@@ -137,7 +137,7 @@
     tool: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>', pin: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>', layers: '<path d="M12 3 3 8l9 5 9-5z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 17 9 5 9-5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>', chev: '<path d="m9 18 6-6-6-6"/>'
+    plus: '<path d="M12 5v14M5 12h14"/>', link: '<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>', ext: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>', chev: '<path d="m9 18 6-6-6-6"/>'
   };
   var SUN = '<svg class="kg-sun" viewBox="0 0 170 170" aria-hidden="true"><defs><radialGradient id="kgsg"><stop offset="0%" stop-color="#FFE3A3"/><stop offset="45%" stop-color="#FFB45E" stop-opacity=".9"/><stop offset="100%" stop-color="#FF8A5B" stop-opacity="0"/></radialGradient></defs><g stroke="rgba(255,226,170,.45)" stroke-width="3" stroke-linecap="round"><path d="M85 8v16M85 146v16M8 85h16M146 85h16M30 30l11 11M129 129l11 11M30 140l11-11M129 41l11-11"/></g><circle cx="85" cy="85" r="60" fill="url(#kgsg)"/><circle cx="85" cy="85" r="26" fill="#FFE7B0"/></svg>';
   function ic(n, cls) { return '<svg class="kg-ic ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[n] + '</svg>'; }
@@ -482,6 +482,7 @@
         item('search', 'search', 'c-cyan', 'Поиск по расписанию') +
         item('schedule', 'table', 'c-violet', 'Таблица по неделям') +
         item('group', 'users', 'c-green', 'Сменить группу') +
+        item('useful', 'link', 'c-blue', 'Полезные ссылки') +
         (botName() && !inTG ? item('bot', 'send', 'c-tg', 'Напоминания в Telegram') : '') +
         item('settings', 'gear', 'c-gray', 'Настройки') +
         (r ? item('tools', 'tool', 'c-amber', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') +
@@ -506,6 +507,7 @@
       case 'group': if (UI === 'cx') return showGroupPage(); goHome(); try { showGroupChooser(); } catch (e) {} return;
       case 'bot': window.open('https://t.me/' + botName() + '?start=g-' + encodeURIComponent(selectedStudyGroup), '_blank'); return;
       case 'report': try { reportProblem(); } catch (e) {} return;
+      case 'useful': return showUseful();
     }
   }
 
@@ -518,7 +520,8 @@
     modules: function () { showOld('modules', 'Модули и зачёты'); },
     search: function () { showOld('search', 'Поиск'); },
     tools: function () { navigate('tools'); },
-    group: function () { showGroupPage(); }
+    group: function () { showGroupPage(); },
+    useful: function () { showUseful(); }
   };
   function enterPage(name, title) {
     if (!state.page) { state.stack = []; try { history.pushState({ kg: name }, ''); } catch (e) {} }
@@ -684,6 +687,16 @@
     var sub = [kindName(e), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · ');
     return '<button type="button" class="cx-row gl" data-cx="day" data-d="' + key + '">' + kIco(kindOf(e)) + '<div><b>' + esc(names[0]) + (names.length > 1 ? ' +' + (names.length - 1) : '') + '</b><span>' + esc(sub) + '</span></div><div class="tm">' + esc(e.start) + (!live ? '<small>отменено</small>' : extra ? '<small>' + esc(extra) + '</small>' : '') + '</div></button>';
   }
+  /* список пар на главной с перерывами (от 15 минут), как в ленте недели */
+  function cxRowsBrk(list, key, firstExtra) {
+    var h = '', pe = null;
+    list.forEach(function (s, i) {
+      if (pe !== null && mins(s[0].start) - pe >= 15) h += '<div class="cx-brk cx-brk-h"><span>Перерыв ' + dur(mins(s[0].start) - pe) + '</span></div>';
+      h += cxRow(s, key, i ? '' : firstExtra);
+      pe = pe === null ? mins(s[0].end) : Math.max(pe, mins(s[0].end));
+    });
+    return '<div class="cx-rows">' + h + '</div>';
+  }
   function cxTasks(t) {
     var list = [];
     try { list = notes.filter(function (n) { return (n.type === 'module' || n.type === 'homework') && n.date >= t && n.date <= addDays(t, 7) && noteRelevant(n); }).sort(function (a, b) { return a.date.localeCompare(b.date); }).slice(0, 3); } catch (e) {}
@@ -714,9 +727,13 @@
       var segs = sl.map(function (s, i) { return (i ? '<i class="gap" style="flex:' + Math.max(4, mins(s[0].start) - mins(sl[i - 1][0].end)) + '"></i>' : '') + '<i class="' + (i ? '' : 'on') + '" style="flex:' + Math.max(1, mins(s[0].end) - mins(s[0].start)) + '"></i>'; }).join('');
       hero = '<section class="cx-hero is-morning">' + SUN + '<i class="kg-sheen"></i><div class="cx-col" style="gap:4px"><span class="cx-pill">Пары ещё не начались</span><span class="cx-hs" style="margin-top:8px">До первой пары</span><span class="cx-big">' + dur(mins(sl[0][0].start) - now) + '</span></div>' +
         '<div class="cx-seg" aria-hidden="true">' + segs + '</div><div class="cx-segl"><span>' + esc(sl[0][0].start) + '</span><span>' + countLabel(sl) + '</span><span>' + esc(sl[sl.length - 1][0].end) + '</span></div>' + cxFirst(sl[0], 'Первая') + '</section>';
-      list = '<div class="cx-sh"><h2>План на сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div><div class="cx-rows">' + lessonsFor(t).map(function (s, i) { return cxRow(s, t, i ? '' : 'первая'); }).join('') + '</div>';
+      list = '<div class="cx-sh"><h2>План на сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div>' + cxRowsBrk(lessonsFor(t), t, 'первая');
     } else if (next) {
-      hero = '<section class="cx-hero is-break">' + deco + '<div class="cx-col" style="gap:4px"><span class="cx-pill">' + ic('cup') + 'Перерыв</span><span class="cx-hs" style="margin-top:8px">До следующей пары</span><span class="cx-big">' + dur(mins(next[0].start) - now) + '</span></div>' + cxFirst(next, 'Далее') + '</section>';
+      /* полоса перерыва: от конца прошлой пары до начала следующей */
+      var pe = 0; sl.forEach(function (s) { var en = mins(s[0].end); if (en <= now && en > pe) pe = en; });
+      var bl = mins(next[0].start) - pe, bp = Math.max(0, Math.min(100, Math.round((now - pe) / Math.max(1, bl) * 100)));
+      var bpb = pe ? '<div class="cx-pb" role="progressbar" aria-label="Перерыв" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + bp + '"><i style="width:' + bp + '%"></i></div><div class="cx-segl"><span>' + hm(pe) + '</span><span>перерыв ' + dur(bl) + '</span><span>' + esc(next[0].start) + '</span></div>' : '';
+      hero = '<section class="cx-hero is-break">' + deco + '<div class="cx-col" style="gap:4px"><span class="cx-pill">' + ic('cup') + 'Перерыв</span><span class="cx-hs" style="margin-top:8px">До следующей пары</span><span class="cx-big">' + dur(mins(next[0].start) - now) + '</span></div>' + bpb + cxFirst(next, 'Далее') + '</section>';
     } else {
       var nd = nextStudy(t), lbl = nd ? (nd.key === addDays(t, 1) ? 'Завтра' : dShort(nd.key)) + ' · первая' : '', sb = semBounds(t);
       var freeHead = sb.w < 1 ? [ic('cal') + 'Семестр ещё не начался', 'Пары начнутся ' + dayMonth(sb.start), 'Расписание осеннего семестра уже опубликовано']
@@ -725,7 +742,7 @@
       hero = sl.length
         ? '<section class="cx-hero is-done">' + deco + '<div class="cx-col"><span class="cx-pill">' + ic('moon') + 'Пары закончились</span><div class="cx-h1">На сегодня всё</div><div class="cx-hs">Последняя закончилась в ' + esc(sl[sl.length - 1][0].end) + '</div></div>' + (nd ? cxFirst(nd.sl[0], lbl) : '') + '</section>'
         : '<section class="cx-hero is-free">' + deco + '<div class="cx-col"><span class="cx-pill">' + freeHead[0] + '</span><div class="cx-h1">' + freeHead[1] + '</div><div class="cx-hs">' + freeHead[2] + '</div></div>' + (nd ? cxFirst(nd.sl[0], lbl) : '') + '</section>';
-      if (nd) list = '<div class="cx-sh"><h2>' + (nd.key === addDays(t, 1) ? 'Завтра' : DOW[dow(nd.key)] + ', ' + parseISO(nd.key).getDate() + ' ' + MON[parseISO(nd.key).getMonth()]) + '</h2><button type="button" data-cx="day" data-d="' + nd.key + '">Весь день ›</button></div><div class="cx-rows">' + lessonsFor(nd.key).map(function (s) { return cxRow(s, nd.key); }).join('') + '</div>';
+      if (nd) list = '<div class="cx-sh"><h2>' + (nd.key === addDays(t, 1) ? 'Завтра' : DOW[dow(nd.key)] + ', ' + parseISO(nd.key).getDate() + ' ' + MON[parseISO(nd.key).getMonth()]) + '</h2><button type="button" data-cx="day" data-d="' + nd.key + '">Весь день ›</button></div>' + cxRowsBrk(lessonsFor(nd.key), nd.key);
     }
     if (live || (next && now >= mins(sl[0][0].start))) {
       var bt = null;
@@ -736,7 +753,7 @@
       var done = sl.filter(function (s) { return mins(s[0].end) <= now; }).length;
       var bars = sl.map(function (s) { return mins(s[0].end) <= now ? '<i class="ok"></i>' : (now >= mins(s[0].start) ? '<i style="background:linear-gradient(90deg,#8C2B33 ' + Math.round((now - mins(s[0].start)) / Math.max(1, mins(s[0].end) - mins(s[0].start)) * 100) + '%,var(--e-sep) 0)"></i>' : '<i></i>'); }).join('');
       bento = '<div class="cx-bento">' + tile1 + '<div class="cx-tile gl"><div class="cx-tl">' + gIco('play', '#A7B3CB', '#5C6B8A', 1) + 'День</div><div class="cx-tv">' + done + ' из ' + sl.length + '</div><div class="cx-bars" aria-hidden="true">' + bars + '</div></div></div>';
-      if (rest.length) list = '<div class="cx-sh"><h2>Дальше сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div><div class="cx-rows">' + rest.map(function (s) { return cxRow(s, t); }).join('') + '</div>';
+      if (rest.length) list = '<div class="cx-sh"><h2>Дальше сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div>' + cxRowsBrk(rest, t);
     }
     return cxHead() + hero + bento + cxTasks(t) + list;
   }
@@ -861,7 +878,7 @@
     var u = tgUser(), r = role(), g = selectedStudyGroup, theme = (typeof userPreferences !== 'undefined' && userPreferences.theme) || 'system';
     var name = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : 'Гость';
     var h = '<div class="cx-prof gl"><div class="kg-ava">' + esc((name.replace('@', '')[0] || '?').toUpperCase()) + '</div><div class="kg-prof-t"><small>' + esc(r ? ROLE[r] : 'Студент') + '</small><b>' + esc(name) + '</b><span>Группа ' + esc(g) + (groupCaption(g) ? ' · ' + esc(groupCaption(g)) : '') + '</span></div></div>' +
-      '<div class="kg-lbox">' + row('Сменить группу', esc(g), 'group') + row('Календарь и ДЗ', '', 'calendar') + '</div>' +
+      '<div class="kg-lbox">' + row('Сменить группу', esc(g), 'group') + row('Календарь и ДЗ', '', 'calendar') + row('Полезные ссылки', '', 'useful') + '</div>' +
       '<div class="kg-lt">Настройки</div><div class="kg-lbox kg-pad">' + (hasSubgroups() ? '<div class="cx-lab">Подгруппа</div>' + seg('sub', [['all', 'Обе'], ['1', '1-я'], ['2', '2-я']], typeof group !== 'undefined' ? group : 'all') : '') +
       '<div class="cx-lab">Тема</div>' + seg('theme', [['system', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], theme) +
       (inTG ? '' : '<div class="cx-lab">Вид сайта</div>' + seg('ui', [['cx', 'Компактный'], ['ext', 'Расширенный']], 'cx')) + '</div>' +
@@ -883,6 +900,28 @@
         else { var t = document.querySelector('[data-theme-choice="' + b.dataset.v + '"]'); if (t) t.click(); setTimeout(applyTGTheme, 30); }
         renderProfile();
       });
+    });
+  }
+
+  /* ---------- полезные ссылки (идея из сборки NOVA) ---------- */
+  var USEFUL = [
+    ['https://kazangmu.ru/', 'home', 'Сайт КГМУ', 'Новости, учебный процесс, документы', '#D98A90', '#8C2B33'],
+    ['https://lk.kazangmu.ru/', 'user', 'Личный кабинет', 'Официальный кабинет студента', '#A7B3CB', '#5C6B8A'],
+    ['https://kazangmu.ru/obuchenie/studentam/raspisanie-zanyatij', 'table', 'Официальное расписание', 'Файлы, которые публикует университет', '#DCC59A', '#9A7A3E']
+  ];
+  function openExt(url) {
+    if (inTG) tgPost('web_app_open_link', { url: url }); else window.open(url, '_blank', 'noopener');
+  }
+  function showUseful() {
+    var h = '<div class="kg-lt">Университет</div><div class="cx-rows">' + USEFUL.map(function (x) {
+      return '<a class="cx-row gl" href="' + esc(x[0]) + '" target="_blank" rel="noopener" data-ext="1">' + gIco(x[1], x[4], x[5]) + '<div><b>' + esc(x[2]) + '</b><span>' + esc(x[3]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
+    }).join('') + '</div>';
+    h += '<div class="kg-lt">Сервис</div><div class="cx-rows">' +
+      (botName() ? '<button type="button" class="cx-row gl" data-go="bot">' + gIco('send', '#9CC3E6', '#3D7AB8') + '<div><b>Напоминания о парах</b><span>Утреннее сообщение в Telegram-боте</span></div><div class="tm">' + ic('chev') + '</div></button>' : '') +
+      '<button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>';
+    showPage('useful', 'Полезные ссылки', h);
+    $('kgPage').querySelectorAll('a[data-ext]').forEach(function (a) {
+      a.addEventListener('click', function (ev) { if (!inTG) return; ev.preventDefault(); openExt(a.href); });
     });
   }
 
