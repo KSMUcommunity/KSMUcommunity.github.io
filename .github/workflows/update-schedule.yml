@@ -3,6 +3,23 @@ on:
   schedule:
     - cron: "17 2,8,14 * * *"   # 05:17, 11:17, 17:17 по Москве
   workflow_dispatch:
+    inputs:
+      week1:
+        description: "Новый семестр: понедельник 1-й недели (ГГГГ-ММ-ДД). Пусто — просто обновить расписание"
+        required: false
+        default: ""
+      title:
+        description: "Название семестра, например «Весна 2026/27»"
+        required: false
+        default: ""
+      weeks:
+        description: "Число учебных недель"
+        required: false
+        default: "18"
+      auto:
+        description: "Определить семестр по файлам КГМУ (вместо даты выше)"
+        type: boolean
+        default: false
   push:
     branches: [main]
 permissions:
@@ -21,6 +38,19 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: Новый семестр
+        if: github.event_name == 'workflow_dispatch' && (inputs.week1 != '' || inputs.auto)
+        env:
+          W1: ${{ inputs.week1 }}
+          TITLE: ${{ inputs.title }}
+          WEEKS: ${{ inputs.weeks }}
+          AUTO: ${{ inputs.auto }}
+        run: |
+          if [ "$AUTO" = "true" ]; then
+            python scraper/new_semester.py --auto ${TITLE:+--title "$TITLE"} --weeks "${WEEKS:-18}"
+          else
+            python scraper/new_semester.py --week1 "$W1" ${TITLE:+--title "$TITLE"} --weeks "${WEEKS:-18}"
+          fi
       - name: Свежее расписание с сайта КГМУ
         if: github.event_name != 'push'
         run: python scraper/update_friend.py || echo "::warning::Не удалось обновить расписание, оставляю прошлые данные"
@@ -29,7 +59,7 @@ jobs:
         run: |
           git config user.name "schedule-bot"
           git config user.email "schedule-bot@users.noreply.github.com"
-          git add schedule.json schedule-data.js
+          git add schedule.json schedule-data.js scraper/semester.json
           git diff --cached --quiet || git commit -m "Автообновление расписания $(date -u +'%F %H:%M')"
           git pull --rebase -X theirs origin main && git push || echo "::warning::Не удалось сохранить расписание"
       - name: Собрать сайт

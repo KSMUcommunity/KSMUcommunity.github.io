@@ -341,3 +341,160 @@ html.kg-e body.kg-mode-old .utility-back{display:none!important}
 .cx-rows>.cx-brk-h{margin:-2px 0 -2px 18px}
 .cx-hero.is-break .cx-pb{margin-top:14px}
 #kgApp a.cx-row{color:inherit;text-decoration:none}
+
+/* ===== 9.1: боковое меню на компьютере, сетка недели, месяц, страницы «О проекте» и политика ===== */
+.cx-side{display:none}
+html.kg-e .developer-footer,html.kg-e .dev-contact{display:none!important}
+html.kg-desk body.kg-on{padding-left:264px}
+html.kg-desk body.kg-cx-first{padding-left:0}
+html.kg-desk .cx-side{display:flex;flex-direction:column;gap:18px;position:fixed;z-index:96;left:0;top:0;bottom:0;width:264px;padding:22px 14px 16px;overflow-y:auto;
+  background:linear-gradient(180deg,var(--gl1),var(--gl2));-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-right:1px solid var(--a-line)}
+html.kg-desk body.kg-cx-first .cx-side,html.kg-desk .kg-tabbar{display:none!important}
+.cx-brand{display:flex;align-items:center;gap:11px;padding:2px 6px}
+.cx-brand-logo{width:44px;height:44px;border-radius:14px;background:#fff;display:grid;place-items:center;flex:none;box-shadow:0 4px 12px rgba(70,40,50,.14)}
+.cx-brand-logo img{width:36px;height:36px;object-fit:contain}
+.cx-brand b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--a-text)}
+.cx-brand small{display:block;font-size:12px;color:var(--a-hint)}
+#kgApp .cx-sgrp{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;border-radius:18px;background:var(--e-hero);color:#fff;text-align:left;box-shadow:0 10px 24px rgba(140,43,51,.3),inset 0 1px 0 rgba(255,255,255,.4)}
+.cx-sgrp>span{flex:1;min-width:0;display:flex;flex-direction:column}
+.cx-sgrp small{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.82}
+.cx-sgrp b{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.cx-sgrp em{font-style:normal;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#kgApp .cx-sgrp .kg-ic{width:18px;height:18px;opacity:.85;flex:none}
+.cx-navs{display:flex;flex-direction:column;gap:2px}
+#kgApp .cx-nav{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 12px;border-radius:13px;font-size:14.5px;font-weight:600;color:var(--a-hint);text-align:left;transition:background-color .15s,color .15s}
+#kgApp .cx-nav .kg-ic{width:20px;height:20px;flex:none}
+#kgApp .cx-nav:hover{background:var(--a-card2);color:var(--a-text)}
+#kgApp .cx-nav.on{background:var(--a-acc-soft);color:var(--a-acc);font-weight:700}
+.cx-nb{margin-left:auto;min-width:20px;height:20px;border-radius:10px;padding:0 6px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,#FF6B6B,#F0437A)}
+.cx-side-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--e-sep)}
+#kgApp .cx-me{display:flex;align-items:center;gap:10px;width:100%;padding:8px;border-radius:14px;text-align:left;color:var(--a-text)}
+#kgApp .cx-me:hover,#kgApp .cx-me.on{background:var(--a-card2)}
+.cx-me-av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;color:var(--a-acc);background:var(--a-acc-soft)}
+#kgApp .cx-me-av .kg-ic{width:18px;height:18px}
+.cx-me>span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column}
+.cx-me b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-me small{font-size:12px;color:var(--a-hint)}
+#kgApp .cx-me>.kg-ic{width:18px;height:18px;color:var(--a-hint);flex:none}
+
+/* широкий экран: поля и колонки */
+html.kg-desk .cx-home{max-width:1200px;padding:28px 40px 28px}
+html.kg-desk .kg-page{max-width:920px;padding:24px 40px 28px}
+html.kg-desk .kg-page:has(.cx-calwrap){max-width:1240px}
+html.kg-desk body.kg-mode-old main.wrap{max-width:1000px;margin:0 auto!important;padding:16px 40px 32px!important}
+html.kg-desk .kg-subbar{grid-template-columns:auto 1fr auto;gap:18px;padding:12px 40px}
+html.kg-desk .kg-subbar b{font-size:20px;justify-self:start}
+html.kg-desk #kgApp .cx-hd .cx-ib{display:none}
+html.kg-desk .cx-hero{padding:24px 26px;border-radius:30px}
+html.kg-desk .cx-h1{font-size:28px}
+html.kg-desk .cx-big{font-size:52px}
+
+.cx-dash{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:24px;align-items:start}
+.cx-main,.cx-aside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cx-aside{position:sticky;top:24px}
+.cx-sh h2 small{font-size:13px;font-weight:600;color:var(--a-hint)}
+.cx-glance{gap:7px}
+#kgApp .cx-wg{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:18px;text-align:left;width:100%;color:var(--a-text)}
+.cx-wgd{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.cx-wgd small{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--a-hint)}
+.cx-wgd b{font-size:19px;font-weight:800}
+.cx-wgl{flex:1;min-width:0;display:flex;flex-direction:column}
+.cx-wgl b{font-size:14px;font-weight:700}
+.cx-wgl small{font-size:12px;color:var(--a-hint)}
+#kgApp .cx-wg>.kg-ic{width:16px;height:16px;color:var(--a-hint);flex:none}
+#kgApp .cx-wg.t{box-shadow:var(--a-shadow),0 0 0 2px color-mix(in srgb,var(--a-acc) 45%,transparent)}
+.cx-wg.t .cx-wgd small{color:var(--a-acc)}
+.cx-wg.off .cx-wgl b{color:var(--a-hint);font-weight:600}
+
+/* шапка недели: переключатель вида и «Месяц» */
+.cx-dtr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cx-vtools{display:flex;gap:8px;align-items:center}
+#kgApp .cx-mbtn{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:700;color:var(--a-acc);background:var(--a-acc-soft)}
+#kgApp .cx-mbtn .kg-ic{width:16px;height:16px}
+
+/* сетка недели Пн–Сб */
+.cx-board{display:grid;gap:12px;align-items:start}
+.cx-bcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+#kgApp .cx-bh{display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;border-radius:14px;text-align:left;color:var(--a-text);width:100%}
+#kgApp .cx-bh:hover{background:var(--a-card2)}
+.cx-bh small{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--a-hint)}
+.cx-bh b{font-size:16px;font-weight:800}
+#kgApp .cx-bcol.t .cx-bh{background:var(--a-acc-soft)}
+.cx-bcol.t .cx-bh small{color:var(--a-acc)}
+#kgApp .cx-bc{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:3px;padding:10px 11px 11px 15px;border-radius:16px;text-align:left;color:var(--a-text);width:100%}
+.cx-bc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--k1),var(--k2))}
+.cx-bct{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--a-hint)}
+.cx-bct i{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:rgba(255,255,255,.24);border-radius:999px;padding:1px 7px}
+.cx-bc b{font-size:13.5px;font-weight:700;line-height:1.3;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cx-bc b span{color:var(--a-hint);font-weight:600}
+.cx-bc small{font-size:11.5px;color:var(--a-hint);overflow-wrap:anywhere}
+#kgApp .cx-bc:hover{box-shadow:var(--a-shadow),0 0 0 2px color-mix(in srgb,var(--a-acc) 30%,transparent)}
+#kgApp .cx-bc.live{background:var(--e-hero);color:#fff;border-color:transparent;box-shadow:var(--e-hero-sh)}
+.cx-bc.live::before{display:none}
+.cx-bc.live .cx-bct,.cx-bc.live small,.cx-bc.live b span{color:rgba(255,255,255,.9)}
+.cx-bc.past{opacity:.55}
+.cx-bc.cancel b{text-decoration:line-through;color:var(--a-hint)}
+.cx-bempty{padding:16px 12px;border-radius:16px;border:1.5px dashed var(--e-sep);font-size:12.5px;color:var(--a-hint);text-align:center}
+.cx-wk-b{justify-content:space-between}
+#kgApp .cx-wk-b>button{width:auto;height:38px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;border-radius:12px;color:var(--a-text);background:var(--a-card2)}
+#kgApp .cx-wk-b>button .kg-ic{width:16px;height:16px}
+.cx-leg-k{flex-wrap:wrap;justify-content:flex-start;gap:8px 18px;margin:4px 4px 0}
+.cx-leg-k i{display:inline-block;width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,var(--k1),var(--k2))}
+
+/* календарь по месяцам: на компьютере в клетках видны пары, справа — выбранный день */
+.cx-calwrap{display:flex;flex-direction:column}
+.cx-calday{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+html.kg-desk .cx-calwrap{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(300px,1fr);gap:22px;align-items:start}
+html.kg-desk .cx-calp{margin-top:0;position:sticky;top:76px}
+html.kg-desk .cx-cal{padding:18px 18px 16px}
+.cx-cal.big .cx-cg{gap:6px}
+#kgApp .cx-cal.big .cx-cd{min-height:104px;align-items:stretch;justify-content:flex-start;padding:8px 7px 6px;gap:5px}
+.cx-cal.big .cx-cd b{align-self:flex-start;font-size:14px;padding-left:2px}
+.cx-cal.big .cx-cd>i{display:none}
+.cx-cal .cx-cd .cx-cl{position:static;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cx-cal .cx-cd .cx-cl>span{position:static;display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;line-height:1.3;color:var(--a-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;min-width:0}
+.cx-cl>span i{width:6px;height:6px;border-radius:2px;flex:none;background:linear-gradient(135deg,var(--k1),var(--k2))}
+.cx-cal .cx-cd .cx-cl>.more{color:var(--a-hint);padding-left:10px}
+#kgApp .cx-cd.sel .cx-cl>span{color:#fff}
+#kgApp .cx-cd.sel .cx-cl>span i{background:#fff}
+
+/* подвал и страницы */
+.cx-foot{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 14px;margin:20px 0 4px;padding-top:14px;border-top:1px solid var(--e-sep);font-size:12px;color:var(--a-hint)}
+#kgApp .cx-foot button{font-size:12px;font-weight:600;color:var(--a-hint);text-decoration:underline;text-underline-offset:3px;min-height:32px;padding:0 2px}
+#kgApp .cx-foot button:hover{color:var(--a-acc)}
+.cx-about{display:flex;gap:16px;align-items:center;padding:20px;border-radius:26px}
+.cx-about small{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--a-acc)}
+.cx-about b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:2px 0 4px}
+.cx-about>div>span{display:block;font-size:14px;line-height:1.45;color:var(--a-hint)}
+.cx-about .cx-gp-logo{box-shadow:0 6px 16px rgba(70,40,50,.15)}
+.cx-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html.kg-desk .cx-facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+.cx-fact{border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:3px}
+#kgApp .cx-fact .kg-ic{width:22px;height:22px;color:var(--a-acc);margin-bottom:4px}
+.cx-fact b{font-size:16px;font-weight:800}
+.cx-fact span{font-size:12.5px;color:var(--a-hint);line-height:1.35}
+.cx-note{font-size:12.5px;line-height:1.55;color:var(--a-hint);margin:16px 6px 0}
+.cx-doc{border-radius:24px;padding:20px 22px}
+.cx-doc h2{font-size:16px;font-weight:800;margin:20px 0 6px;color:var(--a-text)}
+.cx-doc p{font-size:14.5px;line-height:1.6;margin:0;color:var(--a-text)}
+.cx-doc .cx-doc-d{font-size:12.5px;color:var(--a-hint)}
+.cx-doc .cx-btn{margin-top:22px}
+@media (prefers-reduced-motion:reduce){#kgApp .cx-nav{transition:none}}
+/* в календаре пары дня показывает новый блок — в старой панели прячем дубли */
+#cxCalSlot :is(#detailDate,#detailSubtitle,#detailLessons),#cxCalSlot .panel-section-title:has(+ #detailLessons){display:none!important}
+.cx-cal .cx-cd .cx-cl .nm{position:static;display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.kg-desk body.kg-toppage #kgApp .kg-back{visibility:hidden}
+/* узкие компьютеры: меню и поля поменьше, слова в сетке не рвутся посередине */
+.cx-bct{flex-wrap:wrap}.cx-bct>span{white-space:nowrap}
+.cx-bc b{overflow-wrap:break-word;word-break:normal;-webkit-hyphens:auto;hyphens:auto}
+@media (max-width:1279px){
+  html.kg-desk body.kg-on{padding-left:236px}
+  html.kg-desk .cx-side{width:236px;padding:20px 12px 14px}
+  html.kg-desk .cx-home{padding:24px 24px 24px}
+  html.kg-desk .kg-page{padding:22px 24px 24px}
+  html.kg-desk .kg-subbar{padding:12px 24px}
+  .cx-board{gap:8px}
+  #kgApp .cx-bc{padding:9px 9px 10px 13px}
+  .cx-dash{grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:18px}
+}
+html.kg-desk body.kg-cx-first .kg-page{max-width:760px;padding-top:48px}

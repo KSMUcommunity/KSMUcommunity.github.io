@@ -21,7 +21,7 @@ if __name__ == "__main__":
     fetch_all(raw)
     tmp = ROOT / "raw" / "out"
     payload = export(raw, template, tmp)
-    if payload["groups"] == template["groups"]:
+    if payload["groups"] == template["groups"] and payload.get("semester") == template.get("semester"):
         print("Расписание не изменилось — файлы сайта не трогаю.")
         sys.exit(0)
     changed = [g for g in template["groups"] if payload["groups"].get(g) != template["groups"].get(g)]

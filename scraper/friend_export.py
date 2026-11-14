@@ -19,8 +19,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 import parse as P  # noqa: E402
 from parse import HOLIDAYS, clean, fmt_time, parse_file, to_date  # noqa: E402
 
-WEEK1 = dt.date(2026, 8, 31)
-MAX_WEEK = 18
+# Семестр: понедельник 1-й недели, число недель, название — в scraper/semester.json
+SEMESTER = json.loads((Path(__file__).resolve().parent / "semester.json").read_text("utf-8"))
+WEEK1 = dt.date.fromisoformat(SEMESTER["week1"])
+MAX_WEEK = int(SEMESTER["weeks"])
 PROGRAM_BY_PROG = {"Лечебное дело": "lechebnoe", "Педиатрия": "pediatriya", "Стоматология": "stomatologiya",
                    "Медико-профилактическое дело": "medprof", "Фармация": "farmaciya",
                    "Медицинская биофизика": "biofizika", "Медицинская биохимия": "biohimiya",
@@ -156,6 +158,8 @@ def parse_cycles(path, wanted, short_names):
 
 
 def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
+    # новый семестр: группы без занятий убираем, а не останавливаем обновление
+    new_semester = (template.get("semester") or {}).get("week1", "2026-08-31") != SEMESTER["week1"]
     groups_wanted = set(template["groups"])
     dev_groups = {g for g, evs in template["groups"].items() if not evs}
     short_names = {}
@@ -204,7 +208,7 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
                         continue  # занятие только для перечисленных групп
                     result[g].append(grid_event(e, short_names))
                 used_sources.setdefault(g, m["fn"])
-    problems = []
+    problems, gone = [], []
     for g in groups_wanted:
         if g in dev_groups:
             result[g] = []
@@ -221,15 +225,26 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
         result[g] = uniq
         if not uniq and g in new_meta:
             continue  # новая группа без занятий в пределах семестра — не показываем
+        if not uniq and new_semester:
+            gone.append(g)
+            continue
         if not uniq:
             problems.append(f"группа {g}: не найдено ни одного занятия")
         if len(uniq) > 1500:
             problems.append(f"группа {g}: слишком много занятий ({len(uniq)})")
+    if gone and len(gone) > 0.3 * len(template["groups"]):
+        problems.append(f"в новом семестре нет занятий у {len(gone)} групп из {len(template['groups'])} — похоже, файлы КГМУ ещё не опубликованы")
     if problems:
         raise SystemExit("Экспорт остановлен, сайт оставит прошлые данные:\n  " + "\n  ".join(problems))
-    meta = json.loads(json.dumps(template["groupMeta"]))
+    if gone:
+        print(f"Новый семестр: убираю группы без занятий: {', '.join(sorted(gone, key=gkey))}")
+    meta = {g: m for g, m in json.loads(json.dumps(template["groupMeta"])).items() if g not in gone}
     programs = json.loads(json.dumps(template["programs"]))
-    order = list(template["groups"])
+    for prog in programs.values():
+        for c in prog["courses"].values():
+            for st in list(c):
+                c[st] = [g for g in c[st] if g not in gone]
+    order = [g for g in template["groups"] if g not in gone]
     added = sorted((g for g in new_meta if result.get(g)),
                    key=lambda g: (PROGRAM_ORDER.index(new_meta[g]["program"]), int(new_meta[g]["course"]), gkey(g)))
     for g in added:
@@ -252,6 +267,7 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
             meta[g]["source"] = fn
     payload = {"format": "kgmu-v8-multigroup", "version": (template.get("version", "8.5").split("-auto")[0]) + "-auto",
                "updated": dt.date.today().isoformat(), "signed": template.get("signed"),
+               "semester": {k: SEMESTER[k] for k in ("title", "week1", "weeks")},
                "programs": programs, "groupMeta": meta,
                "groups": {g: result[g] for g in order}}
     out.mkdir(parents=True, exist_ok=True)
@@ -261,7 +277,8 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
         "/* Встроенная копия расписания (запасной вариант до загрузки schedule.json). Собрано автоматически. */\n"
         "window.KGMU_EMBEDDED_GROUPS=" + json.dumps(payload["groups"], ensure_ascii=False, separators=(",", ":")) + ";\n"
         "window.KGMU_PROGRAMS=" + json.dumps(payload["programs"], ensure_ascii=False, separators=(",", ":")) + ";\n"
-        "window.KGMU_GROUP_INFO=" + json.dumps(payload["groupMeta"], ensure_ascii=False, separators=(",", ":")) + ";\n",
+        "window.KGMU_GROUP_INFO=" + json.dumps(payload["groupMeta"], ensure_ascii=False, separators=(",", ":")) + ";\n"
+        "window.KGMU_SEMESTER=" + json.dumps(payload["semester"], ensure_ascii=False, separators=(",", ":")) + ";\n",
         "utf-8")
     print(f"✓ {sum(len(v) for v in payload['groups'].values())} занятий в {len(payload['groups'])} группах → {out}")
     return payload

@@ -1004,7 +1004,7 @@ button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.sh
 <script src="./schedule-data.js"></script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
-<link rel="stylesheet" href="./kg-e.css?v=7">
+<link rel="stylesheet" href="./kg-e.css?v=8">
 <script>/* группа, выбранная вручную, важнее группы из ссылки бота */try{var u=new URL(location.href),g=u.searchParams.get("studyGroup"),o=JSON.parse(localStorage.getItem("kg-group-override")||"null");window.KG_URL_GROUP=g;if(g&&o&&o.from===g&&o.to&&o.to!==g){u.searchParams.set("studyGroup",o.to);history.replaceState(null,"",u);}else if(g&&o&&o.from!==g){localStorage.removeItem("kg-group-override");}}catch(e){}</script>
 <style>.data-tools{display:none}body.kg-admin .data-tools{display:block}</style>
 </head>
@@ -1398,7 +1398,7 @@ function placeLine(it){
 }
 
 const DAYS=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
-const INITIAL=new Date(2026,7,31,12);const now=new Date();
+const SEM=window.KGMU_SEM=Object.assign({title:'Осень 2026/27',week1:'2026-08-31',weeks:18},window.KGMU_SEMESTER||{});function semDate(){const p=SEM.week1.split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12);}let INITIAL=semDate();const now=new Date();
 const params=new URLSearchParams(location.search);
 const SETTINGS_KEY='kgmu-v8-settings-v1';
 let userPreferences={theme:'system',group:'all',subgroups:{}};
@@ -1429,8 +1429,8 @@ function diffDays(fromKey,toKey){
  const a=fromKey.split('-').map(Number),b=toKey.split('-').map(Number);
  return Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000);
 }
-function weekFromToday(){return Math.max(1,Math.min(18,dateWeek(kazanTodayKey())));}
-let week=Number(params.get('week'))||weekFromToday();week=Math.max(1,Math.min(18,week));
+function weekFromToday(){return Math.max(1,Math.min(SEM.weeks,dateWeek(kazanTodayKey())));}
+let week=Number(params.get('week'))||weekFromToday();week=Math.max(1,Math.min(SEM.weeks,week));
 let group=params.get('group')||(selectedStudyGroup&&userPreferences.subgroups[selectedStudyGroup])||userPreferences.group||'all';if(!['all','1','2'].includes(group))group='all';
 const $=id=>document.getElementById(id);
 const shortDate=d=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(d);
@@ -1527,7 +1527,7 @@ function renderSession(s,dateKey,state=''){
 }
 function fingerprint(e){return `${e.day}|${e.start}|${subjTitle(e.subject)}|${e.teacher}|${e.shortLocation}|${e.subgroup||''}`;}
 function labelChange(e){return `${DAYS[e.day]} ${e.start} — ${subjTitle(e.subject)}`;}
-function updateChanges(){const t=$('changeTitle'),p=$('changes');if(week===18){t.textContent='Конец расписания';p.textContent='Это последняя (18-я) неделя, указанная в файле.';return;}
+function updateChanges(){const t=$('changeTitle'),p=$('changes');if(week===SEM.weeks){t.textContent='Конец расписания';p.textContent='Это последняя ('+SEM.weeks+'-я) неделя, указанная в файле.';return;}
  t.textContent='Что изменится на '+(week+1)+'-й неделе';
  const current=EVENT_DATA.filter(e=>e.weeks.includes(week)&&(e.subgroup===null||group==='all'||e.subgroup===group));
  const next=EVENT_DATA.filter(e=>e.weeks.includes(week+1)&&(e.subgroup===null||group==='all'||e.subgroup===group));
@@ -1539,8 +1539,8 @@ function updateChanges(){const t=$('changeTitle'),p=$('changes');if(week===18){t
  p.innerHTML=(goneLabels.length?'Уходят или меняются: <b>'+esc(fmt(goneLabels))+'</b>. ':'')+(newLabels.length?'Появляются или меняются: <b>'+esc(fmt(newLabels))+'</b>.':'');
 }
 function render(){
- const rangeLabel=fmtDate(week)+(week===18?' 2026–2027 гг.':' 2026 г.');
- $('week').value=String(week);$('prev').disabled=week===1;$('next').disabled=week===18;
+ const rangeLabel=fmtDate(week)+(dayDate(week,5).getFullYear()!==dayDate(week,0).getFullYear()?' '+dayDate(week,0).getFullYear()+'–'+dayDate(week,5).getFullYear()+' гг.':' '+dayDate(week,0).getFullYear()+' г.');
+ $('week').value=String(week);$('prev').disabled=week===1;$('next').disabled=week===SEM.weeks;
  for(const b of document.querySelectorAll('[data-group]')){b.classList.toggle('active',b.dataset.group===group);b.setAttribute('aria-pressed',b.dataset.group===group?'true':'false');}
  $('printedWeek').textContent='Неделя '+week+' · '+fmtDate(week);
  $('info').textContent=(group==='all'?'Показаны обе подгруппы.':'Показана '+group+'-я подгруппа.')+' Даты недели: '+rangeLabel+'.';
@@ -1566,7 +1566,7 @@ function render(){
  if(activeView==='calendar'){renderCalendar();renderDayDetail();}
  try{const u=new URL(location.href);u.searchParams.set('week',week);u.searchParams.set('group',group);history.replaceState(null,'',u)}catch(err){}
 }
-for(let i=1;i<=18;i++){let op=document.createElement('option');op.value=i;op.textContent=`Неделя ${String(i).padStart(2,'0')} · ${fmtDate(i)}`;$('week').appendChild(op)}
+for(let i=1;i<=SEM.weeks;i++){let op=document.createElement('option');op.value=i;op.textContent=`Неделя ${String(i).padStart(2,'0')} · ${fmtDate(i)}`;$('week').appendChild(op)}
 $('grid').addEventListener('click', e=>{
  const jump=e.target.closest('[data-jump-date]');
  if(!jump)return;
@@ -1610,7 +1610,7 @@ const LONG_MONTHS=['Январь','Февраль','Март','Апрель','М
 function dateISO(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function parseISO(key){const [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d,12);}
 function prettyDate(key){const d=parseISO(key);return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear()+' г.';}
-function dateWeek(key){const d=parseISO(key);const start=Date.UTC(2026,7,31),val=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());return Math.floor((val-start)/604800000)+1;}
+function dateWeek(key){const d=parseISO(key);const start=Date.UTC(INITIAL.getFullYear(),INITIAL.getMonth(),INITIAL.getDate()),val=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());return Math.floor((val-start)/604800000)+1;}
 function noteRelevant(note){return note.subgroup==='all'||group==='all'||note.subgroup===group;}
 function visibleNotes(key){return notes.filter(n=>n.date===key&&noteRelevant(n));}
 function validNote(n){return Boolean(n&&typeof n==='object'&&/^\d{4}-\d{2}-\d{2}$/.test(n.date||'')&&['module','homework'].includes(n.type)&&typeof n.title==='string'&&typeof n.subject==='string'&&['all','1','2'].includes(n.subgroup)&&typeof n.id==='string');}
@@ -1665,7 +1665,7 @@ function animateSurface(node, direction=0, stagger=false){
  }catch(e){}
 }
 function goWeek(delta){
- const next=Math.max(1,Math.min(18,week+delta));
+ const next=Math.max(1,Math.min(SEM.weeks,week+delta));
  if(next===week)return;
  week=next;render();animateSurface($('grid'),delta,true);
 }
@@ -1688,7 +1688,7 @@ function renderCalendar(){
   const d=new Date(y,m,1-offset+i,12),key=dateISO(d),isOther=d.getMonth()!==m;
   const dayNotes=visibleNotes(key),moduleCount=dayNotes.filter(n=>n.type==='module').length,homeworkCount=dayNotes.filter(n=>n.type==='homework').length,hasModules=moduleCount>0,hasHw=homeworkCount>0,isCurrent=key===kazanTodayKey();
   const w=dateWeek(key),dow=(d.getDay()+6)%7;
-  const visibleSlots=(w>=1&&w<=18&&dow<7)?slots(w,dow).filter(s=>!['cancel','moved-away'].includes(s[0].changeFlag)):[];
+  const visibleSlots=(w>=1&&w<=SEM.weeks&&dow<7)?slots(w,dow).filter(s=>!['cancel','moved-away'].includes(s[0].changeFlag)):[];
   const lessons=visibleSlots.filter(s=>s.every(e=>e.lessonType!=='cycle')).length;
   const periods=visibleSlots.filter(s=>s.some(e=>e.lessonType==='cycle')).length;
   const dayChanges=amendments.filter(a=>a.date===key||a.targetDate===key).length;
@@ -1698,11 +1698,11 @@ function renderCalendar(){
  }
  $('calendarMatrix').innerHTML=html;
 }
-function dayLessons(key){const d=parseISO(key),w=dateWeek(key),dow=(d.getDay()+6)%7;return w>=1&&w<=18&&dow<6?slots(w,dow):[];}
+function dayLessons(key){const d=parseISO(key),w=dateWeek(key),dow=(d.getDay()+6)%7;return w>=1&&w<=SEM.weeks&&dow<6?slots(w,dow):[];}
 function renderDayDetail(){
  const dt=parseISO(selectedDate),w=dateWeek(selectedDate),dayName=['Воскресенье',...DAYS][dt.getDay()===0?0:dt.getDay()];
  $('detailDate').textContent=dayName+', '+prettyDate(selectedDate);
- $('detailSubtitle').textContent=(w>=1&&w<=18?'Учебная неделя '+w+' · ':'')+(group==='all'?'Все подгруппы':group+'-я подгруппа');
+ $('detailSubtitle').textContent=(w>=1&&w<=SEM.weeks?'Учебная неделя '+w+' · ':'')+(group==='all'?'Все подгруппы':group+'-я подгруппа');
  const sessions=dayLessons(selectedDate),daynotes=visibleNotes(selectedDate);
  let lessons='';
  for(const s of sessions){const e=s[0],subjects=[...new Set(s.map(v=>subjTitle(v.subject)))];const subnotes=daynotes.filter(n=>subjects.includes(n.subject));
@@ -1845,13 +1845,13 @@ function renderToday(){
  $('quickDateHint').textContent=prettyDate(today);
  $('dailyLessonTitle').textContent=GROUP_INFO[selectedStudyGroup]?.hasCycles?'Лекции и периоды циклов':todayOffset===0?'Занятия сегодня':todayOffset===1?'Занятия завтра':'Занятия в выбранный день';
  const d=parseISO(today),w=dateWeek(today),dow=(d.getDay()+6)%7;
- const daily=(w>=1&&w<=18&&dow<6)?slots(w,dow):[];
+ const daily=(w>=1&&w<=SEM.weeks&&dow<6)?slots(w,dow):[];
  const activeDaily=daily.filter(s=>!['cancel','moved-away'].includes(s[0].changeFlag));
  const confirmedDaily=activeDaily.filter(s=>!s.some(e=>e.lessonType==='cycle'));
  const cyclePeriods=activeDaily.filter(s=>s.some(e=>e.lessonType==='cycle'));
  const daynotes=visibleNotes(today);
  $('todayTitle').textContent=titleDate(today);
- $('todaySubtitle').textContent=(w>=1&&w<=18?w+'-я учебная неделя · ':'')+(group==='all'?'Показаны обе подгруппы':'Подгруппа '+group);
+ $('todaySubtitle').textContent=(w>=1&&w<=SEM.weeks?w+'-я учебная неделя · ':'')+(group==='all'?'Показаны обе подгруппы':'Подгруппа '+group);
  $('todayClasses').textContent=String(activeDaily.length);
  if($('todayClassesCaption'))$('todayClassesCaption').textContent=GROUP_INFO[selectedStudyGroup]?.hasCycles?'Записей':'Занятий';
  $('todayHomeworkCount').textContent=String(daynotes.filter(n=>n.type==='homework').length);
@@ -2090,7 +2090,7 @@ function renderDayChanges(){
 }
 function openChangeEditor(){
  const d=parseISO(selectedDate),w=dateWeek(selectedDate),dow=(d.getDay()+6)%7;
- if(w<1||w>18||dow>5){toast('Выберите учебный день внутри семестра');return;}
+ if(w<1||w>SEM.weeks||dow>5){toast('Выберите учебный день внутри семестра');return;}
  const available=baseSlots(w,dow).flat();
  if(!available.length){toast('На выбранную дату в исходном расписании нет занятий');return;}
  $('changeLesson').innerHTML=available.map(e=>'<option value="'+esc(eventId(e))+'">'+esc(e.start+' — '+subjTitle(e.subject)+(e.subgroup?' · '+e.subgroup+'-я подгруппа':''))+'</option>').join('');
@@ -2105,7 +2105,7 @@ function saveChangeEditor(e){
  if(!raw){toast('Не удалось определить занятие');return;}
  const type=$('changeKind').value,target=type==='move'?$('changeNewDate').value:selectedDate;
  if(type==='move'&&(!target||target.length!==10)){toast('Укажите дату переноса');return;}
- if(type==='move'&&(dateWeek(target)<1||dateWeek(target)>18)){toast('В этой версии перенос возможен в пределах 18 учебных недель');return;}
+ if(type==='move'&&(dateWeek(target)<1||dateWeek(target)>SEM.weeks)){toast('В этой версии перенос возможен в пределах '+SEM.weeks+' учебных недель');return;}
  const start=$('changeNewStart').value,end=$('changeNewEnd').value;
  if(start&&end&&minutesFromTime(end)<=minutesFromTime(start)){toast('Время окончания должно быть позже начала');return;}
  const prev=amendments.find(a=>a.date===selectedDate&&a.eventId===eventId(raw)&&(!a._remote||(typeof cloudCanEdit==='function'&&cloudCanEdit())));
@@ -2253,7 +2253,8 @@ async function loadPublishedSchedule(){
  try{const res=await fetch('./schedule.json?refresh='+Date.now(),{cache:'no-store'});
   if(!res.ok)throw Error('HTTP '+res.status);const payload=await res.json();
   if(payload?.format!=='kgmu-v8-multigroup'||typeof payload.groups!=='object')throw Error('Несовместимый формат');
-  for(const id of GROUP_IDS){const a=payload.groups[id];if(!Array.isArray(a)||(!a.length&&!isDevGroup(id))||a.length>1500||!a.every(e=>e&&Number.isInteger(e.day)&&e.day>=0&&e.day<6&&typeof e.start==='string'&&typeof e.end==='string'&&typeof e.subject==='string'&&Array.isArray(e.weeks)&&e.weeks.every(w=>Number.isInteger(w)&&w>=1&&w<=18)))throw Error('Ошибка группы '+id);}
+  if(payload.semester&&/^\d{4}-\d{2}-\d{2}$/.test(payload.semester.week1||'')&&payload.semester.weeks>0){Object.assign(SEM,payload.semester);INITIAL=semDate();}
+  for(const id of GROUP_IDS){const a=payload.groups[id];if(!Array.isArray(a)||(!a.length&&!isDevGroup(id))||a.length>1500||!a.every(e=>e&&Number.isInteger(e.day)&&e.day>=0&&e.day<6&&typeof e.start==='string'&&typeof e.end==='string'&&typeof e.subject==='string'&&Array.isArray(e.weeks)&&e.weeks.every(w=>Number.isInteger(w)&&w>=1&&w<=SEM.weeks)))throw Error('Ошибка группы '+id);}
   ALL_SCHEDULES=payload.groups;if(selectedStudyGroup){EVENT_DATA=ALL_SCHEDULES[selectedStudyGroup];render();}
  }catch(err){console.info('Оставлено встроенное расписание:',err.message);}
 }
@@ -2269,7 +2270,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=101"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=89"></script>
-<script src="./kg-app.js?v=102"></script>
+<script src="./kg-app.js?v=103"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
