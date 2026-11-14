@@ -17,10 +17,17 @@ import openpyxl
 DAYS = {"ПН": 0, "ВТ": 1, "СР": 2, "ЧТ": 3, "ПТ": 4, "СБ": 5, "ВС": 6}
 GROUP_STREAMS = {}  # группа -> номер потока из строки «ПОТОК» в таблице
 GROUP_RE = re.compile(r"^[А-ЯA-Z]?\d{3,5}[а-яa-zА-ЯA-Z]*(-\d+)?$")
-# Нерабочие праздничные дни (циклы по ним не идут)
-HOLIDAYS = {"2026-11-04", "2026-12-31", "2027-01-01", "2027-01-02", "2027-01-03", "2027-01-04",
-            "2027-01-05", "2027-01-06", "2027-01-07", "2027-01-08", "2027-02-23", "2027-03-08",
-            "2027-05-01", "2027-05-09", "2027-06-12"}
+# Нерабочие праздничные дни (циклы по ним не идут) — из scraper/semester.json
+def _load_holidays():
+    import json
+    from pathlib import Path
+    try:
+        return set(json.loads((Path(__file__).resolve().parent / "semester.json").read_text("utf-8")).get("holidays", []))
+    except (OSError, ValueError):
+        return set()
+
+
+HOLIDAYS = _load_holidays()
 
 
 def fmt_time(v):
