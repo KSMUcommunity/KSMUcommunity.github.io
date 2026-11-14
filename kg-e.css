@@ -336,3 +336,8 @@ html.kg-e body.kg-mode-old .utility-back{display:none!important}
 #kgApp .cx-dt .cx-today .kg-ic{width:14px;height:14px}
 #kgApp .cx-hero > .cx-route[data-cx="group"]{position:relative;display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:11px 16px;border-radius:16px;background:#fff;color:#8C2B33;font-size:14px;font-weight:700;box-shadow:0 8px 20px rgba(20,16,80,.25)}
 #kgApp .cx-hero > .cx-route .kg-ic{width:18px;height:18px}
+
+/* перерывы в списках главной и полоса перерыва в карточке (идеи из сборки NOVA) */
+.cx-rows>.cx-brk-h{margin:-2px 0 -2px 18px}
+.cx-hero.is-break .cx-pb{margin-top:14px}
+#kgApp a.cx-row{color:inherit;text-decoration:none}
