@@ -733,3 +733,13 @@ html.kg-desk .cx-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax
 .kg-mmsg.bad{color:var(--a-red)}
 .kg-mrow{flex-direction:column}
 .kg-mrow .kg-tg-go{width:100%}
+
+/* ===== 9.11.1: кнопки входа по почте — #kgApp button сбрасывает стили, поэтому селекторы через #kgApp ===== */
+#kgApp .kg-mrow{display:flex;flex-direction:column;gap:8px}
+#kgApp .kg-mrow input{min-height:46px;border-radius:14px;padding:0 14px}
+#kgApp .kg-mrow .kg-tg-go{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:14px;
+  background:var(--e-hero)!important;color:#fff!important;font-weight:700;font-size:15px;box-shadow:0 6px 16px rgba(140,43,51,.28);white-space:nowrap}
+#kgApp .kg-mrow .kg-tg-go:disabled{opacity:.45;box-shadow:none;cursor:default}
+#kgApp .kg-mrow .kg-tg-go:not(:disabled):active{transform:scale(.98)}
+#kgApp .kg-mlink{display:inline-block;margin-top:10px;padding:4px 0;min-height:0;color:var(--a-acc)!important;font-size:13px;font-weight:600}
+@media (min-width:480px){#kgApp .kg-mrow{flex-direction:row}#kgApp .kg-mrow input{flex:1}#kgApp .kg-mrow .kg-tg-go{width:auto;flex:none}}
