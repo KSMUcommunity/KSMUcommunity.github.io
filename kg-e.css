@@ -348,7 +348,7 @@ html.kg-e body.kg-mode-old .utility-back{display:none!important}
 .cx-side{display:none}
 html.kg-e .developer-footer,html.kg-e .dev-contact{display:none!important}
 html.kg-desk body.kg-on{padding-left:264px}
-html.kg-desk body.kg-cx-first{padding-left:0}
+html.kg-desk body.kg-on.kg-cx-first{padding-left:0!important}
 html.kg-desk .cx-side{display:flex;flex-direction:column;gap:18px;position:fixed;z-index:96;left:0;top:0;bottom:0;width:264px;padding:22px 14px 16px;overflow-y:auto;
   background:linear-gradient(180deg,var(--gl1),var(--gl2));-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-right:1px solid var(--a-line)}
 html.kg-desk body.kg-cx-first .cx-side,html.kg-desk .kg-tabbar{display:none!important}
@@ -536,7 +536,7 @@ html.kg-desk body.kg-cx-first .kg-page{max-width:760px;padding-top:48px}
 @media (prefers-reduced-motion:reduce){.cx-wl-copy,.cx-wl-feat{animation:none}}
 
 /* компьютер: бордовая панель слева во всю высоту, выбор справа */
-html.kg-desk body.kg-cx-first #kgPage{max-width:none;padding:0;display:grid;grid-template-columns:minmax(380px,40%) minmax(0,1fr);column-gap:0;min-height:100vh}
+html.kg-desk body.kg-cx-first #kgPage{max-width:none;padding:0;display:grid;grid-template-columns:minmax(340px,38%) minmax(0,1fr);column-gap:0;min-height:100vh}
 html.kg-desk body.kg-cx-first .cx-wl{display:contents}
 html.kg-desk body.kg-cx-first .cx-wl-hero{grid-column:1;grid-row:1/span 2;position:sticky;top:0;height:100vh;margin:0;border-radius:0 32px 32px 0;padding:44px 44px 32px;justify-content:space-between;gap:28px}
 html.kg-desk body.kg-cx-first .cx-wl-hero::before{width:520px;height:520px;right:-220px;top:-220px}
@@ -550,5 +550,10 @@ html.kg-desk body.kg-cx-first .cx-wl-main{grid-column:2;width:100%;max-width:760
 html.kg-desk body.kg-cx-first .cx-wl-head{margin-top:0}
 html.kg-desk body.kg-cx-first .cx-wl-head h2{font-size:34px}
 html.kg-desk body.kg-cx-first .cx-foot{grid-column:2;width:calc(100% - 96px);max-width:664px;justify-self:center;align-self:end;margin:24px 0 28px}
-html.kg-desk body.kg-cx-first .cx-picks-c{grid-template-columns:repeat(6,minmax(0,1fr))}
+html.kg-desk body.kg-cx-first .cx-picks-c{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
 html.kg-desk body.kg-cx-first .cx-ggrid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}
+@media (max-width:1279px){
+  html.kg-desk body.kg-cx-first .cx-wl-hero{padding:32px 28px 24px}
+  html.kg-desk body.kg-cx-first .cx-wl-main{padding:36px 28px 8px}
+  html.kg-desk body.kg-cx-first .cx-foot{width:calc(100% - 56px)}
+  html.kg-desk body.kg-cx-first .cx-wl-copy h1{font-size:clamp(36px,4.2vw,52px)}}
