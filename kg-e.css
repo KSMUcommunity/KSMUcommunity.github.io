@@ -575,3 +575,18 @@ html.kg-desk #kgApp .cx-aside .cx-qa small{display:none}
 #kgApp .cx-rx .kg-ic{width:18px;height:18px}
 .cx-mail>div>b{white-space:normal!important;overflow-wrap:anywhere;font-size:14px!important}
 #kgApp .cx-rf .kg-btn{background:var(--e-hero);color:#fff;border:0;box-shadow:0 8px 20px rgba(140,43,51,.3)}
+
+/* ===== логотип KSMU Community: маска, цвет по теме (красный — светлая, белый — тёмная и бордовые панели) ===== */
+html.kg-e{--ksmu:#A8141B}
+html.kg-e[data-theme="dark"]{--ksmu:#fff}
+.ksmu-mark,.ksmu-full{display:block;background:var(--ksmu,#A8141B);-webkit-mask:url(./img/ksmu-mark.webp) center/contain no-repeat;mask:url(./img/ksmu-mark.webp) center/contain no-repeat}
+.ksmu-full{-webkit-mask-image:url(./img/ksmu-logo.webp);mask-image:url(./img/ksmu-logo.webp)}
+.cx-brand-logo,.cx-gp-logo{background:transparent!important;box-shadow:none!important}
+.cx-brand-logo .ksmu-mark{width:40px;height:44px}
+.cx-gp-logo .ksmu-mark{width:52px;height:56px}
+.cx-wl-hero .ksmu-mark,.cx-wl-hero .ksmu-full{background:#fff}
+.cx-wl-brand .cx-gp-logo{width:44px;height:48px;border-radius:0}
+.cx-wl-brand .ksmu-mark{width:44px;height:48px}
+.cx-wl-hero .ksmu-full{display:none}
+html.kg-desk body.kg-cx-first .cx-wl-hero .ksmu-full{display:block;width:150px;height:204px}
+html.kg-desk body.kg-cx-first .cx-wl-brand{display:none}

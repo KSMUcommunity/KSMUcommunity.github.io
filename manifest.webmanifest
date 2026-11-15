@@ -1,13 +1,13 @@
 {
   "id": "/",
-  "name": "Расписание КГМУ — Лечебное дело, Педиатрия, Стоматология",
-  "short_name": "КГМУ · пары",
-  "description": "Интерактивное расписание 1–3 курсов трёх направлений КГМУ",
+  "name": "KSMU Community — расписание КГМУ",
+  "short_name": "KSMU Community",
+  "description": "Расписание, ДЗ, модули и объявления для студентов КГМУ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#edf3f9",
-  "theme_color": "#102642",
+  "theme_color": "#8C2B33",
   "lang": "ru",
   "icons": [
     {

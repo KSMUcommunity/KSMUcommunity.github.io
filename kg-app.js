@@ -223,7 +223,7 @@
     var c = curNav(), nn = unread(), u = tgUser(), r = role(), g = curGroup();
     var nm = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : '';
     function it(id, icon, label, ex) { return '<button type="button" class="cx-nav' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
-    sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
+    sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
       (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') +
@@ -1096,7 +1096,7 @@
     return '<a class="cx-row gl" href="' + esc(url) + '" target="_blank" rel="noopener" data-ext="1">' + icon + '<div><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
   }
   function showContacts() {
-    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><small>Команда проекта</small><b>KSMU Community</b><span>Пишите по ошибкам, идеям и сотрудничеству — отвечаем в Telegram и по почте.</span></div></section>' +
+    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><i class="ksmu-mark"></i></span><div><small>Команда проекта</small><b>KSMU Community</b><span>Пишите по ошибкам, идеям и сотрудничеству — отвечаем в Telegram и по почте.</span></div></section>' +
       '<div class="kg-lt">Разработчики</div><div class="cx-rows">' + TEAM.map(function (x) { return extRow('https://t.me/' + x[0], gIco('user', '#D98A90', '#8C2B33'), '@' + x[0], x[1]); }).join('') + '</div>' +
       '<div class="kg-lt">Почта для сотрудничества</div><div class="cx-rows">' + CONTACT.mails.map(function (m) {
         return '<a class="cx-row gl cx-mail" href="mailto:' + esc(m[0]) + '">' + gIco('send', '#DCC59A', '#9A7A3E') + '<div><b>' + esc(m[0]) + '</b><span>' + esc(m[1]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
@@ -1115,7 +1115,7 @@
   }
   function showAbout() {
     var n = allGroups().length;
-    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><small>Студенческий сервис</small><b>Расписание КГМУ</b><span>Сайт, мини-приложение и Telegram-бот с расписанием занятий Казанского государственного медицинского университета.</span></div></section>' +
+    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><i class="ksmu-mark"></i></span><div><small>Студенческий сервис</small><b>Расписание КГМУ</b><span>Сайт, мини-приложение и Telegram-бот с расписанием занятий Казанского государственного медицинского университета.</span></div></section>' +
       '<div class="kg-lt">Что умеет</div><div class="cx-facts">' +
       [['users', (n ? n + ' групп' : 'Все группы'), 'всех курсов и направлений'], ['clock', '3 раза в день', 'сверяется с официальными файлами КГМУ'], ['flag', 'ДЗ и модули', 'подтверждает староста группы'], ['send', 'Напоминания', 'утром в Telegram-боте']].map(function (x) {
         return '<div class="cx-fact gl">' + ic(x[0]) + '<b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></div>';
@@ -1210,7 +1210,7 @@
   function welcomeHero() {
     var feat = [['cal', 'Расписание', 'пары на день, неделю и месяц'], ['book', 'ДЗ и модули', 'общие для группы, подтверждает староста'],
       ['news', 'Объявления', 'новости и изменения в расписании'], ['send', 'Telegram-бот', 'утром напомнит о парах']];
-    return '<aside class="cx-wl-hero"><div class="cx-wl-brand"><span class="cx-gp-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><b>KSMU <span>Community</span></b><small>Студенческое сообщество КГМУ</small></div></div>' +
+    return '<aside class="cx-wl-hero"><i class="ksmu-full" role="img" aria-label="KSMU Community"></i><div class="cx-wl-brand"><span class="cx-gp-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>Студенческое сообщество КГМУ</small></div></div>' +
       '<div class="cx-wl-copy"><span class="cx-wl-k">Начните здесь</span><h1>Ваш университет.<br><em>Ваш ритм.</em></h1><p>Расписание, домашние задания, модули и новости курса — в одном месте. Выберите группу один раз, дальше покажем только ваше.</p></div>' +
       '<ul class="cx-wl-feat">' + feat.map(function (f) { return '<li>' + ic(f[0]) + '<div><b>' + f[1] + '</b><span>' + f[2] + '</span></div></li>'; }).join('') + '</ul>' +
       '<small class="cx-wl-note">Студенческий проект · не официальный ресурс КГМУ</small></aside>';
