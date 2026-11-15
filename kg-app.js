@@ -237,9 +237,8 @@
     var tb = $('kgTabbar'); if (!tb) return;
     var c = curTab(), nn = unread();
     function t(id, icon, label, ex) { return '<button type="button" class="kg-tab' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
-    tb.innerHTML = t('news', 'news', 'Объявления', nn ? '<span class="kg-bd">' + nn + '</span>' : '') + t('week', 'week', 'Неделя') +
-      '<button type="button" class="kg-fab' + (c === 'home' ? ' on' : '') + '" data-tab="home" aria-label="Главная"' + (c === 'home' ? ' aria-current="page"' : '') + '>' + ic('home') + '</button>' +
-      t('modules', 'layers', 'Модули') + t('profile', 'user', 'Профиль');
+    tb.innerHTML = t('home', 'home', 'Главная') + t('week', 'week', 'Неделя') + t('modules', 'layers', 'Модули') +
+      t('news', 'news', 'Объявления', nn ? '<span class="kg-bd">' + nn + '</span>' : '') + t('profile', 'user', 'Профиль');
   }
   function onTab(ev) {
     var b = ev.target.closest('[data-tab]'); if (!b) return;
@@ -968,7 +967,7 @@
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       '<div class="kg-lbox">' + row('О проекте и команда', '', 'about') + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия 9.1</div>';
+      '<div class="kg-ver">Версия 9.2</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
