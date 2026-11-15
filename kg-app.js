@@ -541,8 +541,8 @@
       case 'close': return;
       case 'news': return showNews();
       case 'calendar': return UI === 'cx' ? showCal(state.tab === 'day' && !state.page ? state.date : null) : showOld('calendar', 'Календарь и ДЗ');
-      case 'modules': return showOld('modules', 'Модули и зачёты');
-      case 'search': return showOld('search', 'Поиск');
+      case 'modules': return UI === 'cx' ? showModules() : showOld('modules', 'Модули и зачёты');
+      case 'search': return UI === 'cx' ? showSearch() : showOld('search', 'Поиск');
       case 'schedule': return showOld('schedule', 'По неделям');
       case 'tools': return showOld('settings', role() === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', true);
       case 'settings': return showSettings();
@@ -566,8 +566,8 @@
     settings: function () { showSettings(); },
     calendar: function () { showCal(state.calSel); },
     news: function () { showNews(); },
-    modules: function () { showOld('modules', 'Модули и зачёты'); },
-    search: function () { showOld('search', 'Поиск'); },
+    modules: function () { showModules(); },
+    search: function () { showSearch(); },
     tools: function () { navigate('tools'); },
     group: function () { showGroupPage(); },
     useful: function () { showUseful(); },
@@ -976,7 +976,8 @@
     var k = a.dataset.cx;
     if (k === 'menu') openSide();
     else if (k === 'dback') { var from = state.dayFrom; state.dayFrom = null; state.open = null;
-      if (from === 'calendar') { state.tab = 'home'; state.viaMenu = true; try { showCal(state.date); } finally { state.viaMenu = false; } } else { state.tab = 'home'; state.date = today(); render(); window.scrollTo({ top: 0 }); } }
+      if (from === 'calendar') { state.tab = 'home'; state.viaMenu = true; try { showCal(state.date); } finally { state.viaMenu = false; } }
+      else if (from && REOPEN[from]) { state.tab = 'home'; state.viaMenu = true; try { REOPEN[from](); } finally { state.viaMenu = false; } } else { state.tab = 'home'; state.date = today(); render(); window.scrollTo({ top: 0 }); } }
     else if (k === 'home') { state.tab = 'home'; state.open = null; state.date = today(); render(); window.scrollTo({ top: 0 }); }
     else if (k === 'group') navigate('group');
     else if (k === 'profile') navigate('settings');
@@ -1043,7 +1044,7 @@
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.8' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.9' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
@@ -1224,6 +1225,107 @@
     setTimeout(f, 0);
   }
 
+  /* ---------- модули и зачёты (новый экран вместо старого V8.8) ---------- */
+  function modList() { try { return notes.filter(function (n) { return n.type === 'module' && noteRelevant(n); }); } catch (e) { return []; } }
+  function daysTo(k) { return Math.round((parseISO(k) - parseISO(today())) / 864e5); }
+  function inDays(d) { return d === 0 ? 'сегодня' : d === 1 ? 'завтра' : d === -1 ? 'вчера' : d > 0 ? 'через ' + plural(d, 'день', 'дня', 'дней') : plural(-d, 'день', 'дня', 'дней') + ' назад'; }
+  function resLinks(raw) {
+    var out = String(raw || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 12).map(function (item) {
+      var parts = item.split(/\s+\|\s+/), url = parts.length > 1 ? parts.slice(1).join(' | ').trim() : item, ok = '';
+      try { var u = new URL(url); if (u.protocol === 'https:' || u.protocol === 'http:') ok = u.href; } catch (e) {}
+      var label = parts.length > 1 ? parts[0].trim() : url;
+      return ok ? '<a class="cx-res" href="' + esc(ok) + '" target="_blank" rel="noopener" data-ext="1">' + ic('link') + '<span>' + esc(label || ok) + '</span></a>' : '<span class="cx-res">' + ic('book') + '<span>' + esc(item) + '</span></span>';
+    }).join('');
+    return out ? '<div class="cx-ress">' + out + '</div>' : '';
+  }
+  function showModules(tab) {
+    state.modTab = tab || state.modTab || 'next';
+    var t = today(), all = modList();
+    var next = all.filter(function (n) { return n.date >= t; }).sort(function (a, b) { return a.date.localeCompare(b.date) || a.subject.localeCompare(b.subject, 'ru'); });
+    var past = all.filter(function (n) { return n.date < t; }).sort(function (a, b) { return b.date.localeCompare(a.date); });
+    var list = state.modTab === 'past' ? past : next, nx = next[0];
+    var h = '<section class="cx-mhero"><div><small>Группа ' + esc(selectedStudyGroup) + '</small><b>' + (next.length ? plural(next.length, 'модуль впереди', 'модуля впереди', 'модулей впереди') : 'Модулей впереди нет') + '</b>' +
+      '<span>' + (nx ? 'Ближайший — ' + esc(nx.subject) + ', ' + inDays(daysTo(nx.date)) : 'Староста или помощник добавит модуль — он появится здесь и в календаре') + '</span></div>' +
+      '<button type="button" class="cx-madd" data-mod="add">' + ic('plus') + 'Модуль</button></section>' +
+      '<div class="cx-sg cx-mseg" role="group" aria-label="Какие модули показать">' + [['next', 'Предстоящие', next.length], ['past', 'Прошедшие', past.length]].map(function (o) {
+        return '<button type="button" data-mod="tab" data-v="' + o[0] + '" aria-pressed="' + (state.modTab === o[0]) + '">' + o[1] + (o[2] ? ' · ' + o[2] : '') + '</button>'; }).join('') + '</div>';
+    h += list.length ? '<div class="cx-mods">' + list.map(function (n) {
+      var d = daysTo(n.date), dt = parseISO(n.date), soon = d >= 0 && d <= 3;
+      return '<article class="cx-mod gl' + (soon ? ' soon' : '') + (d < 0 ? ' past' : '') + '"><div class="cx-mdate"><small>' + DOWS[dow(n.date)] + '</small><b>' + dt.getDate() + '</b><small>' + MON[dt.getMonth()].slice(0, 3) + '</small></div>' +
+        '<div class="cx-mbody"><span class="cx-mpill">' + inDays(d) + '</span><h3>' + esc(n.subject) + '</h3>' + (n.title ? '<p class="cx-mt">' + esc(n.title) + '</p>' : '') +
+        (n.subgroup && n.subgroup !== 'all' ? '<p class="cx-mm">' + esc(n.subgroup) + '-я подгруппа</p>' : '') +
+        (n.details ? '<p class="cx-md">' + esc(n.details) + '</p>' : '') + resLinks(n.resources) +
+        '<div class="cx-mact">' + (d >= 0 ? '<button type="button" class="cx-btn g" data-ics="' + esc(n.id) + '">' + ic('cal') + 'Календарь</button>' : '') +
+        '<button type="button" class="cx-btn g" data-mod="day" data-d="' + n.date + '">' + ic('week') + 'День</button>' +
+        '<button type="button" class="cx-btn g" data-share-module="' + esc(n.id) + '">' + ic('send') + 'Поделиться</button></div></div></article>';
+    }).join('') + '</div>'
+      : state.modTab === 'past' ? '<div class="cx-empty gl"><b>Прошедших модулей нет</b>Здесь будут модули, которые уже прошли</div>' : '';
+    showPage('modules', 'Модули и зачёты', h);
+    bindExt();
+  }
+
+  /* ---------- поиск по всему семестру (новый экран вместо старого V8.8) ---------- */
+  var OCC = { k: '', list: [] };
+  function occAll() {
+    var g = typeof group !== 'undefined' ? String(group) : 'all', na = 0;
+    try { na = amendments.length; } catch (e) {}
+    var ck = selectedStudyGroup + '|' + g + '|' + na + '|' + LAST_WEEK;
+    if (OCC.k === ck) return OCC.list;
+    var s0 = (window.KGMU_SEM && window.KGMU_SEM.week1) || '2026-08-31', out = [];
+    for (var i = 0; i < LAST_WEEK * 7; i++) { var k = addDays(s0, i); liveOf(k).forEach(function (sl) { out.push({ k: k, s: sl }); }); }
+    OCC.k = ck; OCC.list = out; return out;
+  }
+  function nrm(v) { return String(v || '').toLocaleLowerCase('ru-RU').replace(/ё/g, 'е').replace(/№\s*/g, '').replace(/\s+/g, ' ').trim(); }
+  function showSearch() {
+    state.sf = state.sf || 'all';
+    var h = '<label class="cx-gq gl">' + ic('search') + '<input id="cxSq" type="search" enterkeyhint="search" autocomplete="off" maxlength="60" placeholder="Предмет, преподаватель, аудитория, тема" aria-label="Что найти" value="' + esc(state.sq || '') + '"></label>' +
+      '<div class="cx-sg cx-sf" role="group" aria-label="Где искать">' + [['all', 'Всё'], ['class', 'Пары'], ['homework', 'ДЗ'], ['module', 'Модули']].map(function (o) {
+        return '<button type="button" data-sr="f" data-v="' + o[0] + '" aria-pressed="' + (state.sf === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSr" aria-live="polite"></div>';
+    showPage('search', 'Поиск', h);
+    var q = $('cxSq');
+    q.addEventListener('input', function () { state.sq = q.value; renderSearchCx(); });
+    if (desk()) setTimeout(function () { q.focus(); }, 30);
+    renderSearchCx();
+  }
+  function renderSearchCx() {
+    var box = $('cxSr'); if (!box) return;
+    var q = nrm(state.sq), f = state.sf, t = today(), res = [];
+    if (q.length < 2) {
+      box.innerHTML = '<div class="cx-empty gl"><b>Поиск по всему семестру</b>Название предмета, фамилия преподавателя, корпус или аудитория, тема ДЗ или модуля. Например: «пато», «УЛК», «воспаление».</div>';
+      return;
+    }
+    if (f === 'all' || f === 'class') {
+      var byS = {}, order = [];
+      occAll().forEach(function (o) {
+        var e = o.s[0], hay = nrm(o.s.map(function (x) { return [subjTitle(x.subject), x.fullSubject, x.teacher, x.location, x.shortLocation, roomChip(x.shortLocation || x.location)].join(' '); }).join(' '));
+        if (hay.indexOf(q) < 0) return;
+        var id = pkey(e);
+        if (!byS[id]) { byS[id] = { e: e, occ: [], teachers: {}, places: {} }; order.push(id); }
+        var r = byS[id]; r.occ.push(o);
+        o.s.forEach(function (x) { if (x.teacher) r.teachers[x.teacher] = 1; var pl = roomChip(x.shortLocation || x.location); if (pl) r.places[pl] = 1; });
+      });
+      order.forEach(function (id) {
+        var r = byS[id], nx = r.occ.filter(function (o) { return o.k >= t; })[0], last = r.occ[r.occ.length - 1], done = r.occ.filter(function (o) { return o.k < t; }).length;
+        var when = nx ? 'следующая ' + (nx.k === t ? 'сегодня' : dShort(nx.k)) + ', ' + nx.s[0].start : 'все прошли, последняя ' + ddmm(last.k);
+        res.push({ sort: nx ? '0' + nx.k + nx.s[0].start : '1' + last.k, html: '<button type="button" class="cx-row gl cx-srr" data-sr="day" data-d="' + (nx || last).k + '">' + kIco(kindOf(r.e)) +
+          '<div><b>' + esc(subjTitle(r.e.subject)) + '</b><span>' + esc(kindName(r.e) + ' · ' + done + ' из ' + r.occ.length + ' прошло · ' + when) + '</span>' +
+          '<span>' + esc(Object.keys(r.teachers).slice(0, 2).concat(Object.keys(r.places).slice(0, 2)).join(' · ')) + '</span></div><div class="tm">' + ic('chev') + '</div></button>' });
+      });
+    }
+    if (f !== 'class') {
+      var ns = []; try { ns = notes.filter(function (n) { return noteRelevant(n) && (f === 'all' || n.type === f); }); } catch (e) {}
+      ns.forEach(function (n) {
+        if (nrm([n.subject, n.title, n.details, n.resources].join(' ')).indexOf(q) < 0) return;
+        var mod = n.type === 'module';
+        res.push({ sort: (n.date >= t ? '0' : '1') + n.date, html: '<button type="button" class="cx-row gl cx-srr" data-sr="day" data-d="' + n.date + '">' + (mod ? gIco('layers', '#D98A90', '#8C2B33') : gIco('flag', '#A7B3CB', '#5C6B8A')) +
+          '<div><b>' + (mod ? 'Модуль' : 'ДЗ') + ' · ' + esc(n.subject) + '</b><span>' + esc((n.title || '') + (n.title ? ' · ' : '') + dShort(n.date)) + '</span>' + (n.details ? '<span>' + esc(n.details.slice(0, 90)) + '</span>' : '') + '</div><div class="tm">' + ic('chev') + '</div></button>' });
+      });
+    }
+    res.sort(function (a, b) { return a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0; });
+    box.innerHTML = res.length ? '<div class="cx-lab">Найдено: ' + res.length + '</div><div class="cx-rows">' + res.slice(0, 80).map(function (r) { return r.html; }).join('') + '</div>'
+      : '<div class="cx-empty gl"><b>Ничего не нашлось</b>Попробуйте часть слова: «анат», «хир», «213»</div>';
+  }
+
   /* ---------- компактный вид: выбор группы ---------- */
   var gp = null;
   function progs() { return typeof PROGRAM_CONFIG !== 'undefined' ? PROGRAM_CONFIG : {}; }
@@ -1368,6 +1470,14 @@
   function onCxPage(ev) {
     var r = ev.target.closest('#cxCalDay [data-cx="day"]');
     if (r) { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
+    var m = ev.target.closest('[data-mod],[data-sr]');
+    if (m) {
+      var mv = m.dataset.mod || m.dataset.sr;
+      if (mv === 'tab') { state.modTab = m.dataset.v; state.noPush = true; try { showModules(); } finally { state.noPush = false; } return; }
+      if (mv === 'add') { var nd = nextStudy(addDays(today(), -1)); openEditorFor('module', null, nd ? nd.key : today()); return; }
+      if (mv === 'f') { state.sf = m.dataset.v; m.parentNode.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === m)); }); renderSearchCx(); return; }
+      if (mv === 'day') { state.dayFrom = state.page; state.tab = 'day'; state.board = false; state.date = m.dataset.d; state.open = null; goHome(); return; }
+    }
     var a = ev.target.closest('[data-gp],[data-cal]'); if (!a) return;
     if (a.dataset.gp) {
       if (!gp) return;
