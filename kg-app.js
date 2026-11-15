@@ -1076,8 +1076,8 @@
     ['https://kazangmu.ru/education/departments', 'users', 'Кафедры КГМУ', 'Деканаты и все кафедры на сайте университета', '#C9B6E4', '#6B4FA0'],
     ['https://t.me/libavicenna', 'book', 'Авиценна', 'База знаний и сообщество студентов в Telegram', '#9CC3E6', '#3D7AB8']
   ];
-  /* контакты (раздел «Контакты»): одна почта — адрес пришлёт пользователь; MAX — впишите тег, когда появится */
-  var CONTACT = { channel: 'KsmuStudProject', max: '', mails: [['KSMUcommunitysupp@proton.me', 'Вопросы и предложения']] };
+  /* контакты (раздел «Контакты»): одна почта; MAX — впишите тег, когда появится */
+  var CONTACT = { channel: 'KsmuStudProject', max: '', mails: [['ksmucommunityinfo@mail.ru', 'Вопросы и предложения']] };
   var TEAM = [['brainfucker01'], ['dkkk111111']];
   function openExt(url) {
     if (inTG) tgPost('web_app_open_link', { url: url }); else window.open(url, '_blank', 'noopener');
