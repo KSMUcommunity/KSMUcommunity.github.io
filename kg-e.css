@@ -612,3 +612,10 @@ body.cx-dr-open{overflow:hidden}
 #kgApp .cx-sq .kg-ic{width:20px;height:20px;color:var(--a-acc)}
 #kgApp .cx-sq:active{transform:scale(.96)}
 @media (prefers-reduced-motion:reduce){.cx-side,.cx-scrim{transition:none!important}}
+
+/* ===== 9.6: без нижнего меню (дизайн E) ===== */
+html.kg-notab .kg-tabbar{display:none!important}
+html.kg-e.kg-notab .kg-home,html.kg-e.kg-notab .kg-page,html.kg-e.kg-notab .cx-home{padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+html.kg-e.kg-notab body.kg-mode-old main.wrap{padding-bottom:calc(32px + env(safe-area-inset-bottom))!important}
+#kgApp .cx-mb{position:relative}
+.cx-dot{position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#F0437A);box-shadow:0 0 0 2px var(--e-bg)}
