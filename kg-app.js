@@ -172,7 +172,7 @@
   /* ---------- каркас ---------- */
   function mount() {
     if ($('kgApp')) return;
-    if (UI === 'cx') return mountCx();
+    if (UI === 'cx') { var mc = mountCx(); deepPage(); return mc; }
     var app = document.createElement('div');
     app.id = 'kgApp';
     app.innerHTML =
@@ -1083,6 +1083,14 @@
       '<button type="button" class="cx-btn g" data-go="privacy">' + ic('flag') + 'Политика конфиденциальности</button>'));
   }
   window.kgShowConsent = function () { showConsent(); };
+  /* прямые ссылки на документы: ?page=privacy | consent | about (ссылается Telegram-бот) */
+  function deepPage() {
+    var pg = ''; try { pg = new URLSearchParams(location.search).get('page') || ''; } catch (e) {}
+    var f = { privacy: showPrivacy, consent: showConsent, about: showAbout }[pg];
+    if (!f) return;
+    try { var url = new URL(location.href); url.searchParams.delete('page'); history.replaceState(history.state, '', url); } catch (e) {}
+    setTimeout(f, 0);
+  }
 
   /* ---------- компактный вид: выбор группы ---------- */
   var gp = null;
