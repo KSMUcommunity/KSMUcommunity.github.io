@@ -743,3 +743,14 @@ html.kg-desk .cx-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax
 #kgApp .kg-mrow .kg-tg-go:not(:disabled):active{transform:scale(.98)}
 #kgApp .kg-mlink{display:inline-block;margin-top:10px;padding:4px 0;min-height:0;color:var(--a-acc)!important;font-size:13px;font-weight:600}
 @media (min-width:480px){#kgApp .kg-mrow{flex-direction:row}#kgApp .kg-mrow input{flex:1}#kgApp .kg-mrow .kg-tg-go{width:auto;flex:none}}
+
+/* ===== 9.11.2: своя кнопка «Войти через Telegram» вместо фрейма-виджета; без входа по паролю ===== */
+#cloudLoginForm,.kg-mail-login{display:none!important}
+#kgApp .kg-tg-main{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:0 18px;border-radius:14px;
+  background:linear-gradient(135deg,#37AEE2,#1E96C8)!important;color:#fff!important;font-weight:700;font-size:15px;box-shadow:0 6px 16px rgba(30,150,200,.3)}
+#kgApp .kg-tg-main:disabled{opacity:.45;box-shadow:none;cursor:default}
+#kgApp .kg-tg-main:not(:disabled):active{transform:scale(.98)}
+#kgApp .kg-tg-main svg{flex:none}
+.kg-tg-msg{margin:6px 0 0;font-size:13px;color:var(--a-hint);min-height:0}
+.kg-tg-msg:empty{display:none}
+@media (min-width:480px){#kgApp .kg-tg-main{width:auto;min-width:260px}}
