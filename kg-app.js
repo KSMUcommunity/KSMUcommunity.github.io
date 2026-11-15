@@ -714,6 +714,27 @@
   function gIco(icon, g1, g2, s) { return '<span class="cx-ki' + (s ? ' s' : '') + '" style="--k1:' + g1 + ';--k2:' + g2 + '" aria-hidden="true">' + ic(icon) + '</span>'; }
   function placeOf(x) { var v = null; try { v = placeInfo(x); } catch (e) {} var p = x.location || x.shortLocation || ''; var u = ''; try { u = p ? mapLink(v && v.address ? v.address : p) : ''; } catch (e) {} return { text: p, chip: roomChip(x.shortLocation || x.location) || p, addr: v && v.address ? v.address : '', url: u }; }
   function liveOf(key) { return lessonsFor(key).filter(function (s) { return s.some(isLive); }); }
+  /* номер пары по предмету за семестр: «3/17» — третья из 17 (лекции и практики считаются отдельно, отменённые не считаются) */
+  var PROG = { k: '', m: {} };
+  function pkey(e) { return subjTitle(e.subject) + '|' + kindOf(e); }
+  function progMap() {
+    var g = typeof group !== 'undefined' ? String(group) : 'all', na = 0;
+    try { na = amendments.length + ':' + amendments.map(function (a) { return a.id; }).join(','); } catch (e) {}
+    var ck = selectedStudyGroup + '|' + g + '|' + na + '|' + LAST_WEEK;
+    if (PROG.k === ck) return PROG.m;
+    var s0 = (window.KGMU_SEM && window.KGMU_SEM.week1) || '2026-08-31', pos = {}, cnt = {}, m = {};
+    for (var i = 0; i < LAST_WEEK * 7; i++) {
+      var k = addDays(s0, i);
+      liveOf(k).forEach(function (sl) { var id = pkey(sl[0]); cnt[id] = (cnt[id] || 0) + 1; pos[k + '|' + sl[0].start + '|' + id] = [cnt[id], id]; });
+    }
+    Object.keys(pos).forEach(function (x) { m[x] = [pos[x][0], cnt[pos[x][1]]]; });
+    PROG.k = ck; PROG.m = m; return m;
+  }
+  function progOf(sl, key) {
+    if (!sl.some(isLive)) return '';
+    var p; try { p = progMap()[key + '|' + sl[0].start + '|' + pkey(sl[0])]; } catch (e) { return ''; }
+    return p && p[1] > 1 ? p[0] + '/' + p[1] : '';
+  }
   /* границы опубликованного расписания: недели 1–18 */
   var LAST_WEEK = sem().weeks;
   function semBounds(key) { var w = dateWeek(key), mon1 = addDays(key, -dow(key) - (w - 1) * 7); return { w: w, start: mon1, end: addDays(mon1, LAST_WEEK * 7 - 1) }; }
@@ -741,7 +762,8 @@
   }
   function cxRow(s, key, extra) {
     var e = s[0], live = s.some(isLive), names = namesOf(s);
-    var sub = [kindName(e), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · ');
+    var pg = progOf(s, key);
+    var sub = [kindName(e) + (pg ? ' ' + pg : ''), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · ');
     return '<button type="button" class="cx-row gl" data-cx="day" data-d="' + key + '">' + kIco(kindOf(e)) + '<div><b>' + esc(names[0]) + (names.length > 1 ? ' +' + (names.length - 1) : '') + '</b><span>' + esc(sub) + '</span></div><div class="tm">' + esc(e.start) + (!live ? '<small>отменено</small>' : extra ? '<small>' + esc(extra) + '</small>' : '') + '</div></button>';
   }
   /* список пар на главной с перерывами (от 15 минут), как в ленте недели */
@@ -859,7 +881,7 @@
     var h = '<article class="cx-card ' + (isNow ? 'live' : 'gl') + (past ? ' past' : '') + (!live ? ' cancel' : '') + '" style="' + kv(kindOf(e)) + '" data-cx="open" data-id="' + id + '" role="button" tabindex="0" aria-expanded="' + (state.open === id) + '">' +
       (isNow ? '<i class="kg-sheen"></i><span class="cx-left">ещё ' + dur(mins(e.end) - now) + '</span>' : '') + (past && live ? '<span class="cx-chk" aria-label="Прошла"><svg class="kg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>' : '') +
       '<h3>' + esc(names.join(' / ')) + '</h3><div class="m">' + esc([kindName(e) + cyclePeriod(e), sub].filter(Boolean).join(' · ')) + '</div>' + (teachers.length ? '<div class="m">' + esc(teachers.slice(0, 2).join(', ')) + '</div>' : '') +
-      '<div class="ch">' + chips + '</div>';
+      '<div class="ch">' + (function () { var pg = progOf(s, key); return pg ? '<span class="cx-chip cx-prog" title="' + pg.split('/')[0] + '-я пара по предмету из ' + pg.split('/')[1] + ' (' + kindName(e).toLowerCase() + ')">' + pg + '</span>' : ''; })() + chips + '</div>';
     if (isNow) h += '<div class="cx-pb"><i style="width:' + Math.max(0, Math.min(100, Math.round((now - mins(e.start)) / Math.max(1, mins(e.end) - mins(e.start)) * 100))) + '%"></i></div>';
     if (state.open === id) {
       h += '<div class="cx-more">';
@@ -1029,7 +1051,7 @@
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.6.2' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.7' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }

@@ -638,3 +638,10 @@ html:not(.kg-desk) #kgApp .kg-back .kg-ic{width:24px;height:24px}
 .cx-tbar b{justify-self:center!important;padding-right:0!important}
 #kgApp .cx-tbar .cx-hb{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;color:var(--a-text)}
 #kgApp .cx-tbar .cx-hb .kg-ic{width:22px;height:22px}
+
+/* ===== 9.7: без приближения двойным касанием и при фокусе на поле (iOS), без сдвига вбок ===== */
+html.kg-e,html.kg-e body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html.kg-e body.kg-on{overflow-x:clip}
+@media (max-width:1023px){html.kg-e input,html.kg-e select,html.kg-e textarea{font-size:16px!important}}
+#kgApp .cx-chip.cx-prog{font-variant-numeric:tabular-nums;font-weight:800;background:var(--a-acc-soft);color:var(--a-acc);border-color:transparent}
+#kgApp .cx-card.live .cx-chip.cx-prog{background:rgba(255,255,255,.22);color:#fff}
