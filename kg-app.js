@@ -225,8 +225,10 @@
     function it(id, icon, label, ex) { return '<button type="button" class="cx-nav' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
     sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
       (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
+      (desk() ? '' : '<div class="cx-squick" aria-label="Быстрый доступ">' + [['calendar', 'cal', 'Календарь'], ['week', 'week', 'Неделя'], ['wizard', 'tool', 'Мастер'], ['useful', 'link', 'Полезное']].map(function (q) {
+        return '<button type="button" class="cx-sq" data-tab="' + q[0] + '">' + ic(q[1]) + '<span>' + q[2] + '</span></button>'; }).join('') + '</div>') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
-      it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') +
+      it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
       (canRoles() ? it('roles', 'users', 'Роли') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
       '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти через Telegram') + '</small></span>' + ic('gear') + '</button></div>';
   }
@@ -244,9 +246,23 @@
         t('modules', 'layers', 'Модули') + t('profile', 'user', 'Профиль')
       : t('home', 'home', 'Главная') + t('week', 'week', 'Неделя') + t('modules', 'layers', 'Модули') + t('news', 'news', 'Объявления', bd) + t('profile', 'user', 'Профиль');
   }
+  /* телефон: боковое меню выезжает слева */
+  function openSide() {
+    if (desk()) return;
+    renderSide();
+    document.body.classList.add('cx-dr-open');
+    var mb = $('kgMenuB'); if (mb) mb.setAttribute('aria-expanded', 'true');
+    setTimeout(function () { var f = document.querySelector('#cxSide .cx-nav.on') || document.querySelector('#cxSide .cx-nav'); if (f) f.focus({ preventScroll: true }); }, 60);
+  }
+  function closeSide() {
+    if (!document.body.classList.contains('cx-dr-open')) return;
+    document.body.classList.remove('cx-dr-open');
+    var mb = $('kgMenuB'); if (mb) mb.setAttribute('aria-expanded', 'false');
+  }
   function onTab(ev) {
     var b = ev.target.closest('[data-tab]'); if (!b) return;
     var id = b.dataset.tab;
+    closeSide();
     if (id === 'home' || id === 'week') {
       state.tab = id === 'week' ? 'day' : 'home'; state.open = null;
       if (id === 'week') state.board = true;
@@ -536,6 +552,7 @@
       case 'useful': return showUseful();
       case 'about': return showAbout();
       case 'contacts': return showContacts();
+      case 'wizard': return openWizard();
       case 'roles': return showRoles();
       case 'privacy': return showPrivacy();
       case 'consent': return showConsent();
@@ -712,7 +729,7 @@
     var greet = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
     var ini = u && (u.name || u.username) ? String(u.name || u.username).replace('@', '').slice(0, 1).toUpperCase()
       : (groupCaption(g).split(' · ')[0] || 'КГМУ').split(/[\s-]+/).filter(function (w) { return w.length > 2; }).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase() || 'К';
-    return '<div class="cx-hd"><button type="button" class="cx-who" data-cx="group" aria-label="Сменить группу"><span class="cx-av" aria-hidden="true"><b>' + esc(ini) + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong></span></button>' +
+    return '<div class="cx-hd"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button><button type="button" class="cx-who" data-cx="group" aria-label="Сменить группу"><span class="cx-av" aria-hidden="true"><b>' + esc(ini) + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong></span></button>' +
       '<button type="button" class="cx-ib gl" data-cx="profile" aria-label="Профиль и настройки">' + ic('gear') + '</button></div>' +
       '<button type="button" class="cx-search gl" data-cx="search">' + ic('search') + 'Предмет, преподаватель, аудитория…</button>';
   }
@@ -795,7 +812,7 @@
       if (rest.length) list = '<div class="cx-sh"><h2>Дальше сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div>' + cxRowsBrk(rest, t);
     }
     if (desk()) return cxHead() + '<div class="cx-dash"><div class="cx-main">' + hero + bento + (list || '') + '</div><aside class="cx-aside" aria-label="Неделя и важное">' + cxQuick() + cxGlance(t) + cxTasks(t) + '</aside></div>' + cxFoot();
-    return cxHead() + hero + bento + cxQuick() + cxTasks(t) + list + cxFoot();
+    return cxHead() + hero + list + bento + cxTasks(t) + cxFoot();
   }
   /* компьютер: краткий обзор недели справа от главной карточки */
   function cxGlance(t) {
@@ -935,7 +952,8 @@
     if (ev.target.closest('a')) return;
     var a = ev.target.closest('[data-cx]'); if (!a) return;
     var k = a.dataset.cx;
-    if (k === 'group') navigate('group');
+    if (k === 'menu') openSide();
+    else if (k === 'group') navigate('group');
     else if (k === 'profile') navigate('settings');
     else if (k === 'search') navigate('search');
     else if (k === 'news') navigate('news');
@@ -957,11 +975,13 @@
   function mountCx() {
     var app = document.createElement('div');
     app.id = 'kgApp';
-    app.innerHTML = '<div class="kg-subbar" id="kgSubBar"><button type="button" class="kg-back" id="kgBack">' + ic('left') + 'Назад</button><b id="kgSubTitle"></b><span></span></div>' +
+    app.innerHTML = '<div class="kg-subbar" id="kgSubBar"><span class="kg-sl"><button type="button" class="kg-mb" id="kgMenuB" aria-label="Меню" aria-controls="cxSide" aria-expanded="false">' + ic('menu') + '</button><button type="button" class="kg-back" id="kgBack">' + ic('left') + 'Назад</button></span><b id="kgSubTitle"></b><span></span></div>' +
       '<section class="kg-home cx-home" id="kgHome"><div id="kgCx"></div></section><section class="kg-page" id="kgPage"></section>' +
       '<nav class="kg-tabbar" id="kgTabbar" aria-label="Разделы"></nav><aside class="cx-side" id="cxSide" aria-label="Меню"></aside>';
     document.body.insertBefore(app, document.body.firstChild);
     $('cxSide').addEventListener('click', onTab);
+    var scrim = document.createElement('div'); scrim.className = 'cx-scrim'; scrim.setAttribute('aria-hidden', 'true'); scrim.addEventListener('click', closeSide); app.appendChild(scrim);
+    $('kgMenuB').addEventListener('click', openSide);
     var onDesk = function () { var was = document.documentElement.classList.contains('kg-desk'); syncDesk(); if (was !== desk()) { render(); if (state.page === 'calendar') renderCal(); } };
     if (DESK.addEventListener) DESK.addEventListener('change', onDesk); else if (DESK.addListener) DESK.addListener(onDesk);
     var bl = document.createElement('div'); bl.className = 'kg-blobs'; bl.setAttribute('aria-hidden', 'true'); bl.innerHTML = '<i></i><i></i><i></i><i></i>'; document.body.appendChild(bl);
@@ -979,13 +999,17 @@
       if (Math.abs(dx) > 70 && Math.abs(dy) < 45) shift(dx < 0 ? 1 : -1);
     }, { passive: true });
     window.addEventListener('popstate', onPop);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && state.page) back(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (document.body.classList.contains('cx-dr-open')) { closeSide(); var mb = state.page ? $('kgMenuB') : document.querySelector('#kgCx [data-cx="menu"]'); if (mb) mb.focus(); return; }
+      if (state.page) back();
+    });
   }
   function renderProfile() {
     var u = tgUser(), r = role(), g = selectedStudyGroup, theme = (typeof userPreferences !== 'undefined' && userPreferences.theme) || 'system';
     var name = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : 'Гость';
     var h = '<div class="cx-prof gl"><div class="kg-ava">' + esc((name.replace('@', '')[0] || '?').toUpperCase()) + '</div><div class="kg-prof-t"><small>' + esc(r ? ROLE[r] : 'Студент') + '</small><b>' + esc(name) + '</b><span>Группа ' + esc(g) + (groupCaption(g) ? ' · ' + esc(groupCaption(g)) : '') + '</span></div></div>' +
-      '<div class="kg-lbox">' + row('Сменить группу', esc(g), 'group') + row('Календарь и ДЗ', '', 'calendar') + row('Полезное', '', 'useful') + '</div>' +
+      '<div class="kg-lbox">' + row('Сменить группу', esc(g), 'group') + '</div>' +
       '<div class="kg-lt">Настройки</div><div class="kg-lbox kg-pad">' + (hasSubgroups() ? '<div class="cx-lab">Подгруппа</div>' + seg('sub', [['all', 'Обе'], ['1', '1-я'], ['2', '2-я']], typeof group !== 'undefined' ? group : 'all') : '') +
       '<div class="cx-lab">Тема</div>' + seg('theme', [['system', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], theme) + '</div>' +
       (botName() ? '<div class="kg-lbox">' + row('Напоминания о парах', 'в боте', 'bot') + '</div>' : '') +
@@ -993,8 +1017,8 @@
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
-      '<div class="kg-lbox">' + row('Контакты', '', 'contacts') + row('О проекте', '', 'about') + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.4' : '9.2') + '</div>';
+      '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.5' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
