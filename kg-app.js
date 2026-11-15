@@ -886,6 +886,11 @@
       return '<section class="cx-bcol' + (isT ? ' t' : '') + '"><button type="button" class="cx-bh" data-cx="bday" data-d="' + k + '"><small>' + DOW[dow(k)] + (isT ? ' · сегодня' : '') + '</small><b>' + d.getDate() + ' ' + MON[d.getMonth()] + '</b></button>' + cards + '</section>';
     }).join('') + '</div>';
   }
+  /* телефон: у экрана недели/дня — меню и возврат на главную (на компьютере есть боковое меню) */
+  function cxTopBar() {
+    return '<div class="cx-tbar"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button>' +
+      '<button type="button" class="cx-hb" data-cx="home">' + ic('left') + 'Главная</button><b>Неделя</b></div>';
+  }
   function cxDay() {
     var key = state.date, t = today(), now = kazanClockMinutes(), isT = key === t, slots = lessonsFor(key), w = dateWeek(key);
     var board = desk() && state.board !== false;
@@ -944,7 +949,7 @@
       renderTabs();
       return;
     }
-    box.innerHTML = state.tab === 'day' ? cxDay() : cxHome();
+    box.innerHTML = state.tab === 'day' ? cxTopBar() + cxDay() : cxHome();
     if (dir && state.tab === 'day' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       var l = box.querySelector('.cx-list'); if (l) l.animate([{ opacity: 0, transform: 'translateX(' + (dir > 0 ? 18 : -18) + 'px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' });
     }
@@ -955,6 +960,7 @@
     var a = ev.target.closest('[data-cx]'); if (!a) return;
     var k = a.dataset.cx;
     if (k === 'menu') openSide();
+    else if (k === 'home') { state.tab = 'home'; state.open = null; state.date = today(); render(); window.scrollTo({ top: 0 }); }
     else if (k === 'group') navigate('group');
     else if (k === 'profile') navigate('settings');
     else if (k === 'search') navigate('search');
@@ -1020,7 +1026,7 @@
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.6' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.6.1' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
