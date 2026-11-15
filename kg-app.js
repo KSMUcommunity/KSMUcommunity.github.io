@@ -834,7 +834,7 @@
       bento = '<div class="cx-bento">' + tile1 + '<div class="cx-tile gl"><div class="cx-tl">' + gIco('play', '#A7B3CB', '#5C6B8A', 1) + 'День</div><div class="cx-tv">' + done + ' из ' + sl.length + '</div><div class="cx-bars" aria-hidden="true">' + bars + '</div></div></div>';
       if (rest.length) list = '<div class="cx-sh"><h2>Дальше сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div>' + cxRowsBrk(rest, t);
     }
-    if (desk()) return cxHead() + '<div class="cx-dash"><div class="cx-main">' + hero + bento + (list || '') + '</div><aside class="cx-aside" aria-label="Неделя и важное">' + cxQuick() + cxGlance(t) + cxTasks(t) + '</aside></div>' + cxFoot();
+    if (desk()) return cxHead() + '<div class="cx-dash"><div class="cx-main">' + hero + bento + (list || '') + '</div><aside class="cx-aside" aria-label="Неделя и важное">' + cxGlance(t) + cxTasks(t) + '</aside></div>' + cxFoot();
     return cxHead() + hero + list + bento + cxTasks(t) + cxFoot();
   }
   /* компьютер: краткий обзор недели справа от главной карточки */
@@ -847,14 +847,6 @@
         '<span class="cx-wgl"><b>' + (sl.length ? esc(countLabel(sl)) : (lessonsFor(k).length ? 'Пары отменены' : 'Пар нет')) + '</b>' + (sl.length ? '<small>' + esc(sl[0][0].start) + ' – ' + hm(ends) + '</small>' : '') + '</span>' + ic('chev') + '</button>';
     }
     return '<div class="cx-sh"><h2>' + (dow(t) === 6 ? 'Следующая неделя' : 'Эта неделя') + (wn >= 1 && wn <= LAST_WEEK ? ' <small>· ' + wn + '-я</small>' : '') + '</h2><button type="button" data-cx="week" data-d="' + mon + '">Сетка недели ›</button></div><div class="cx-rows cx-glance">' + h + '</div>';
-  }
-  /* быстрый доступ: месячная сетка, неделя, мастер расписания (ручная отмена/перенос/замена пары), ссылки */
-  function cxQuick() {
-    var q = [['calendar', 'cal', 'Календарь', 'сетка месяца', '#9CC3E6', '#3D7AB8'], ['week', 'week', 'Неделя', 'сетка Пн–Сб', '#A7B3CB', '#5C6B8A'],
-      ['wizard', 'tool', 'Мастер расписания', 'отмена, перенос', '#DCC59A', '#9A7A3E'], ['useful', 'link', 'Полезное', 'ЛК, портал, кафедры', '#D98A90', '#8C2B33']];
-    return '<div class="cx-sh"><h2>Быстрый доступ</h2></div><div class="cx-quick">' + q.map(function (x) {
-      return '<button type="button" class="cx-qa gl" data-cx="' + x[0] + '"' + (x[0] === 'week' ? ' data-d="' + today() + '"' : '') + '>' + gIco(x[1], x[4], x[5], 1) + '<b>' + x[2] + '</b><small>' + x[3] + '</small></button>';
-    }).join('') + '</div>';
   }
   /* мастер расписания: календарь на ближайшем учебном дне + форма изменения пары из старого приложения */
   function openWizard() {
