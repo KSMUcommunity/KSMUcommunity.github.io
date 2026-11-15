@@ -1,7 +1,8 @@
 """Переключение сайта на новый семестр (весенний или осенний).
 
-Обычно запускается из GitHub Actions: вкладка Actions → «Расписание КГМУ» → Run workflow,
-заполнить «Название семестра», «Понедельник 1-й недели» и «Число недель». Вручную:
+Обычно не нужен: автообновление (update_friend.py) само замечает новый семестр в файлах КГМУ.
+Это ручная замена на случай, если автоматика ошиблась. Из GitHub Actions: Actions →
+«Расписание КГМУ» → Run workflow, заполнить «Понедельник 1-й недели» и т. д. Из консоли:
 
     python scraper/new_semester.py --title "Весна 2026/27" --week1 2027-02-08 --weeks 18
     python scraper/new_semester.py --auto            # взять семестр из шапки свежих Excel-файлов КГМУ
@@ -68,17 +69,16 @@ def write(title, week1, weeks, holidays=None):
 
 
 def auto():
-    """Семестр по шапке Excel-файлов КГМУ («весенний семестр 2026/2027»)."""
+    """Семестр по шапке Excel-файлов КГМУ и датам циклов (то же, что делает автообновление)."""
     sys.path.insert(0, str(HERE))
-    from build import fetch_all, semester_start  # noqa: E402
+    from build import fetch_all  # noqa: E402
+    import semester_auto  # noqa: E402
     raw = HERE.parent / "raw"
-    manifest = fetch_all(raw)
-    start, label = semester_start(raw, manifest)
-    m = re.search(r"(осенний|весенний) семестр (\d{4})/(\d{4})", label or "")
-    if not m:
+    det = semester_auto.detect(raw, fetch_all(raw))
+    if not det:
         sys.exit("Не удалось определить семестр по файлам КГМУ — укажите --title и --week1 вручную")
-    title = ("Осень " if m.group(1) == "осенний" else "Весна ") + m.group(2) + "/" + m.group(3)[2:]
-    return title, start
+    print(f"По файлам КГМУ: {det['title']}, 1-я неделя с {det['week1']} ({det['how']})")
+    return det["title"], det["week1"]
 
 
 if __name__ == "__main__":
