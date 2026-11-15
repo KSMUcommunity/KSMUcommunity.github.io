@@ -216,7 +216,7 @@
 
   /* ---------- нижнее меню: Объявления · Неделя · [Главная] · Модули · Профиль ---------- */
   function curTab() { if (state.page === 'news') return 'news'; if (state.page === 'modules') return 'modules'; if (state.page === 'settings') return 'profile'; if (state.page) return ''; return state.tab === 'day' ? 'week' : 'home'; }
-  var SIDE_PAGES = { calendar: 1, search: 1, useful: 1, tools: 1, about: 1, privacy: 1, group: 1 };
+  var SIDE_PAGES = { calendar: 1, search: 1, useful: 1, contacts: 1, roles: 1, tools: 1, about: 1, privacy: 1, group: 1 };
   function curNav() { return state.page && SIDE_PAGES[state.page] ? state.page : curTab(); }
   function renderSide() {
     var sd = $('cxSide'); if (!sd) return;
@@ -226,8 +226,8 @@
     sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
       (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
-      it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') +
-      (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
+      it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') +
+      (canRoles() ? it('roles', 'users', 'Роли') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
       '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти через Telegram') + '</small></span>' + ic('gear') + '</button></div>';
   }
   /* только непрочитанные: всё, что новее последнего просмотренного объявления */
@@ -535,6 +535,8 @@
       case 'report': try { reportProblem(); } catch (e) {} return;
       case 'useful': return showUseful();
       case 'about': return showAbout();
+      case 'contacts': return showContacts();
+      case 'roles': return showRoles();
       case 'privacy': return showPrivacy();
       case 'consent': return showConsent();
       case 'week': state.tab = 'day'; state.date = state.date || today(); return state.page ? goHome() : render();
@@ -553,6 +555,8 @@
     group: function () { showGroupPage(); },
     useful: function () { showUseful(); },
     about: function () { showAbout(); },
+    contacts: function () { showContacts(); },
+    roles: function () { showRoles(); },
     privacy: function () { showPrivacy(); },
     consent: function () { showConsent(); }
   };
@@ -790,8 +794,8 @@
       bento = '<div class="cx-bento">' + tile1 + '<div class="cx-tile gl"><div class="cx-tl">' + gIco('play', '#A7B3CB', '#5C6B8A', 1) + 'День</div><div class="cx-tv">' + done + ' из ' + sl.length + '</div><div class="cx-bars" aria-hidden="true">' + bars + '</div></div></div>';
       if (rest.length) list = '<div class="cx-sh"><h2>Дальше сегодня</h2><button type="button" data-cx="day" data-d="' + t + '">Весь день ›</button></div>' + cxRowsBrk(rest, t);
     }
-    if (desk()) return cxHead() + '<div class="cx-dash"><div class="cx-main">' + hero + bento + (list || '') + '</div><aside class="cx-aside" aria-label="Неделя и важное">' + cxGlance(t) + cxTasks(t) + '</aside></div>' + cxFoot();
-    return cxHead() + hero + bento + cxTasks(t) + list + cxFoot();
+    if (desk()) return cxHead() + '<div class="cx-dash"><div class="cx-main">' + hero + bento + (list || '') + '</div><aside class="cx-aside" aria-label="Неделя и важное">' + cxQuick() + cxGlance(t) + cxTasks(t) + '</aside></div>' + cxFoot();
+    return cxHead() + hero + bento + cxQuick() + cxTasks(t) + list + cxFoot();
   }
   /* компьютер: краткий обзор недели справа от главной карточки */
   function cxGlance(t) {
@@ -803,6 +807,20 @@
         '<span class="cx-wgl"><b>' + (sl.length ? esc(countLabel(sl)) : (lessonsFor(k).length ? 'Пары отменены' : 'Пар нет')) + '</b>' + (sl.length ? '<small>' + esc(sl[0][0].start) + ' – ' + hm(ends) + '</small>' : '') + '</span>' + ic('chev') + '</button>';
     }
     return '<div class="cx-sh"><h2>' + (dow(t) === 6 ? 'Следующая неделя' : 'Эта неделя') + (wn >= 1 && wn <= LAST_WEEK ? ' <small>· ' + wn + '-я</small>' : '') + '</h2><button type="button" data-cx="week" data-d="' + mon + '">Сетка недели ›</button></div><div class="cx-rows cx-glance">' + h + '</div>';
+  }
+  /* быстрый доступ: месячная сетка, неделя, мастер расписания (ручная отмена/перенос/замена пары), ссылки */
+  function cxQuick() {
+    var q = [['calendar', 'cal', 'Календарь', 'сетка месяца', '#9CC3E6', '#3D7AB8'], ['week', 'week', 'Неделя', 'сетка Пн–Сб', '#A7B3CB', '#5C6B8A'],
+      ['wizard', 'tool', 'Мастер расписания', 'отмена, перенос', '#DCC59A', '#9A7A3E'], ['useful', 'link', 'Полезное', 'ЛК, портал, кафедры', '#D98A90', '#8C2B33']];
+    return '<div class="cx-sh"><h2>Быстрый доступ</h2></div><div class="cx-quick">' + q.map(function (x) {
+      return '<button type="button" class="cx-qa gl" data-cx="' + x[0] + '"' + (x[0] === 'week' ? ' data-d="' + today() + '"' : '') + '>' + gIco(x[1], x[4], x[5], 1) + '<b>' + x[2] + '</b><small>' + x[3] + '</small></button>';
+    }).join('') + '</div>';
+  }
+  /* мастер расписания: календарь на ближайшем учебном дне + форма изменения пары из старого приложения */
+  function openWizard() {
+    var t = today(), k = lessonsFor(t).length ? t : ((nextStudy(t) || {}).key || t);
+    showCal(k);
+    setTimeout(function () { try { openChangeEditor(); } catch (e) {} }, 60);
   }
   function cxFoot() {
     return '<footer class="cx-foot"><span>© ' + new Date().getFullYear() + ' KSMU Community · Расписание КГМУ</span><button type="button" data-go="privacy">Политика конфиденциальности</button></footer>';
@@ -923,6 +941,8 @@
     else if (k === 'news') navigate('news');
     else if (k === 'modules') navigate('modules');
     else if (k === 'calendar') navigate('calendar');
+    else if (k === 'useful') navigate('useful');
+    else if (k === 'wizard') openWizard();
     else if (k === 'week') { state.tab = 'day'; state.board = true; state.date = a.dataset.d || today(); state.open = null; render(); window.scrollTo({ top: 0 }); }
     else if (k === 'board') { state.board = a.dataset.v === '1'; state.open = null; render(); }
     else if (k === 'bday') { state.board = false; state.date = a.dataset.d; state.open = null; render(); window.scrollTo({ top: 0 }); }
@@ -972,8 +992,9 @@
       '<div class="kg-lt">Аккаунт</div><div class="kg-lbox" id="kgAccBox">' +
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
-      '<div class="kg-lbox">' + row('О проекте и команда', '', 'about') + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.3' : '9.2') + '</div>';
+      (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
+      '<div class="kg-lbox">' + row('Контакты', '', 'contacts') + row('О проекте', '', 'about') + row('Сообщить о проблеме', '', 'report') + '</div>' +
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.4' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
@@ -991,11 +1012,15 @@
 
   /* ---------- полезные ссылки (идея из сборки NOVA) ---------- */
   var USEFUL = [
+    ['https://lk.kazangmu.ru/', 'user', 'Личный кабинет студента', 'Оценки, документы, заявления', '#A7B3CB', '#5C6B8A'],
     ['https://kazangmu.ru/', 'home', 'Официальный сайт КГМУ', 'Новости, учебный процесс, документы', '#D98A90', '#8C2B33'],
     ['https://kazangmu.ru/obuchenie/studentam/raspisanie-zanyatij', 'table', 'Официальное расписание', 'Файлы, которые публикует университет', '#DCC59A', '#9A7A3E'],
-    ['https://lk.kazangmu.ru/', 'user', 'Личный кабинет студента', 'Оценки, документы, заявления', '#A7B3CB', '#5C6B8A'],
-    ['https://t.me/libavicenna', 'book', 'База знаний и сообщество студентов', 'Авиценна · материалы и обсуждения в Telegram', '#9CC3E6', '#3D7AB8']
+    ['https://e.kazangmu.ru/', 'layers', 'Образовательный портал', 'e.kazangmu.ru · курсы, тесты, материалы', '#B7D3A8', '#4F7D3A'],
+    ['https://kazangmu.ru/education/departments', 'users', 'Кафедры КГМУ', 'Деканаты и все кафедры на сайте университета', '#C9B6E4', '#6B4FA0'],
+    ['https://t.me/libavicenna', 'book', 'Авиценна', 'База знаний и сообщество студентов в Telegram', '#9CC3E6', '#3D7AB8']
   ];
+  /* контакты проекта (раздел «Контакты»); MAX — впишите тег, когда появится */
+  var CONTACT = { channel: 'KsmuStudProject', max: '', mails: [['KSMUcommunitysupp@proton.me', 'Поддержка и сотрудничество'], ['fearofgod999@mail.ru', 'Сотрудничество']] };
   var TEAM = [
     ['brainfucker01', 'Сайт, данные и дизайн', 'Расписание, календарь, модули, загрузка файлов КГМУ'],
     ['dkkk111111', 'Telegram-бот и мини-приложение', 'Напоминания о парах, вход через Telegram, роли старост']
@@ -1007,14 +1032,82 @@
     var h = '<div class="kg-lt">Университет</div><div class="cx-rows">' + USEFUL.map(function (x) {
       return '<a class="cx-row gl" href="' + esc(x[0]) + '" target="_blank" rel="noopener" data-ext="1">' + gIco(x[1], x[4], x[5]) + '<div><b>' + esc(x[2]) + '</b><span>' + esc(x[3]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
     }).join('') + '</div>';
+    h += '<div class="kg-lt">Сообщество</div><div class="cx-rows">' + extRow('https://t.me/' + CONTACT.channel, gIco('send', '#9CC3E6', '#2A8BD0'), 'Telegram-канал проекта', '@' + CONTACT.channel + ' · новости и обновления') + '</div>';
     h += '<div class="kg-lt">Сервис</div><div class="cx-rows">' +
       (botName() ? '<button type="button" class="cx-row gl" data-go="bot">' + gIco('send', '#9CC3E6', '#3D7AB8') + '<div><b>Напоминания о парах</b><span>Утреннее сообщение в Telegram-боте</span></div><div class="tm">' + ic('chev') + '</div></button>' : '') +
       '<button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>';
-    h = h.replace('<div class="kg-lt">Сервис</div><div class="cx-rows">', '<div class="kg-lt">Сервис</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="about">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты команды</b><span>Кто делает сервис и как с нами связаться</span></div><div class="tm">' + ic('chev') + '</div></button>');
+    h = h.replace('<div class="kg-lt">Сервис</div><div class="cx-rows">', '<div class="kg-lt">Сервис</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="contacts">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты</b><span>Telegram разработчиков, почта для сотрудничества</span></div><div class="tm">' + ic('chev') + '</div></button>');
     showPage('useful', 'Полезное', h);
     bindExt();
   }
 
+  /* ---------- роли: та же таблица kgmu_roles, что и у бота (tg-auth, вход через Telegram) ---------- */
+  function myAssign() { try { return (typeof cloudAssignments !== 'undefined' && cloudAssignments) || []; } catch (e) { return []; } }
+  function isAdm() { return myAssign().some(function (a) { return a.role === 'admin' && a.study_group === '*'; }); }
+  function starGroups() { return myAssign().filter(function (a) { return a.role === 'starosta'; }).map(function (a) { return a.study_group; }); }
+  function canRoles() { return !!tgUser() && (isAdm() || starGroups().length > 0); }
+  function rolesCall(body) {
+    var tok = ''; try { tok = cloudSession && cloudSession.access_token; } catch (e) {}
+    if (!tok) return Promise.reject(new Error('Войдите через Telegram'));
+    return fetch(KG_TG_FN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: KGMU_CLOUD.key, Authorization: 'Bearer ' + tok }, body: JSON.stringify(Object.assign({ site: 1 }, body)) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || 'Ошибка ' + r.status); return j; }); });
+  }
+  function showRoles() {
+    if (!canRoles()) { showPage('roles', 'Роли и доступ', '<div class="cx-empty gl"><b>Нет доступа</b>Раздел для администраторов и старост, вошедших через Telegram</div>'); return; }
+    var adm = isAdm(), my = starGroups(), g = curGroup();
+    var grp = adm ? '<input id="cxRlG" class="cx-in" inputmode="numeric" maxlength="12" placeholder="Группа, например 1307" value="' + esc(g) + '" aria-label="Группа">'
+      : '<select id="cxRlG" class="cx-in" aria-label="Группа">' + my.map(function (x) { return '<option' + (x === g ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>';
+    var roles = adm ? [['starosta', 'Староста'], ['editor', 'Помощник старосты'], ['admin', 'Администратор (все группы)']] : [['editor', 'Помощник старосты']];
+    var h = '<p class="cx-note" style="margin-top:0">Роли общие с Telegram-ботом: назначение здесь сразу видно в боте (/myrole, админ-панель) и наоборот. Человек должен хотя бы раз написать боту или войти на сайт через Telegram — иначе укажите его числовой ID.</p>' +
+      '<div class="kg-lt">Назначить</div><form class="kg-lbox kg-pad cx-rf" id="cxRlF"><input id="cxRlT" class="cx-in" autocomplete="off" maxlength="40" placeholder="@username или Telegram ID" aria-label="Кому" required>' + grp +
+      '<select id="cxRlR" class="cx-in" aria-label="Роль">' + roles.map(function (r) { return '<option value="' + r[0] + '">' + r[1] + '</option>'; }).join('') + '</select>' +
+      '<button type="submit" class="kg-btn kg-wide">' + ic('plus') + 'Назначить</button><p class="cx-rmsg" id="cxRlM" role="status"></p></form>' +
+      '<div class="kg-lt">' + (adm ? 'Все роли' : 'Роли группы ' + esc(my.join(', '))) + '</div><div id="cxRlL" class="cx-rows"><div class="cx-empty gl">Загрузка…</div></div>';
+    showPage('roles', 'Роли и доступ', h);
+    var msg = function (t, bad) { var m = $('cxRlM'); if (m) { m.textContent = t; m.classList.toggle('bad', !!bad); } };
+    $('cxRlF').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var role = $('cxRlR').value, body = { action: 'grant', target: $('cxRlT').value.trim(), role: role, group: role === 'admin' ? '*' : $('cxRlG').value.trim() };
+      msg('Сохраняем…');
+      rolesCall(body).then(function (j) { msg('Готово: ' + j.who + ' — ' + j.role_ru + (j.group !== '*' ? ', группа ' + j.group : '')); $('cxRlT').value = ''; loadRoles(); })
+        .catch(function (e) { msg(e.message, true); });
+    });
+    $('cxRlL').addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-rv]'); if (!b) return;
+      if (!confirm('Снять роль «' + b.dataset.rr + '» у ' + b.dataset.who + '?')) return;
+      b.disabled = true;
+      rolesCall({ action: 'revoke', target: b.dataset.rv, group: b.dataset.g }).then(loadRoles).catch(function (e) { b.disabled = false; msg(e.message, true); });
+    });
+    loadRoles();
+  }
+  function loadRoles() {
+    var box = $('cxRlL'); if (!box) return;
+    rolesCall({ action: 'list' }).then(function (j) {
+      var it = (j.items || []).slice().sort(function (a, b) { return String(a.study_group).localeCompare(String(b.study_group), 'ru', { numeric: true }); });
+      var RU = { admin: 'Администратор', starosta: 'Староста', editor: 'Помощник' }, me = (tgUser() || {}).id;
+      box.innerHTML = it.length ? it.map(function (r) {
+        var self = me && String(r.tg_id) === String(me);
+        return '<div class="cx-row gl">' + gIco(r.role === 'admin' ? 'gear' : r.role === 'starosta' ? 'flag' : 'user', '#D98A90', '#8C2B33') + '<div><b>' + esc(r.who) + (self ? ' · вы' : '') + '</b><span>' + esc(RU[r.role] || r.role) + (r.study_group !== '*' ? ' · группа ' + esc(r.study_group) : ' · все группы') + '</span></div>' +
+          (self && r.role === 'admin' ? '' : '<button type="button" class="cx-rx" data-rv="' + esc(r.tg_id) + '" data-g="' + esc(r.study_group) + '" data-rr="' + esc(RU[r.role] || r.role) + '" data-who="' + esc(r.who) + '" aria-label="Снять роль">' + ic('x') + '</button>') + '</div>';
+      }).join('') : '<div class="cx-empty gl">Ролей пока нет</div>';
+    }).catch(function (e) { box.innerHTML = '<div class="cx-empty gl"><b>Не удалось загрузить</b>' + esc(e.message) + '</div>'; });
+  }
+  function extRow(url, icon, title, sub) {
+    return '<a class="cx-row gl" href="' + esc(url) + '" target="_blank" rel="noopener" data-ext="1">' + icon + '<div><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
+  }
+  function showContacts() {
+    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><img alt="" src="./img/kgmu-logo.webp"></span><div><small>Команда проекта</small><b>KSMU Community</b><span>Пишите по ошибкам, идеям и сотрудничеству — отвечаем в Telegram и по почте.</span></div></section>' +
+      '<div class="kg-lt">Разработчики</div><div class="cx-rows">' + TEAM.map(function (x) { return extRow('https://t.me/' + x[0], gIco('user', '#D98A90', '#8C2B33'), '@' + x[0], x[1]); }).join('') + '</div>' +
+      '<div class="kg-lt">Почта для сотрудничества</div><div class="cx-rows">' + CONTACT.mails.map(function (m) {
+        return '<a class="cx-row gl cx-mail" href="mailto:' + esc(m[0]) + '">' + gIco('send', '#DCC59A', '#9A7A3E') + '<div><b>' + esc(m[0]) + '</b><span>' + esc(m[1]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
+      }).join('') + '</div>' +
+      '<div class="kg-lt">Каналы</div><div class="cx-rows">' + extRow('https://t.me/' + CONTACT.channel, gIco('send', '#9CC3E6', '#2A8BD0'), 'Telegram-канал', '@' + CONTACT.channel) +
+      (CONTACT.max ? extRow('https://max.ru/' + CONTACT.max, gIco('users', '#B9A7F0', '#5B3FD0'), 'MAX', '@' + CONTACT.max)
+        : '<div class="cx-row gl">' + gIco('users', '#B9A7F0', '#5B3FD0') + '<div><b>MAX</b><span>Скоро</span></div></div>') +
+      '<button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>';
+    showPage('contacts', 'Контакты', h);
+    bindExt();
+  }
   function bindExt() {
     $('kgPage').querySelectorAll('a[data-ext]').forEach(function (a) {
       a.addEventListener('click', function (ev) { if (!inTG) return; ev.preventDefault(); openExt(a.href); });
@@ -1027,9 +1120,7 @@
       [['users', (n ? n + ' групп' : 'Все группы'), 'всех курсов и направлений'], ['clock', '3 раза в день', 'сверяется с официальными файлами КГМУ'], ['flag', 'ДЗ и модули', 'подтверждает староста группы'], ['send', 'Напоминания', 'утром в Telegram-боте']].map(function (x) {
         return '<div class="cx-fact gl">' + ic(x[0]) + '<b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></div>';
       }).join('') + '</div>' +
-      '<div class="kg-lt">Команда</div><div class="cx-rows">' + TEAM.map(function (x) {
-        return '<a class="cx-row gl" href="https://t.me/' + x[0] + '" target="_blank" rel="noopener" data-ext="1">' + gIco('user', '#D98A90', '#8C2B33') + '<div><b>' + esc(x[1]) + '</b><span>@' + esc(x[0]) + ' · ' + esc(x[2]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
-      }).join('') + '<button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>' +
+      '<div class="kg-lt">Команда</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="contacts">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты</b><span>Telegram разработчиков, почта для сотрудничества, канал</span></div><div class="tm">' + ic('chev') + '</div></button><button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>' +
       '<p class="cx-note">Сервис сделан студентами и не является официальным ресурсом КГМУ. Источник расписания — файлы, которые университет публикует на kazangmu.ru; при расхождении верно официальное расписание.</p>';
     showPage('about', 'О проекте', h);
     bindExt();
@@ -1044,7 +1135,7 @@
   function showPrivacy() {
     var P = [
       ['1. Общие положения', ['Политика описывает, как сервис «Расписание КГМУ» (сайт, мини-приложение и Telegram-бот) обрабатывает персональные данные пользователей. Она составлена по Федеральному закону от 27.07.2006 № 152-ФЗ «О персональных данных».',
-        'Оператор персональных данных — команда проекта «Расписание КГМУ». Связаться с командой можно в Telegram: контакты указаны на странице «О проекте». Сервис сделан студентами и не является официальным ресурсом КГМУ.',
+        'Оператор персональных данных — команда проекта «Расписание КГМУ». Связаться с командой можно в Telegram: контакты указаны на странице «Контакты». Сервис сделан студентами и не является официальным ресурсом КГМУ.',
         'Пользуясь расписанием без входа, вы не передаёте нам персональные данные. Вход через Telegram и Telegram-бот работают только с вашего согласия.']],
       ['2. Какие данные и зачем мы обрабатываем', ['Вход через Telegram, подпись записей и роли. Данные: идентификатор Telegram, имя и фамилия, имя пользователя (@username), ссылка на фото профиля, если Telegram её передаёт. Цель: подтвердить, что вы — это вы, показать автора записей ДЗ и модулей, назначить роли старост, помощников и администраторов.',
         'Записи ДЗ, модулей, заявки на правку и объявления. Данные: текст записи, группа, дата, автор, статус проверки. Цель: обмен домашними заданиями и сведениями о модулях внутри группы.',

@@ -468,7 +468,7 @@ function kgTgMountUI(){
     '<label class="kg-pd"><input type="checkbox" id="kgPdChk"'+(kgPdOk()?' checked':'')+'> <span>Я даю <a href="#" data-pd="consent">согласие на обработку персональных данных</a> и ознакомлен с <a href="#" data-pd="privacy">политикой конфиденциальности</a></span></label>'+
     '<div id="kgTgWidget"></div>';
   form.parentNode.insertBefore(box,form);
-  const det=document.createElement('details');det.className='kg-mail-login';det.innerHTML='<summary>Вход по почте (старые аккаунты)</summary>';
+  const det=document.createElement('details');det.className='kg-mail-login';det.innerHTML='<summary>Вход по почте и паролю · режим редактора</summary>';
   form.parentNode.insertBefore(det,form);det.appendChild(form);
   const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}'+
     '.kg-pd{display:flex;gap:10px;align-items:flex-start;margin:4px 0 10px;font-size:13px;line-height:1.4;cursor:pointer}.kg-pd input{width:20px;height:20px;flex:none;margin:0;accent-color:#8C2B33}.kg-pd a{color:inherit;text-decoration:underline;text-underline-offset:2px}'+
