@@ -645,3 +645,10 @@ html.kg-e body.kg-on{overflow-x:clip}
 @media (max-width:1023px){html.kg-e input,html.kg-e select,html.kg-e textarea{font-size:16px!important}}
 #kgApp .cx-chip.cx-prog{font-variant-numeric:tabular-nums;font-weight:800;background:var(--a-acc-soft);color:var(--a-acc);border-color:transparent}
 #kgApp .cx-card.live .cx-chip.cx-prog{background:rgba(255,255,255,.22);color:#fff}
+
+/* ===== 9.7.1: «+ ДЗ» и «+ Модуль» одинаковые — в карточке пары и в календаре ===== */
+#kgApp .cx-card .r{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#kgApp .cx-card .r .cx-btn{justify-content:center}
+html.kg-e .panel-tools{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+html.kg-e body.kg-on .panel-tools button#addModule,html.kg-e body.kg-on .panel-tools button#addHomework{display:flex;align-items:center;justify-content:center;min-height:44px;margin:0;padding:0 12px;border-radius:14px;
+  font:inherit;font-size:15px;font-weight:700;white-space:nowrap;background:var(--a-acc-soft)!important;color:var(--a-acc)!important;border:1px solid transparent!important;box-shadow:none!important}
