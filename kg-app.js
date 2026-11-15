@@ -1076,12 +1076,9 @@
     ['https://kazangmu.ru/education/departments', 'users', 'Кафедры КГМУ', 'Деканаты и все кафедры на сайте университета', '#C9B6E4', '#6B4FA0'],
     ['https://t.me/libavicenna', 'book', 'Авиценна', 'База знаний и сообщество студентов в Telegram', '#9CC3E6', '#3D7AB8']
   ];
-  /* контакты проекта (раздел «Контакты»); MAX — впишите тег, когда появится */
-  var CONTACT = { channel: 'KsmuStudProject', max: '', mails: [['KSMUcommunitysupp@proton.me', 'Поддержка и сотрудничество'], ['fearofgod999@mail.ru', 'Сотрудничество']] };
-  var TEAM = [
-    ['brainfucker01', 'Сайт, данные и дизайн', 'Расписание, календарь, модули, загрузка файлов КГМУ'],
-    ['dkkk111111', 'Telegram-бот и мини-приложение', 'Напоминания о парах, вход через Telegram, роли старост']
-  ];
+  /* контакты (раздел «Контакты»): одна почта — адрес пришлёт пользователь; MAX — впишите тег, когда появится */
+  var CONTACT = { channel: 'KsmuStudProject', max: '', mails: [['KSMUcommunitysupp@proton.me', 'Вопросы и предложения']] };
+  var TEAM = [['brainfucker01'], ['dkkk111111']];
   function openExt(url) {
     if (inTG) tgPost('web_app_open_link', { url: url }); else window.open(url, '_blank', 'noopener');
   }
@@ -1089,11 +1086,6 @@
     var h = '<div class="kg-lt">Университет</div><div class="cx-rows">' + USEFUL.map(function (x) {
       return '<a class="cx-row gl" href="' + esc(x[0]) + '" target="_blank" rel="noopener" data-ext="1">' + gIco(x[1], x[4], x[5]) + '<div><b>' + esc(x[2]) + '</b><span>' + esc(x[3]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
     }).join('') + '</div>';
-    h += '<div class="kg-lt">Сообщество</div><div class="cx-rows">' + extRow('https://t.me/' + CONTACT.channel, gIco('send', '#9CC3E6', '#2A8BD0'), 'Telegram-канал проекта', '@' + CONTACT.channel + ' · новости и обновления') + '</div>';
-    h += '<div class="kg-lt">Сервис</div><div class="cx-rows">' +
-      (botName() ? '<button type="button" class="cx-row gl" data-go="bot">' + gIco('send', '#9CC3E6', '#3D7AB8') + '<div><b>Напоминания о парах</b><span>Утреннее сообщение в Telegram-боте</span></div><div class="tm">' + ic('chev') + '</div></button>' : '') +
-      '<button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>';
-    h = h.replace('<div class="kg-lt">Сервис</div><div class="cx-rows">', '<div class="kg-lt">Сервис</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="contacts">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты</b><span>Telegram разработчиков, почта для сотрудничества</span></div><div class="tm">' + ic('chev') + '</div></button>');
     showPage('useful', 'Полезное', h);
     bindExt();
   }
@@ -1153,9 +1145,9 @@
     return '<a class="cx-row gl" href="' + esc(url) + '" target="_blank" rel="noopener" data-ext="1">' + icon + '<div><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
   }
   function showContacts() {
-    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><i class="ksmu-mark"></i></span><div><small>Команда проекта</small><b>KSMU Community</b><span>Пишите по ошибкам, идеям и сотрудничеству — отвечаем в Telegram и по почте.</span></div></section>' +
-      '<div class="kg-lt">Разработчики</div><div class="cx-rows">' + TEAM.map(function (x) { return extRow('https://t.me/' + x[0], gIco('user', '#D98A90', '#8C2B33'), '@' + x[0], x[1]); }).join('') + '</div>' +
-      '<div class="kg-lt">Почта для сотрудничества</div><div class="cx-rows">' + CONTACT.mails.map(function (m) {
+    var h = '<section class="cx-about gl"><span class="cx-gp-logo"><i class="ksmu-mark"></i></span><div><small>Команда проекта</small><b>KSMU Community</b><span>Нашли ошибку или есть идея? Напишите нам — ответим в Telegram или по почте.</span></div></section>' +
+      '<div class="kg-lt">Разработчики</div><div class="cx-rows">' + TEAM.map(function (x) { return extRow('https://t.me/' + x[0], gIco('user', '#D98A90', '#8C2B33'), '@' + x[0], 'Telegram'); }).join('') + '</div>' +
+      '<div class="kg-lt">Почта</div><div class="cx-rows">' + CONTACT.mails.map(function (m) {
         return '<a class="cx-row gl cx-mail" href="mailto:' + esc(m[0]) + '">' + gIco('send', '#DCC59A', '#9A7A3E') + '<div><b>' + esc(m[0]) + '</b><span>' + esc(m[1]) + '</span></div><div class="tm">' + ic('ext') + '</div></a>';
       }).join('') + '</div>' +
       '<div class="kg-lt">Каналы</div><div class="cx-rows">' + extRow('https://t.me/' + CONTACT.channel, gIco('send', '#9CC3E6', '#2A8BD0'), 'Telegram-канал', '@' + CONTACT.channel) +
@@ -1177,7 +1169,7 @@
       [['users', (n ? n + ' групп' : 'Все группы'), 'всех курсов и направлений'], ['clock', '3 раза в день', 'сверяется с официальными файлами КГМУ'], ['flag', 'ДЗ и модули', 'подтверждает староста группы'], ['send', 'Напоминания', 'утром в Telegram-боте']].map(function (x) {
         return '<div class="cx-fact gl">' + ic(x[0]) + '<b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></div>';
       }).join('') + '</div>' +
-      '<div class="kg-lt">Команда</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="contacts">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты</b><span>Telegram разработчиков, почта для сотрудничества, канал</span></div><div class="tm">' + ic('chev') + '</div></button><button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>' +
+      '<div class="kg-lt">Команда</div><div class="cx-rows"><button type="button" class="cx-row gl" data-go="contacts">' + gIco('users', '#C9B6E4', '#6B4FA0') + '<div><b>Контакты</b><span>Telegram разработчиков, почта и канал проекта</span></div><div class="tm">' + ic('chev') + '</div></button><button type="button" class="cx-row gl" data-go="report">' + gIco('heart', '#E7A3B8', '#B04A6A') + '<div><b>Сообщить о проблеме</b><span>Ошибка в расписании или на сайте</span></div><div class="tm">' + ic('chev') + '</div></button></div>' +
       '<p class="cx-note">Сервис сделан студентами и не является официальным ресурсом КГМУ. Источник расписания — файлы, которые университет публикует на kazangmu.ru; при расхождении верно официальное расписание.</p>';
     showPage('about', 'О проекте', h);
     bindExt();
