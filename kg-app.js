@@ -445,7 +445,7 @@
       try { var u = new URLSearchParams(location.search).get('date'); if (u && /^\d{4}-\d{2}-\d{2}$/.test(u)) return u; } catch (e) {}
       return dow(t) === 6 && !inTG ? t : t;
     })();
-    if (UI === 'cx') { renderCx(dir); return; }
+    if (UI === 'cx') { renderCx(dir); saveView(); return; }
     var g = selectedStudyGroup;
     if ($('kgTopGroup')) { $('kgTopGroup').textContent = g; $('kgTopSub').textContent = groupCaption(g); }
     var w = dateWeek(state.date);
@@ -593,6 +593,7 @@
     window.scrollTo(0, 0);
     tgPost('web_app_setup_back_button', { is_visible: true });
     renderTabs();
+    saveView();
   }
   function showOld(view, title, tools) {
     restoreMoved();
@@ -1230,9 +1231,36 @@
   function deepPage() {
     var pg = ''; try { pg = new URLSearchParams(location.search).get('page') || ''; } catch (e) {}
     var f = { privacy: showPrivacy, consent: showConsent, about: showAbout }[pg];
-    if (!f) return;
+    if (!f) { restoreView(); return; }
     try { var url = new URL(location.href); url.searchParams.delete('page'); history.replaceState(history.state, '', url); } catch (e) {}
     setTimeout(f, 0);
+  }
+
+  /* обновление страницы возвращает в тот же раздел (sessionStorage — только до закрытия вкладки/приложения) */
+  var VIEW_KEY = 'kg-view', viewRestoring = false;
+  function saveView() {
+    if (viewRestoring) return;
+    try {
+      sessionStorage.setItem(VIEW_KEY, JSON.stringify({ p: state.page || '', r: !!state.rootMenu, t: state.tab, b: !!state.board,
+        d: state.date || '', f: state.dayFrom || '', c: state.calSel || '' }));
+    } catch (e) {}
+  }
+  function restoreView() {
+    var v = null; try { v = JSON.parse(sessionStorage.getItem(VIEW_KEY) || 'null'); } catch (e) {}
+    if (!v) return;
+    var okDate = function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d || ''); };
+    if (v.p && REOPEN[v.p]) {
+      if (okDate(v.c)) state.calSel = v.c;
+      viewRestoring = true;
+      setTimeout(function () {
+        viewRestoring = false;
+        state.viaMenu = !!v.r;
+        try { REOPEN[v.p](); } catch (e) {} finally { state.viaMenu = false; }
+      }, 0);
+    } else if (v.t === 'day') {
+      state.tab = 'day'; state.board = !!v.b; state.dayFrom = v.f || null;
+      if (okDate(v.d)) state.date = v.d;
+    }
   }
 
   /* ---------- анонимная статистика (таблица kgmu_stats; см. политику, раздел 2) ----------
@@ -1539,6 +1567,7 @@
       (sl.length ? cxRowsBrk(sl, k) : '<div class="cx-empty gl"><b>' + (dow(k) === 6 ? 'Воскресенье' : 'Пар нет') + '</b>' + (dateWeek(k) >= 1 && dateWeek(k) <= LAST_WEEK ? 'В этот день занятий нет' : 'Дата вне опубликованного расписания') + '</div>');
   }
   function calSelect(key) {
+    setTimeout(saveView, 0);
     state.calSel = key; state.calMonth = monthOf(key);
     try { selectDate(key, false); } catch (e) {}
     renderCal();
