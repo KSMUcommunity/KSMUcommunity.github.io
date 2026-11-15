@@ -627,3 +627,14 @@ html.kg-e.kg-notab body.kg-mode-old main.wrap{padding-bottom:calc(32px + env(saf
 html.kg-desk .cx-tbar{display:none}
 html:not(.kg-desk) .kg-subbar{grid-template-columns:auto minmax(0,1fr) auto;gap:6px}
 html:not(.kg-desk) .kg-subbar b{justify-self:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px}
+
+/* ===== 9.6.3: телефон — «Назад» маленькой стрелкой, заголовок строго по центру ===== */
+html:not(.kg-desk) .kg-subbar{grid-template-columns:44px minmax(0,1fr) 44px;gap:4px}
+html:not(.kg-desk) .kg-subbar b{padding-right:0}
+html:not(.kg-desk) #kgApp .kg-back{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;border-radius:12px;color:var(--a-text)!important}
+html:not(.kg-desk) #kgApp .kg-back span{display:none}
+html:not(.kg-desk) #kgApp .kg-back .kg-ic{width:24px;height:24px}
+.cx-tbar{grid-template-columns:44px 1fr 44px!important;gap:4px}
+.cx-tbar b{justify-self:center!important;padding-right:0!important}
+#kgApp .cx-tbar .cx-hb{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;color:var(--a-text)}
+#kgApp .cx-tbar .cx-hb .kg-ic{width:22px;height:22px}

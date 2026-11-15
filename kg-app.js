@@ -889,8 +889,8 @@
   function cxTopBar() {
     /* открыто из меню — только ☰; со второго экрана (главная, календарь) — «Назад» туда */
     return '<div class="cx-tbar">' + (state.dayFrom
-      ? '<button type="button" class="cx-hb" data-cx="dback">' + ic('left') + 'Назад</button>'
-      : '<button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button>') + '<b>Неделя</b></div>';
+      ? '<button type="button" class="cx-ib gl cx-hb" data-cx="dback" aria-label="Назад">' + ic('left') + '</button>'
+      : '<button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button>') + '<b>Неделя</b><span></span></div>';
   }
   function cxDay() {
     var key = state.date, t = today(), now = kazanClockMinutes(), isT = key === t, slots = lessonsFor(key), w = dateWeek(key);
@@ -986,7 +986,7 @@
   function mountCx() {
     var app = document.createElement('div');
     app.id = 'kgApp';
-    app.innerHTML = '<div class="kg-subbar" id="kgSubBar"><span class="kg-sl"><button type="button" class="kg-mb" id="kgMenuB" aria-label="Меню" aria-controls="cxSide" aria-expanded="false">' + ic('menu') + '</button><button type="button" class="kg-back" id="kgBack">' + ic('left') + 'Назад</button></span><b id="kgSubTitle"></b><span></span></div>' +
+    app.innerHTML = '<div class="kg-subbar" id="kgSubBar"><span class="kg-sl"><button type="button" class="kg-mb" id="kgMenuB" aria-label="Меню" aria-controls="cxSide" aria-expanded="false">' + ic('menu') + '</button><button type="button" class="kg-back" id="kgBack" aria-label="Назад">' + ic('left') + '<span>Назад</span></button></span><b id="kgSubTitle"></b><span></span></div>' +
       '<section class="kg-home cx-home" id="kgHome"><div id="kgCx"></div></section><section class="kg-page" id="kgPage"></section>' +
       '<nav class="kg-tabbar" id="kgTabbar" aria-label="Разделы"></nav><aside class="cx-side" id="cxSide" aria-label="Меню"></aside>';
     document.body.insertBefore(app, document.body.firstChild);
