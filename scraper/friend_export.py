@@ -281,15 +281,42 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
     out.mkdir(parents=True, exist_ok=True)
     body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     (out / "schedule.json").write_text(body, "utf-8")
-    (out / "schedule-data.js").write_text(
-        "/* Встроенная копия расписания (запасной вариант до загрузки schedule.json). Собрано автоматически. */\n"
-        "window.KGMU_EMBEDDED_GROUPS=" + json.dumps(payload["groups"], ensure_ascii=False, separators=(",", ":")) + ";\n"
-        "window.KGMU_PROGRAMS=" + json.dumps(payload["programs"], ensure_ascii=False, separators=(",", ":")) + ";\n"
-        "window.KGMU_GROUP_INFO=" + json.dumps(payload["groupMeta"], ensure_ascii=False, separators=(",", ":")) + ";\n"
-        "window.KGMU_SEMESTER=" + json.dumps(payload["semester"], ensure_ascii=False, separators=(",", ":")) + ";\n",
-        "utf-8")
+    write_site_data(payload, out)
     print(f"✓ {sum(len(v) for v in payload['groups'].values())} занятий в {len(payload['groups'])} группах → {out}")
     return payload
+
+
+def group_file(gid):
+    """Имя файла группы: латиница, цифры и «-» как есть, остальное — uXXXX (то же правило в index.html, kgGroupSrc)."""
+    return "".join(c if (c.isascii() and c.isalnum()) or c == "-" else "u%04x" % ord(c) for c in gid) + ".js"
+
+
+def write_site_data(payload, out):
+    """Для сайта: лёгкий schedule-data.js (список групп, направления, семестр, версии файлов)
+    и data/g/<группа>.js с расписанием одной группы — сайт грузит только свою группу (~35 КБ вместо 8 МБ).
+    schedule.json (все группы целиком) пишется отдельно — его читают бот и экспорт."""
+    import hashlib, shutil
+    J = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+    gdir = out / "data" / "g"
+    if gdir.exists():
+        shutil.rmtree(gdir)
+    gdir.mkdir(parents=True)
+    vers = {}
+    for gid, events in payload["groups"].items():
+        body = J(events)
+        vers[gid] = hashlib.sha1(body.encode("utf-8")).hexdigest()[:8]
+        (gdir / group_file(gid)).write_text(
+            "KGMU_EMBEDDED_GROUPS[" + J(gid) + "]=" + body + ";KGMU_LOADED[" + J(gid) + "]=1;\n", "utf-8")
+    (out / "schedule-data.js").write_text(
+        "/* Список групп и служебные данные; расписание каждой группы — в data/g/<группа>.js. Собрано автоматически. */\n"
+        "window.KGMU_EMBEDDED_GROUPS=" + J({g: [] for g in payload["groups"]}) + ";\n"
+        "window.KGMU_LOADED={};\n"
+        "window.KGMU_GROUP_V=" + J(vers) + ";\n"
+        "window.KGMU_DATA_UPDATED=" + J(payload.get("updated")) + ";\n"
+        "window.KGMU_PROGRAMS=" + J(payload["programs"]) + ";\n"
+        "window.KGMU_GROUP_INFO=" + J(payload["groupMeta"]) + ";\n"
+        "window.KGMU_SEMESTER=" + J(payload["semester"]) + ";\n",
+        "utf-8")
 
 
 if __name__ == "__main__":

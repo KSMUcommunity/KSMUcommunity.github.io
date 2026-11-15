@@ -749,9 +749,8 @@
   function cxHead() {
     var g = selectedStudyGroup, u = tgUser(), h = Math.floor(kazanClockMinutes() / 60);
     var greet = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
-    var ini = u && (u.name || u.username) ? String(u.name || u.username).replace('@', '').slice(0, 1).toUpperCase()
-      : (groupCaption(g).split(' · ')[0] || 'КГМУ').split(/[\s-]+/).filter(function (w) { return w.length > 2; }).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase() || 'К';
-    return '<div class="cx-hd"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню' + (unread() ? ', есть новые объявления' : '') + '" aria-controls="cxSide">' + ic('menu') + (unread() ? '<i class="cx-dot" aria-hidden="true"></i>' : '') + '</button><button type="button" class="cx-who" data-cx="group" aria-label="Сменить группу"><span class="cx-av" aria-hidden="true"><b>' + esc(ini) + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong></span></button>' +
+    var ini = u && (u.name || u.username) ? esc(String(u.name || u.username).replace('@', '').slice(0, 1).toUpperCase()) : ic('user');
+    return '<div class="cx-hd"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню' + (unread() ? ', есть новые объявления' : '') + '" aria-controls="cxSide">' + ic('menu') + (unread() ? '<i class="cx-dot" aria-hidden="true"></i>' : '') + '</button><button type="button" class="cx-who" data-cx="group" aria-label="Сменить группу"><span class="cx-av" aria-hidden="true"><b>' + ini + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong></span></button>' +
       '<button type="button" class="cx-ib gl" data-cx="profile" aria-label="Профиль и настройки">' + ic('gear') + '</button></div>' +
       '<button type="button" class="cx-search gl" data-cx="search">' + ic('search') + 'Предмет, преподаватель, аудитория…</button>';
   }
@@ -855,7 +854,8 @@
     setTimeout(function () { try { openChangeEditor(); } catch (e) {} }, 60);
   }
   function cxFoot() {
-    return '<footer class="cx-foot"><span>© ' + new Date().getFullYear() + ' KSMU Community · Расписание КГМУ</span><button type="button" data-go="privacy">Политика конфиденциальности</button></footer>';
+    var up = window.KGMU_DATA_UPDATED ? dayMonth(window.KGMU_DATA_UPDATED) : '';
+    return '<footer class="cx-foot">' + (up ? '<span class="cx-upd" title="Сверяется с сайтом КГМУ 3 раза в день">' + ic('clock') + 'Расписание обновлено ' + esc(up) + '</span>' : '') + '<span>© ' + new Date().getFullYear() + ' KSMU Community · Расписание КГМУ</span><button type="button" data-go="privacy">Политика конфиденциальности</button></footer>';
   }
 
   function cxCard(s, key, idx, isT, now) {
@@ -1043,7 +1043,7 @@
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.7' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.8' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }

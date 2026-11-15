@@ -652,3 +652,14 @@ html.kg-e body.kg-on{overflow-x:clip}
 html.kg-e .panel-tools{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
 html.kg-e body.kg-on .panel-tools button#addModule,html.kg-e body.kg-on .panel-tools button#addHomework{display:flex;align-items:center;justify-content:center;min-height:44px;margin:0;padding:0 12px;border-radius:14px;
   font:inherit;font-size:15px;font-weight:700;white-space:nowrap;background:var(--a-acc-soft)!important;color:var(--a-acc)!important;border:1px solid transparent!important;box-shadow:none!important}
+
+/* ===== 9.8: мелочи — цели касания ≥40 px, приветствие в одну строку, аватар, отметка обновления ===== */
+#kgApp .cx-sg button{min-width:40px;min-height:36px}
+#kgApp .cx-wk>button{width:40px}
+#kgApp .cx-sh button,#kgApp .cx-sh a{padding:10px 4px;margin:-10px -4px}
+.cx-who small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-who>span:last-child{min-width:0}
+.cx-av b .kg-ic{width:22px;height:22px}
+.cx-upd{flex-basis:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.cx-upd .kg-ic{width:14px;height:14px;flex:none}
+@media (max-width:420px){.cx-who small{font-size:12px}}

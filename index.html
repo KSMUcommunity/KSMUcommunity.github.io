@@ -1003,9 +1003,19 @@ button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.sh
 
 </style>
 <script src="./schedule-data.js"></script>
+<script>/* расписание только своей группы (data/g/<группа>.js, ~15 КБ) — другие группы догружаются при смене */
+(function(){var G=window.KGMU_EMBEDDED_GROUPS||{},L=window.KGMU_LOADED=window.KGMU_LOADED||{},g=null;
+try{g=new URLSearchParams(location.search).get('studyGroup')||localStorage.getItem('kgmu-v8-selected-group')}catch(e){}
+window.kgGroupSrc=function(id){return './data/g/'+String(id).replace(/[^A-Za-z0-9-]/g,function(c){return 'u'+('000'+c.charCodeAt(0).toString(16)).slice(-4)})+'.js?v='+((window.KGMU_GROUP_V||{})[id]||'')};
+window.kgLoadGroup=function(id){return new Promise(function(ok,no){if(L[id])return ok();var s=document.createElement('script');s.src=kgGroupSrc(id);
+ s.onload=function(){L[id]?ok():no(Error('нет данных'))};s.onerror=function(){no(Error('не загрузилось'))};document.head.appendChild(s)})};
+if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+kgGroupSrc(g)+'"><\/script>');
+ /* для офлайна: файл своей группы — в кэш kgmu-data (при первом открытии офлайн-кэш ещё не перехватывает запросы) */
+ window.addEventListener('load',function(){try{if(!window.caches)return;var u=new URL(kgGroupSrc(g),location.href),k=u.origin+u.pathname;
+  caches.open('kgmu-data').then(function(c){return c.match(k).then(function(m){if(!m)return fetch(u).then(function(r){if(r.ok)return c.put(k,r)})})}).catch(function(){})}catch(e){}});}})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
-<link rel="stylesheet" href="./kg-e.css?v=21">
+<link rel="stylesheet" href="./kg-e.css?v=23">
 <link rel="stylesheet" href="./kg-apple.css?v=1" id="kgAppleCss">
 <script>/* основной дизайн — E; ?design=apple (вариант 2) действует только до закрытия вкладки/мини-приложения, ?design=e возвращает E.
    Раньше выбор хранился в localStorage навсегда — из-за этого в Telegram «застревал» вариант 2; старую запись стираем. */
@@ -1279,7 +1289,7 @@ window.KG_DESIGN=d==='apple'?'apple':'e';if(window.KG_DESIGN==='e')document.getE
 </section>
 <section class="view" hidden="" id="searchView">
 <div class="utility-panel">
-<div class="utility-header"><div><div class="utility-kicker">Быстрый доступ</div><h2>Поиск</h2><p>Найдите предмет, домашнее задание, модуль, преподавателя или аудиторию.</p></div><button class="utility-back" id="closeSearch" type="button">К расписанию</button></div>
+<div class="utility-header"><div><div class="utility-kicker">По расписанию группы</div><h2>Поиск</h2><p>Найдите предмет, домашнее задание, модуль, преподавателя или аудиторию.</p></div><button class="utility-back" id="closeSearch" type="button">К расписанию</button></div>
 <label class="sr-label" for="globalSearch">Поисковый запрос</label>
 <div class="search-control"><span aria-hidden="true">⌕</span><input autocomplete="off" enterkeyhint="search" id="globalSearch" maxlength="120" placeholder="Например, патофизиология, КЛД или 131" type="search"/><button aria-label="Очистить поиск" id="clearSearch" type="button">×</button></div>
 <div aria-label="Тип поиска" class="search-filters" role="group">
@@ -2066,6 +2076,8 @@ function hideGroupChooser(){
 }
 function activateStudyGroup(id){
  if(!GROUP_IDS.includes(id))return;
+ /* расписание группы ещё не загружено — загрузить и повторить */
+ if(window.kgLoadGroup&&!(window.KGMU_LOADED||{})[id]){kgLoadGroup(id).then(()=>activateStudyGroup(id)).catch(()=>toast('Не удалось загрузить расписание группы '+id+' — проверьте интернет'));return;}
  selectedStudyGroup=id;EVENT_DATA=ALL_SCHEDULES[id];
  try{localStorage.setItem(GROUP_STORAGE_KEY,id);}catch(e){}
  loadGroupData(id);
@@ -2254,17 +2266,8 @@ window.setInterval(()=>{
 
 /* После публикации расписание можно менять только в schedule.json.
    Офлайн HTML без этого файла продолжает работать по встроенным данным. */
-async function loadPublishedSchedule(){
- if(!/^https?:$/.test(location.protocol))return;
- try{const res=await fetch('./schedule.json',{cache:'no-cache'});
-  if(!res.ok)throw Error('HTTP '+res.status);const payload=await res.json();
-  if(payload?.format!=='kgmu-v8-multigroup'||typeof payload.groups!=='object')throw Error('Несовместимый формат');
-  if(payload.semester&&/^\d{4}-\d{2}-\d{2}$/.test(payload.semester.week1||'')&&payload.semester.weeks>0){Object.assign(SEM,payload.semester);INITIAL=semDate();}
-  for(const id of GROUP_IDS){const a=payload.groups[id];if(!Array.isArray(a)||(!a.length&&!isDevGroup(id))||a.length>1500||!a.every(e=>e&&Number.isInteger(e.day)&&e.day>=0&&e.day<6&&typeof e.start==='string'&&typeof e.end==='string'&&typeof e.subject==='string'&&Array.isArray(e.weeks)&&e.weeks.every(w=>Number.isInteger(w)&&w>=1&&w<=SEM.weeks)))throw Error('Ошибка группы '+id);}
-  ALL_SCHEDULES=payload.groups;if(selectedStudyGroup){EVENT_DATA=ALL_SCHEDULES[selectedStudyGroup];render();}
- }catch(err){console.info('Оставлено встроенное расписание:',err.message);}
-}
-loadPublishedSchedule();
+/* С 9.8 расписание приходит по группам (data/g/<группа>.js, версия в KGMU_GROUP_V) — полный schedule.json (8 МБ)
+   сайт больше не скачивает; его читают бот и экспорт. */
 
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -2276,7 +2279,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=103"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=89"></script>
-<script src="./kg-app.js?v=123"></script>
+<script src="./kg-app.js?v=125"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>

@@ -59,7 +59,7 @@ jobs:
         run: |
           git config user.name "schedule-bot"
           git config user.email "schedule-bot@users.noreply.github.com"
-          git add schedule.json schedule-data.js scraper/semester.json
+          git add schedule.json schedule-data.js data/g scraper/semester.json
           git diff --cached --quiet || git commit -m "Автообновление расписания $(date -u +'%F %H:%M')"
           git pull --rebase -X theirs origin main && git push || echo "::warning::Не удалось сохранить расписание"
       - name: Собрать сайт
