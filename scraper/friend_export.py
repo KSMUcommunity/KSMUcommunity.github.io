@@ -23,6 +23,14 @@ from parse import HOLIDAYS, clean, fmt_time, parse_file, to_date  # noqa: E402
 SEMESTER = json.loads((Path(__file__).resolve().parent / "semester.json").read_text("utf-8"))
 WEEK1 = dt.date.fromisoformat(SEMESTER["week1"])
 MAX_WEEK = int(SEMESTER["weeks"])
+
+
+def use_semester(sem):
+    """Собрать расписание под другой семестр (автоопределение в update_friend.py)."""
+    global SEMESTER, WEEK1, MAX_WEEK
+    SEMESTER, WEEK1, MAX_WEEK = dict(sem), dt.date.fromisoformat(sem["week1"]), int(sem["weeks"])
+    HOLIDAYS.clear()
+    HOLIDAYS.update(sem.get("holidays", []))
 PROGRAM_BY_PROG = {"Лечебное дело": "lechebnoe", "Педиатрия": "pediatriya", "Стоматология": "stomatologiya",
                    "Медико-профилактическое дело": "medprof", "Фармация": "farmaciya",
                    "Медицинская биофизика": "biofizika", "Медицинская биохимия": "biohimiya",
