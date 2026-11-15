@@ -216,7 +216,7 @@
 
   /* ---------- нижнее меню: Объявления · Неделя · [Главная] · Модули · Профиль ---------- */
   function curTab() { if (state.page === 'news') return 'news'; if (state.page === 'modules') return 'modules'; if (state.page === 'settings') return 'profile'; if (state.page) return ''; return state.tab === 'day' ? 'week' : 'home'; }
-  var SIDE_PAGES = { calendar: 1, search: 1, useful: 1, contacts: 1, roles: 1, tools: 1, about: 1, privacy: 1, group: 1 };
+  var SIDE_PAGES = { calendar: 1, search: 1, useful: 1, contacts: 1, roles: 1, stats: 1, tools: 1, about: 1, privacy: 1, group: 1 };
   function curNav() { return state.page && SIDE_PAGES[state.page] ? state.page : curTab(); }
   function renderSide() {
     var sd = $('cxSide'); if (!sd) return;
@@ -227,7 +227,7 @@
       (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
-      (canRoles() ? it('roles', 'users', 'Роли') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
+      (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
       '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти через Telegram') + '</small></span>' + ic('gear') + '</button></div>';
   }
   /* только непрочитанные: всё, что новее последнего просмотренного объявления */
@@ -265,7 +265,7 @@
     closeSide();
     if (id === 'home' || id === 'week') {
       state.tab = id === 'week' ? 'day' : 'home'; state.open = null; state.dayFrom = null;
-      if (id === 'week') state.board = true;
+      if (id === 'week') { state.board = true; stat('view', 'week'); }
       if (id === 'home' || !state.date) state.date = today();
       if (state.page) goHome(); else render();
       window.scrollTo({ top: 0 });
@@ -554,6 +554,7 @@
       case 'contacts': return showContacts();
       case 'wizard': return openWizard();
       case 'roles': return showRoles();
+      case 'stats': return showStats();
       case 'privacy': return showPrivacy();
       case 'consent': return showConsent();
       case 'week': state.tab = 'day'; state.date = state.date || today(); return state.page ? goHome() : render();
@@ -574,6 +575,7 @@
     about: function () { showAbout(); },
     contacts: function () { showContacts(); },
     roles: function () { showRoles(); },
+    stats: function () { showStats(); },
     privacy: function () { showPrivacy(); },
     consent: function () { showConsent(); }
   };
@@ -581,6 +583,7 @@
     if (!state.page) { state.stack = []; state.rootMenu = !!state.viaMenu; try { history.pushState({ kg: name }, ''); } catch (e) {} }
     else if (state.page !== name && !state.noPush && REOPEN[state.page]) { state.stack.push(state.page); if (state.stack.length > 8) state.stack.shift(); }
     state.page = name;
+    stat('view', name);
     /* на компьютере раздел из бокового меню открыт «сверху» — кнопка «Назад» не нужна */
     /* «верхний» раздел — открыт из меню; со второго экрана (с главной или из раздела) нужен «Назад» */
     document.body.classList.toggle('kg-toppage', !state.stack.length && !!state.rootMenu);
@@ -1042,9 +1045,9 @@
       '<div class="kg-lt">Аккаунт</div><div class="kg-lbox" id="kgAccBox">' +
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
-      (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
+      (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.9' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.10' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
@@ -1168,7 +1171,7 @@
     bindExt();
   }
   /* политика и согласие по 152-ФЗ «О персональных данных»; при изменении текста — обновить DOC_DATE */
-  var DOC_DATE = '15 ноября 2026 г.';
+  var DOC_DATE = '16 ноября 2026 г.';
   function docHtml(P, tail) {
     return '<div class="cx-doc gl"><p class="cx-doc-d">Редакция от ' + DOC_DATE + '</p>' + P.map(function (x) {
       return '<h2>' + esc(x[0]) + '</h2>' + [].concat(x[1]).map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('');
@@ -1183,6 +1186,7 @@
         'Записи ДЗ, модулей, заявки на правку и объявления. Данные: текст записи, группа, дата, автор, статус проверки. Цель: обмен домашними заданиями и сведениями о модулях внутри группы.',
         'Telegram-бот. Данные: идентификатор чата, имя пользователя, группа, подгруппа, время напоминания, заявки на роль старосты. Цель: присылать расписание и напоминания, рассматривать заявки старост.',
         'Технические данные. Хостинг сайта и база данных автоматически получают IP-адрес и сведения о браузере, как любой сервер в интернете. Мы не используем их для отслеживания и не составляем по ним профили.',
+        'Анонимная статистика использования. Данные: случайный номер устройства, который создаёт сам сайт (он не связан с аккаунтом, именем и Telegram), выбранная группа, открытые разделы, площадка (сайт, мини-приложение или установленное приложение) и дата. Цель: понимать, сколько людей и какими разделами пользуются, чтобы улучшать сервис. Сводку видят только администраторы. Если в браузере включено «Не отслеживать» (Do Not Track), статистика не собирается.',
         'Мы не получаем номер телефона, пароль Telegram, переписку и список контактов.']],
       ['3. Основание обработки', 'Обработка ведётся на основании вашего согласия (п. 1 ч. 1 ст. 6 152-ФЗ). Согласие даётся отметкой перед входом через Telegram и запуском бота; его текст приведён на отдельной странице «Согласие на обработку персональных данных».'],
       ['4. Что мы делаем с данными', 'Обработка автоматизированная: сбор, запись, систематизация, хранение, уточнение, использование, передача обработчикам (раздел 5), блокирование, удаление и уничтожение. Мы не принимаем на основе этих данных решений, которые влекут для вас юридические последствия, не продаём их и не используем для рекламы.'],
@@ -1191,8 +1195,9 @@
         'GitHub Inc. — хостинг сайта; серверы в США. Получает только технические данные при открытии сайта.',
         'Telegram — вход через Telegram и работа бота; данные передаёт сам Telegram по своим правилам.',
         'Это трансграничная передача данных: в Германию — страну, обеспечивающую адекватную защиту прав субъектов персональных данных, и в США. Другим лицам данные передаются только по требованию закона.']],
-      ['6. Что хранится на вашем устройстве', 'Выбранная группа и подгруппа, тема оформления, вид сайта, отметка о прочитанных объявлениях, отметка о согласии и ключ входа хранятся в памяти браузера (localStorage). Сайт не использует cookie, рекламу, счётчики посещаемости и сторонние трекеры. Шрифты загружаются с самого сайта.'],
+      ['6. Что хранится на вашем устройстве', 'Выбранная группа и подгруппа, тема оформления, вид сайта, отметка о прочитанных объявлениях, отметка о согласии, ключ входа и случайный номер устройства для анонимной статистики хранятся в памяти браузера (localStorage). Сайт не использует cookie, рекламу, сторонние счётчики посещаемости и трекеры — собственная анонимная статистика описана в разделе 2. Шрифты загружаются с самого сайта.'],
       ['7. Сроки хранения', ['Данные хранятся, пока вы пользуетесь сервисом и не отозвали согласие.',
+        'Анонимная статистика хранится не дольше 12 месяцев.',
         'После отзыва согласия или запроса на удаление мы удаляем аккаунт, роли и данные бота в течение 30 дней. Записи ДЗ и модулей удаляем или обезличиваем, убирая имя автора. При закрытии сервиса все данные уничтожаются.']],
       ['8. Ваши права', ['Вы можете узнать, какие ваши данные обрабатываются; потребовать уточнить, заблокировать или удалить их; отозвать согласие; обжаловать наши действия в Роскомнадзоре или в суде.',
         'Чтобы воспользоваться правами, напишите команде в Telegram. Мы ответим в течение 10 рабочих дней. Выйти из аккаунта можно в профиле, остановить рассылку бота — командой /stop.']],
@@ -1223,6 +1228,72 @@
     if (!f) return;
     try { var url = new URL(location.href); url.searchParams.delete('page'); history.replaceState(history.state, '', url); } catch (e) {}
     setTimeout(f, 0);
+  }
+
+  /* ---------- анонимная статистика (таблица kgmu_stats; см. политику, раздел 2) ----------
+     Случайный номер устройства (не связан с аккаунтом), группа, раздел, площадка. Не собираем при «Не отслеживать». */
+  var STAT_ON = (function () {
+    try {
+      if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return false;
+      if (/^(localhost|127\.)/.test(location.hostname) && localStorage.getItem('kg-stats-dev') !== '1') return false;
+      return typeof KGMU_CLOUD !== 'undefined' && !!KGMU_CLOUD.url;
+    } catch (e) { return false; }
+  })();
+  function statDev() {
+    try {
+      var d = localStorage.getItem('kg-dev');
+      if (!d) { d = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 24); localStorage.setItem('kg-dev', d); }
+      return d;
+    } catch (e) { return ''; }
+  }
+  /* одно событие каждого вида за сеанс — без лишних запросов */
+  function stat(event, section) {
+    if (!STAT_ON) return;
+    try {
+      var key = 'kg-st-' + event + '-' + (section || '');
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+      var dev = statDev(); if (!dev) return;
+      var plat = inTG ? 'tg' : (window.matchMedia && matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'web');
+      fetch(KGMU_CLOUD.url + '/rest/v1/kgmu_stats', { method: 'POST', keepalive: true,
+        headers: { apikey: KGMU_CLOUD.key, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ device: dev, grp: curGroup() || null, event: event, section: section || null, platform: plat }) }).catch(function () {});
+    } catch (e) {}
+  }
+
+  /* ---------- страница «Статистика» (только администратор) ---------- */
+  var SEC_RU = { calendar: 'Календарь', week: 'Неделя', modules: 'Модули', search: 'Поиск', news: 'Объявления', useful: 'Полезное', contacts: 'Контакты',
+    about: 'О проекте', privacy: 'Политика', consent: 'Согласие', settings: 'Профиль', group: 'Выбор группы', roles: 'Роли', tools: 'Инструменты', stats: 'Статистика' };
+  function showStats(days) {
+    state.statDays = days || state.statDays || 30;
+    if (!isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
+    var h = '<div class="cx-sg cx-mseg" role="group" aria-label="Период">' + [[7, '7 дней'], [30, '30 дней'], [90, '90 дней']].map(function (o) {
+      return '<button type="button" data-st="d" data-v="' + o[0] + '" aria-pressed="' + (state.statDays === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSt"><div class="cx-empty gl">Загрузка…</div></div>' +
+      '<p class="cx-note">Считаются устройства, а не люди: телефон и компьютер одного студента — два устройства. Статистика анонимная, без имён и Telegram-аккаунтов; при включённом в браузере «Не отслеживать» не собирается.</p>';
+    showPage('stats', 'Статистика', h);
+    var tok = ''; try { tok = cloudSession && cloudSession.access_token; } catch (e) {}
+    fetch(KGMU_CLOUD.url + '/rest/v1/rpc/kgmu_stats_summary', { method: 'POST', headers: { apikey: KGMU_CLOUD.key, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify({ days: state.statDays }) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || ('Ошибка ' + r.status)); return j; }); })
+      .then(renderStats)
+      .catch(function (e) { var b = $('cxSt'); if (b) b.innerHTML = '<div class="cx-empty gl"><b>Не удалось загрузить</b>' + esc(e.message) + '</div>'; });
+  }
+  function renderStats(j) {
+    var box = $('cxSt'); if (!box) return;
+    var daily = j.daily || [], max = Math.max.apply(null, daily.map(function (d) { return d.users; }).concat([1]));
+    var tile = function (v, l) { return '<div class="cx-stt gl"><b>' + v + '</b><span>' + l + '</span></div>'; };
+    var h = '<div class="cx-sts">' + tile(j.today || 0, 'сегодня') + tile(j.week || 0, 'за 7 дней') + tile(j.month || 0, 'за 30 дней') + '</div>';
+    h += '<div class="cx-lab">Устройств в день</div><section class="cx-stc gl"><div class="cx-bars2" role="img" aria-label="' + esc(daily.map(function (d) { return ddmm(d.day) + ': ' + d.users; }).join(', ')) + '">' +
+      daily.map(function (d) { var pct = Math.round(d.users / max * 100); return '<span class="cx-bar2" title="' + ddmm(d.day) + ' — ' + plural(d.users, 'устройство', 'устройства', 'устройств') + ', открытий: ' + d.opens + '"><i style="height:' + Math.max(pct, d.users ? 4 : 0) + '%"></i></span>'; }).join('') +
+      '</div><div class="cx-bax"><span>' + (daily[0] ? ddmm(daily[0].day) : '') + '</span><span>макс. ' + max + '</span><span>' + (daily.length ? ddmm(daily[daily.length - 1].day) : '') + '</span></div></section>';
+    var pl = j.platform || {}, pt = (pl.tg || 0) + (pl.web || 0) + (pl.pwa || 0);
+    var row = function (label, n, tot, extra) { var pc = tot ? Math.round(n / tot * 100) : 0; return '<div class="cx-str"><span>' + label + '</span><b>' + n + (extra || '') + '</b><i style="--w:' + pc + '%"></i></div>'; };
+    h += '<div class="cx-lab">Где открывают</div><section class="cx-stl gl">' + (pt ? row('Мини-приложение Telegram', pl.tg || 0, pt) + row('Сайт в браузере', pl.web || 0, pt) + row('Установленное приложение', pl.pwa || 0, pt) : '<span class="cx-stn">Пока нет данных</span>') + '</section>';
+    var gs = j.groups || [], gmax = gs.length ? gs[0].users : 0;
+    h += '<div class="cx-lab">Группы</div><section class="cx-stl gl">' + (gs.length ? gs.map(function (g) { return row('Группа ' + esc(g.grp), g.users, gmax); }).join('') : '<span class="cx-stn">Пока нет данных</span>') + '</section>';
+    var ss = j.sections || [], smax = ss.length ? ss[0].views : 0;
+    h += '<div class="cx-lab">Разделы</div><section class="cx-stl gl">' + (ss.length ? ss.map(function (x) { return row(esc(SEC_RU[x.section] || x.section), x.views, smax); }).join('') : '<span class="cx-stn">Пока нет данных</span>') + '</section>';
+    h += '<div class="cx-lab">Аккаунты</div><section class="cx-stl gl"><div class="cx-str"><span>Вошли через Telegram</span><b>' + (j.tg_accounts || 0) + '</b></div></section>';
+    box.innerHTML = h;
   }
 
   /* ---------- модули и зачёты (новый экран вместо старого V8.8) ---------- */
@@ -1470,6 +1541,8 @@
   function onCxPage(ev) {
     var r = ev.target.closest('#cxCalDay [data-cx="day"]');
     if (r) { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
+    var st = ev.target.closest('[data-st]');
+    if (st) { state.noPush = true; try { showStats(+st.dataset.v); } finally { state.noPush = false; } return; }
     var m = ev.target.closest('[data-mod],[data-sr]');
     if (m) {
       var mv = m.dataset.mod || m.dataset.sr;
@@ -1516,6 +1589,7 @@
     });
     $('kgPage').addEventListener('click', onCxPage);
     if (!curGroup()) showGroupPage(true);
+    stat('open');
   }
 
   /* ---------- связка со старым приложением ---------- */
