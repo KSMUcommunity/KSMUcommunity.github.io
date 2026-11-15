@@ -264,16 +264,16 @@
     var id = b.dataset.tab;
     closeSide();
     if (id === 'home' || id === 'week') {
-      state.tab = id === 'week' ? 'day' : 'home'; state.open = null;
+      state.tab = id === 'week' ? 'day' : 'home'; state.open = null; state.dayFrom = null;
       if (id === 'week') state.board = true;
       if (id === 'home' || !state.date) state.date = today();
       if (state.page) goHome(); else render();
       window.scrollTo({ top: 0 });
     } else {
       /* вкладка нижнего меню — раздел верхнего уровня: «Назад» из него ведёт на главную */
-      state.stack = []; state.noPush = true;
+      state.stack = []; state.noPush = true; state.rootMenu = true; state.viaMenu = true;
       if (state.page === 'calendar' && id === 'calendar') { state.noPush = false; return; }
-      try { navigate(id === 'profile' ? 'settings' : id); } finally { state.noPush = false; }
+      try { navigate(id === 'profile' ? 'settings' : id); } finally { state.noPush = false; state.viaMenu = false; }
     }
     renderTabs();
   }
@@ -578,11 +578,12 @@
     consent: function () { showConsent(); }
   };
   function enterPage(name, title) {
-    if (!state.page) { state.stack = []; try { history.pushState({ kg: name }, ''); } catch (e) {} }
+    if (!state.page) { state.stack = []; state.rootMenu = !!state.viaMenu; try { history.pushState({ kg: name }, ''); } catch (e) {} }
     else if (state.page !== name && !state.noPush && REOPEN[state.page]) { state.stack.push(state.page); if (state.stack.length > 8) state.stack.shift(); }
     state.page = name;
     /* на компьютере раздел из бокового меню открыт «сверху» — кнопка «Назад» не нужна */
-    document.body.classList.toggle('kg-toppage', !state.stack.length);
+    /* «верхний» раздел — открыт из меню; со второго экрана (с главной или из раздела) нужен «Назад» */
+    document.body.classList.toggle('kg-toppage', !state.stack.length && !!state.rootMenu);
     $('kgSubTitle').textContent = title;
     window.scrollTo(0, 0);
     tgPost('web_app_setup_back_button', { is_visible: true });
@@ -886,8 +887,10 @@
   }
   /* телефон: у экрана недели/дня — меню и возврат на главную (на компьютере есть боковое меню) */
   function cxTopBar() {
-    return '<div class="cx-tbar"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button>' +
-      '<button type="button" class="cx-hb" data-cx="home">' + ic('left') + 'Главная</button><b>Неделя</b></div>';
+    /* открыто из меню — только ☰; со второго экрана (главная, календарь) — «Назад» туда */
+    return '<div class="cx-tbar">' + (state.dayFrom
+      ? '<button type="button" class="cx-hb" data-cx="dback">' + ic('left') + 'Назад</button>'
+      : '<button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню" aria-controls="cxSide">' + ic('menu') + '</button>') + '<b>Неделя</b></div>';
   }
   function cxDay() {
     var key = state.date, t = today(), now = kazanClockMinutes(), isT = key === t, slots = lessonsFor(key), w = dateWeek(key);
@@ -958,6 +961,8 @@
     var a = ev.target.closest('[data-cx]'); if (!a) return;
     var k = a.dataset.cx;
     if (k === 'menu') openSide();
+    else if (k === 'dback') { var from = state.dayFrom; state.dayFrom = null; state.open = null;
+      if (from === 'calendar') { state.tab = 'home'; state.viaMenu = true; try { showCal(state.date); } finally { state.viaMenu = false; } } else { state.tab = 'home'; state.date = today(); render(); window.scrollTo({ top: 0 }); } }
     else if (k === 'home') { state.tab = 'home'; state.open = null; state.date = today(); render(); window.scrollTo({ top: 0 }); }
     else if (k === 'group') navigate('group');
     else if (k === 'profile') navigate('settings');
@@ -967,11 +972,11 @@
     else if (k === 'calendar') navigate('calendar');
     else if (k === 'useful') navigate('useful');
     else if (k === 'wizard') openWizard();
-    else if (k === 'week') { state.tab = 'day'; state.board = true; state.date = a.dataset.d || today(); state.open = null; render(); window.scrollTo({ top: 0 }); }
+    else if (k === 'week') { if (state.tab !== 'day') state.dayFrom = 'home'; state.tab = 'day'; state.board = true; state.date = a.dataset.d || today(); state.open = null; render(); window.scrollTo({ top: 0 }); }
     else if (k === 'board') { state.board = a.dataset.v === '1'; state.open = null; render(); }
     else if (k === 'bday') { state.board = false; state.date = a.dataset.d; state.open = null; render(); window.scrollTo({ top: 0 }); }
     else if (k === 'bopen') { state.board = false; state.date = a.dataset.d; state.open = a.dataset.d + ':' + a.dataset.i; render(); window.scrollTo({ top: 0 }); }
-    else if (k === 'day') { state.tab = 'day'; state.date = a.dataset.d || today(); state.open = null; render(); window.scrollTo({ top: 0 }); }
+    else if (k === 'day') { if (state.tab !== 'day') state.dayFrom = 'home'; state.tab = 'day'; state.date = a.dataset.d || today(); state.open = null; render(); window.scrollTo({ top: 0 }); }
     else if (k === 'date') { var n = a.dataset.d > state.date ? 1 : -1; state.date = a.dataset.d; state.open = null; render(n); }
     else if (k === 'wk') { state.date = addDays(state.date, +a.dataset.n); state.open = null; render(+a.dataset.n); }
     else if (k === 'sg') { try { setGroup(a.dataset.v); } catch (e) {} render(); }
@@ -1024,7 +1029,7 @@
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.6.1' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.6.2' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
@@ -1356,7 +1361,7 @@
   }
   function onCxPage(ev) {
     var r = ev.target.closest('#cxCalDay [data-cx="day"]');
-    if (r) { state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
+    if (r) { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
     var a = ev.target.closest('[data-gp],[data-cal]'); if (!a) return;
     if (a.dataset.gp) {
       if (!gp) return;
@@ -1369,7 +1374,7 @@
       return;
     }
     var c = a.dataset.cal;
-    if (c === 'open') { state.tab = 'day'; state.board = false; state.date = a.dataset.d; state.open = null; goHome(); return; }
+    if (c === 'open') { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = a.dataset.d; state.open = null; goHome(); return; }
     if (c === 'd') calSelect(a.dataset.d);
     else if (c === 'today') calSelect(today());
     else if (c === 'm') { var d = parseISO(state.calMonth); state.calMonth = dateISO(new Date(d.getFullYear(), d.getMonth() + (+a.dataset.n), 1, 12)); renderCal(); }

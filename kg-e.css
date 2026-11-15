@@ -598,8 +598,9 @@ html.kg-desk #kgApp .cx-mb,html.kg-desk #kgApp .kg-mb{display:none}
 html:not(.kg-desk) #kgCx .cx-search{display:none}
 .kg-sl{justify-self:start;display:flex;align-items:center;gap:2px}
 #kgApp .kg-mb{display:none;width:40px;height:40px;border:0;border-radius:12px;background:none;color:var(--a-text);place-items:center;padding:0}
-html:not(.kg-desk) #kgApp .kg-mb{display:grid}
-/* 9.6.1: «Назад» на телефоне виден всегда, рядом с ☰ */
+/* 9.6.2: верхний раздел (из меню) — только ☰; второй экран — только «Назад» */
+html:not(.kg-desk) body.kg-toppage #kgApp .kg-mb{display:grid}
+html:not(.kg-desk) body.kg-toppage #kgApp .kg-back{display:none}
 html.kg-e:not(.kg-desk) .cx-side{display:flex;flex-direction:column;gap:14px;position:fixed;z-index:130;left:0;top:0;bottom:0;width:min(300px,84vw);box-sizing:border-box;
   padding:calc(16px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;background:var(--e-bg);
   border-right:1px solid var(--a-line);box-shadow:0 24px 70px rgba(10,12,20,.28);transform:translateX(-105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s}
@@ -619,7 +620,7 @@ html.kg-e.kg-notab .kg-home,html.kg-e.kg-notab .kg-page,html.kg-e.kg-notab .cx-h
 html.kg-e.kg-notab body.kg-mode-old main.wrap{padding-bottom:calc(32px + env(safe-area-inset-bottom))!important}
 #kgApp .cx-mb{position:relative}
 .cx-dot{position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#F0437A);box-shadow:0 0 0 2px var(--e-bg)}
-.cx-tbar{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:8px;margin:0 0 12px}
+.cx-tbar{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;margin:0 0 12px}
 .cx-tbar b{justify-self:end;font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--a-text);padding-right:4px}
 #kgApp .cx-hb{display:flex;align-items:center;gap:2px;border:0;background:none;color:var(--a-acc);font-weight:600;font-size:16px;padding:6px 4px;min-height:40px}
 #kgApp .cx-hb .kg-ic{width:20px;height:20px}
