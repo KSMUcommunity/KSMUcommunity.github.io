@@ -225,8 +225,6 @@
     function it(id, icon, label, ex) { return '<button type="button" class="cx-nav' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
     sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
       (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
-      (desk() ? '' : '<div class="cx-squick" aria-label="Быстрый доступ">' + [['calendar', 'cal', 'Календарь'], ['week', 'week', 'Неделя'], ['wizard', 'tool', 'Мастер'], ['useful', 'link', 'Полезное']].map(function (q) {
-        return '<button type="button" class="cx-sq" data-tab="' + q[0] + '">' + ic(q[1]) + '<span>' + q[2] + '</span></button>'; }).join('') + '</div>') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
       (canRoles() ? it('roles', 'users', 'Роли') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
