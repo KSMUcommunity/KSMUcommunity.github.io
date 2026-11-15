@@ -76,6 +76,9 @@ if __name__ == "__main__":
     print(f"Изменилось расписание групп: {', '.join(changed)}")
     for name in ("schedule.json", "schedule-data.js"):
         (ROOT / name).write_text((tmp / name).read_text("utf-8"), "utf-8")
+    import shutil
+    shutil.rmtree(ROOT / "data" / "g", ignore_errors=True)
+    shutil.copytree(tmp / "data" / "g", ROOT / "data" / "g")
     if sem:
         SA.save(sem)  # настройку семестра сохраняем только вместе с успешно собранным расписанием
-    print("✓ schedule.json и schedule-data.js обновлены")
+    print("✓ schedule.json, schedule-data.js и data/g/ обновлены")
