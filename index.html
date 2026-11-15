@@ -1005,7 +1005,7 @@ button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.sh
 <script src="./schedule-data.js"></script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
-<link rel="stylesheet" href="./kg-e.css?v=19">
+<link rel="stylesheet" href="./kg-e.css?v=21">
 <link rel="stylesheet" href="./kg-apple.css?v=1" id="kgAppleCss">
 <script>/* основной дизайн — E; ?design=apple (вариант 2) действует только до закрытия вкладки/мини-приложения, ?design=e возвращает E.
    Раньше выбор хранился в localStorage навсегда — из-за этого в Telegram «застревал» вариант 2; старую запись стираем. */
@@ -1187,8 +1187,8 @@ window.KG_DESIGN=d==='apple'?'apple':'e';if(window.KG_DESIGN==='e')document.getE
 <div class="panel-section-title">Модули и домашние задания</div>
 <div class="entries" id="detailEntries"></div>
 <div class="panel-tools">
-<button class="action-red" id="addModule" type="button">🚩 Добавить модуль</button>
-<button id="addHomework" type="button">＋ Добавить ДЗ</button>
+<button class="action-red" id="addModule" type="button">＋ Модуль</button>
+<button id="addHomework" type="button">＋ ДЗ</button>
 </div><div class="panel-section-title">Отмены, переносы и замены</div><div class="entries" id="detailOverrides"></div><div class="panel-tools"><button class="change-action" id="addChange" type="button">＋ Добавить изменение занятия</button></div><form class="editor" hidden="" id="changeEditor">
 <h3>Отмена, перенос или изменение пары</h3>
 <p class="field-help">Изменение относится только к выбранной дате и не меняет расписание других недель.</p>
@@ -2256,7 +2256,7 @@ window.setInterval(()=>{
    Офлайн HTML без этого файла продолжает работать по встроенным данным. */
 async function loadPublishedSchedule(){
  if(!/^https?:$/.test(location.protocol))return;
- try{const res=await fetch('./schedule.json?refresh='+Date.now(),{cache:'no-store'});
+ try{const res=await fetch('./schedule.json',{cache:'no-cache'});
   if(!res.ok)throw Error('HTTP '+res.status);const payload=await res.json();
   if(payload?.format!=='kgmu-v8-multigroup'||typeof payload.groups!=='object')throw Error('Несовместимый формат');
   if(payload.semester&&/^\d{4}-\d{2}-\d{2}$/.test(payload.semester.week1||'')&&payload.semester.weeks>0){Object.assign(SEM,payload.semester);INITIAL=semDate();}
@@ -2276,7 +2276,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=103"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=89"></script>
-<script src="./kg-app.js?v=122"></script>
+<script src="./kg-app.js?v=123"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
