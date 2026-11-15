@@ -388,7 +388,7 @@ async function cloudInit(){
   kgTgMountUI();
   cloudUpdateUI();
   const tgNow=kgTgUser();
-  if(kgTgInit && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
+  if(kgTgInit && kgPdOk() && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
     try{await kgTgLogin({initData:kgTgInit},true);}catch(e){console.warn('TG auto-login:',e);}
   }
   if(cloudSession && !cloudSession.user?.is_anonymous)await cloudLoadPermissions();
@@ -432,7 +432,9 @@ cloudRefreshGroup=async function(quiet){
   return res;
 };
 
-/* KGMU: вход через Telegram — автоматически в мини-приложении, кнопкой Telegram Login на сайте. */
+/* KGMU: вход через Telegram — только после согласия на обработку ПД (152-ФЗ): в мини-приложении кнопкой «Войти», на сайте кнопкой Telegram Login. Согласие запоминается (kg-pd-consent). */
+function kgPdOk(){try{return Boolean(localStorage.getItem('kg-pd-consent'));}catch(_){return false;}}
+function kgPdSet(on){try{if(on)localStorage.setItem('kg-pd-consent',new Date().toISOString());else localStorage.removeItem('kg-pd-consent');}catch(_){}}
 function kgTgUserFromInit(){try{return JSON.parse(new URLSearchParams(kgTgInit).get('user')||'null');}catch(_){return null;}}
 async function kgTgLogin(payload,quiet=false,light=false){
   if(!quiet)cloudSetStatus('Входим через Telegram…');
@@ -462,20 +464,48 @@ function kgTgMountUI(){
   const panel=document.getElementById('cloudPanel'),form=document.getElementById('cloudLoginForm');
   if(!panel||!form||document.getElementById('kgTgLogin'))return;
   const box=document.createElement('div');box.id='kgTgLogin';box.className='kg-tg-login';
-  box.innerHTML='<p><b>Войдите через Telegram</b>, чтобы старосты и помощники могли подтверждать ДЗ и публиковать изменения пар. Роли выдаются в боте.</p><div id="kgTgWidget">'+(kgTgInit?'Входим автоматически…':'Загрузка кнопки…')+'</div>';
+  box.innerHTML='<p><b>Войдите через Telegram</b>, чтобы старосты и помощники могли подтверждать ДЗ и публиковать изменения пар. Роли выдаются в боте.</p>'+
+    '<label class="kg-pd"><input type="checkbox" id="kgPdChk"'+(kgPdOk()?' checked':'')+'> <span>Я даю <a href="#" data-pd="consent">согласие на обработку персональных данных</a> и ознакомлен с <a href="#" data-pd="privacy">политикой конфиденциальности</a></span></label>'+
+    '<div id="kgTgWidget"></div>';
   form.parentNode.insertBefore(box,form);
   const det=document.createElement('details');det.className='kg-mail-login';det.innerHTML='<summary>Вход по почте (старые аккаунты)</summary>';
   form.parentNode.insertBefore(det,form);det.appendChild(form);
-  const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}';
+  const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}'+
+    '.kg-pd{display:flex;gap:10px;align-items:flex-start;margin:4px 0 10px;font-size:13px;line-height:1.4;cursor:pointer}.kg-pd input{width:20px;height:20px;flex:none;margin:0;accent-color:#8C2B33}.kg-pd a{color:inherit;text-decoration:underline;text-underline-offset:2px}'+
+    '.kg-tg-go{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:0;border-radius:12px;background:#2AABEE;color:#fff;font:inherit;font-weight:700;cursor:pointer}.kg-tg-go:disabled{opacity:.45;cursor:default}';
   document.head.appendChild(st);
-  if(kgTgInit)return;
-  kgTgBotName().then(name=>{
+  box.addEventListener('click',e=>{
+    const l=e.target.closest('[data-pd]');if(!l)return;
+    e.preventDefault();
+    if(l.dataset.pd==='consent'&&window.kgShowConsent)window.kgShowConsent();
+    else if(l.dataset.pd==='privacy'&&window.kgShowPrivacy)window.kgShowPrivacy();
+  });
+  const chk=box.querySelector('#kgPdChk');
+  const draw=()=>{
     const w=document.getElementById('kgTgWidget');if(!w)return;
-    if(!name){w.textContent='Кнопка входа временно недоступна';return;}
-    w.textContent='';
-    const sc=document.createElement('script');sc.async=true;sc.src='https://telegram.org/js/telegram-widget.js?22';
-    sc.setAttribute('data-telegram-login',name);sc.setAttribute('data-size','large');sc.setAttribute('data-radius','12');
-    sc.setAttribute('data-onauth','kgTgOnAuth(user)');sc.setAttribute('data-request-access','write');
-    w.appendChild(sc);
-  }).catch(()=>{});
+    if(kgTgInit){
+      w.innerHTML='<button type="button" class="kg-tg-go"'+(chk.checked?'':' disabled')+'>Войти через Telegram</button>';
+      w.firstChild.onclick=async()=>{
+        if(!chk.checked)return;
+        w.firstChild.disabled=true;
+        try{await kgTgLogin({initData:kgTgInit});toast('✈️ Вы вошли через Telegram');}
+        catch(err){cloudSetStatus('Ошибка входа: '+err.message);w.firstChild.disabled=false;}
+        cloudUpdateUI();
+      };
+      return;
+    }
+    if(!chk.checked){w.innerHTML='<small style="opacity:.7">Отметьте согласие, чтобы появилась кнопка входа.</small>';return;}
+    w.textContent='Загрузка кнопки…';
+    kgTgBotName().then(name=>{
+      if(!chk.checked)return;
+      if(!name){w.textContent='Кнопка входа временно недоступна';return;}
+      w.textContent='';
+      const sc=document.createElement('script');sc.async=true;sc.src='https://telegram.org/js/telegram-widget.js?22';
+      sc.setAttribute('data-telegram-login',name);sc.setAttribute('data-size','large');sc.setAttribute('data-radius','12');
+      sc.setAttribute('data-onauth','kgTgOnAuth(user)');sc.setAttribute('data-request-access','write');
+      w.appendChild(sc);
+    }).catch(()=>{});
+  };
+  chk.addEventListener('change',()=>{kgPdSet(chk.checked);draw();});
+  draw();
 }
