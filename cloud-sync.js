@@ -455,12 +455,21 @@ window.kgTgOnAuth=async function(user){
   try{await kgTgLogin({widget:user});toast('✈️ Вы вошли через Telegram');}
   catch(e){cloudSetStatus('Ошибка входа: '+e.message);}
 };
+/* имя и id бота: из кэша сразу, но раз за загрузку страницы сверяем с tg-auth (бота могли сменить) */
+var kgTgCfgP=null;
+function kgTgConfig(){
+  if(kgTgCfgP)return kgTgCfgP;
+  kgTgCfgP=fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:'{"action":"config"}'})
+    .then(r=>r.json()).catch(()=>({})).then(j=>{
+      if(j&&j.bot_id){try{localStorage.setItem('kg-tg-botid',String(j.bot_id));if(j.bot_username)localStorage.setItem('kg-tg-bot',j.bot_username);}catch(_){}}
+      else kgTgCfgP=null;
+      return j||{};
+    });
+  return kgTgCfgP;
+}
 async function kgTgBotId(){
-  try{const c=localStorage.getItem('kg-tg-botid');if(c)return +c;}catch(_){}
-  const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:'{"action":"config"}'});
-  const j=await r.json().catch(()=>({}));
-  if(j.bot_id){try{localStorage.setItem('kg-tg-botid',String(j.bot_id));if(j.bot_username)localStorage.setItem('kg-tg-bot',j.bot_username);}catch(_){}}
-  return j.bot_id||0;
+  try{const c=localStorage.getItem('kg-tg-botid');if(c){kgTgConfig();return +c;}}catch(_){}
+  return (await kgTgConfig()).bot_id||0;
 }
 var kgTgWidgetJs=null; /* var: cloudInit() вызывается выше по файлу, let дал бы ошибку TDZ */
 function kgTgLoadWidgetJs(){
@@ -470,11 +479,8 @@ function kgTgLoadWidgetJs(){
   return kgTgWidgetJs;
 }
 async function kgTgBotName(){
-  try{const c=localStorage.getItem('kg-tg-bot');if(c)return c;}catch(_){}
-  const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:'{"action":"config"}'});
-  const j=await r.json().catch(()=>({}));
-  if(j.bot_username){try{localStorage.setItem('kg-tg-bot',j.bot_username);}catch(_){}}
-  return j.bot_username||'';
+  try{const c=localStorage.getItem('kg-tg-bot');if(c){kgTgConfig();return c;}}catch(_){}
+  return (await kgTgConfig()).bot_username||'';
 }
 
 /* ---------- вход по почте для всех (16.11.2026): код из письма или ссылка из письма ---------- */
