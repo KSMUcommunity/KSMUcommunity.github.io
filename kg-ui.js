@@ -49,7 +49,7 @@
     var ch = document.getElementById('addChange'); if (ch) ch.classList.add('kg-editor-only');
     var cp = document.querySelector('#cloudPanel > h3'); if (cp && !cp.dataset.kg) { cp.dataset.kg = '1'; cp.textContent = 'Аккаунт'; }
     var hint = document.querySelector('#kgTgLogin p');
-    if (hint && !hint.dataset.kg) { hint.dataset.kg = '1'; hint.innerHTML = 'Войдите через Telegram, чтобы ваши ДЗ сохранялись за вами. Старостам вход открывает подтверждение ДЗ и изменения пар.'; }
+    if (hint && !hint.dataset.kg) { hint.dataset.kg = '1'; hint.innerHTML = 'Войдите через Telegram или по почте, чтобы ваши ДЗ сохранялись за вами. Старостам вход открывает подтверждение ДЗ и изменения пар.'; }
   }
   function roles() {
     var b = document.body;

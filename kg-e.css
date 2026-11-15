@@ -719,3 +719,17 @@ html.kg-desk .cx-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax
 .cx-str i{grid-column:1/-1;height:6px;border-radius:3px;background:var(--e-sep);position:relative;overflow:hidden}
 .cx-str i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:3px;background:var(--a-acc)}
 .cx-stn{font-size:13px;color:var(--a-hint)}
+
+/* ===== 9.11: вход по почте (код из письма) ===== */
+.kg-mail-otp{margin-top:12px}
+.kg-or{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:12px;color:var(--a-hint)}
+.kg-or::before,.kg-or::after{content:"";flex:1;height:1px;background:var(--e-sep)}
+.kg-mrow{display:flex;gap:8px}
+.kg-mrow input{flex:1;min-width:0;min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--e-sep);background:var(--e-chip);color:var(--a-text);font:inherit;font-size:16px;box-sizing:border-box}
+.kg-mrow .kg-tg-go{flex:none;background:var(--e-hero)!important;padding:0 14px}
+.kg-mhint{margin:0 0 8px;font-size:13px;line-height:1.4;color:var(--a-hint)}
+#kgApp .kg-mlink,.kg-mlink{margin-top:8px;padding:6px 0;border:0;background:none;color:var(--a-acc);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.kg-mmsg{margin:8px 0 0;font-size:13px;color:var(--a-green);min-height:1em}
+.kg-mmsg.bad{color:var(--a-red)}
+.kg-mrow{flex-direction:column}
+.kg-mrow .kg-tg-go{width:100%}

@@ -104,7 +104,7 @@ function cloudSaveSession(session){
   cloudSession=session;
   try{
     if(session?.user?.is_anonymous) localStorage.setItem(CLOUD_VISITOR_KEY,JSON.stringify(session));
-    else if(session?.user?.user_metadata?.tg_id) localStorage.setItem(CLOUD_TG_KEY,JSON.stringify(session));
+    else if(session?.user?.user_metadata?.tg_id||session?.user?.user_metadata?.kg_mail) localStorage.setItem(CLOUD_TG_KEY,JSON.stringify(session));
     else if(session?.access_token) sessionStorage.setItem(CLOUD_SESSION_KEY,JSON.stringify(session));
     else sessionStorage.removeItem(CLOUD_SESSION_KEY);
   }catch(_){}
@@ -229,6 +229,7 @@ async function cloudLogout(){
   try{const s=JSON.parse(localStorage.getItem(CLOUD_VISITOR_KEY)||'null');if(s?.access_token&&s?.refresh_token)cloudSession=s;}catch(_){}
   cloudUpdateUI();
   cloudSetStatus('Вы вышли из редактора · ДЗ и модули доступны всем');
+  try{window.dispatchEvent(new Event('kg-auth'));}catch(_){}
   if(token){fetch(KGMU_CLOUD.url+'/auth/v1/logout',{method:'POST',headers:{'apikey':KGMU_CLOUD.key,'Authorization':'Bearer '+token}}).catch(()=>{});}
 }
 function cloudShouldSaveNote(prev){
@@ -386,6 +387,7 @@ async function cloudInit(){
   document.getElementById('cloudRefresh')?.addEventListener('click',()=>cloudRefreshGroup());
   document.getElementById('cloudPublishLocal')?.addEventListener('click',cloudPublishLocal);
   kgTgMountUI();
+  await kgMailFromHash();
   cloudUpdateUI();
   const tgNow=kgTgUser();
   if(kgTgInit && kgPdOk() && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
@@ -460,14 +462,86 @@ async function kgTgBotName(){
   if(j.bot_username){try{localStorage.setItem('kg-tg-bot',j.bot_username);}catch(_){}}
   return j.bot_username||'';
 }
+
+/* ---------- вход по почте для всех (16.11.2026): код из письма или ссылка из письма ---------- */
+function kgMailUser(){const u=cloudSession?.user;return u&&!u.is_anonymous&&u.email&&!u.user_metadata?.tg_id&&!/@tg\.kgmu\.local$/.test(u.email)?{email:u.email}:null;}
+window.kgMailUser=kgMailUser;
+function kgMailErr(j){const c=String(j?.error_code||''),m=String(j?.msg||j?.error_description||j?.message||j?.error||'');
+  if(/rate_limit|over_email_send/.test(c)||/rate|seconds|too many/i.test(m))return 'Слишком часто — подождите минуту и попробуйте снова';
+  if(c==='email_address_invalid')return 'Такой почты нет или она не принимает письма — проверьте адрес';
+  if(c==='email_address_not_authorized'||/not authorized/i.test(m))return 'Отправка писем ещё не настроена — пока войдите через Telegram';
+  if(c==='signup_disabled'||c==='email_provider_disabled')return 'Вход по почте сейчас отключён';
+  if(c==='otp_expired'||/expired|invalid.*(otp|token)|token.*invalid/i.test(m))return 'Код неверный или устарел — запросите новый';
+  return m||'Не получилось, попробуйте ещё раз';}
+async function kgMailSend(email){
+  const back=location.origin+location.pathname;
+  const r=await fetch(KGMU_CLOUD.url+'/auth/v1/otp?redirect_to='+encodeURIComponent(back),{method:'POST',headers:cloudApiHeaders(false,{'Content-Type':'application/json'}),
+    body:JSON.stringify({email,create_user:true,data:{kg_mail:true}})});
+  if(!r.ok)throw Error(kgMailErr(await r.json().catch(()=>({}))));
+}
+async function kgMailDone(session){
+  cloudSaveSession(session);
+  await cloudLoadPermissions();
+  if(selectedStudyGroup)await cloudRefreshGroup(true);
+  cloudUpdateUI();
+  try{window.dispatchEvent(new Event('kg-auth'));}catch(_){}
+}
+async function kgMailVerify(email,token){
+  const r=await fetch(KGMU_CLOUD.url+'/auth/v1/verify',{method:'POST',headers:cloudApiHeaders(false,{'Content-Type':'application/json'}),body:JSON.stringify({type:'email',email,token})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.access_token)throw Error(kgMailErr(j));
+  await kgMailDone(j);
+}
+/* ссылка из письма открывает сайт с #access_token=…&type=magiclink|signup */
+async function kgMailFromHash(){
+  if(!/access_token=|error_description=/.test(location.hash))return;
+  const h=new URLSearchParams(location.hash.slice(1));
+  try{history.replaceState(history.state,'',location.pathname+location.search);}catch(_){}
+  if(h.get('error_description')){setTimeout(()=>{try{toast('Ссылка из письма устарела — запросите новый код');}catch(_){}},800);return;}
+  const s={access_token:h.get('access_token'),refresh_token:h.get('refresh_token'),expires_in:+h.get('expires_in')||3600,token_type:'bearer'};
+  if(!s.access_token||!s.refresh_token)return;
+  try{const r=await fetch(KGMU_CLOUD.url+'/auth/v1/user',{headers:{apikey:KGMU_CLOUD.key,Authorization:'Bearer '+s.access_token}});
+    s.user=await r.json();if(!r.ok||!s.user?.id)throw Error('нет пользователя');
+    await kgMailDone(s);setTimeout(()=>{try{toast('Вход по почте выполнен');}catch(_){}},600);
+  }catch(e){console.warn('Вход по ссылке:',e);}
+}
+function kgMailMount(box){
+  const w=document.createElement('div');w.className='kg-mail-otp';
+  w.innerHTML='<p class="kg-or"><span>или по почте</span></p>'+
+    '<div id="kgMailS1" class="kg-mrow"><input id="kgMailEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="Почта, например ivan@mail.ru" aria-label="Почта"><button type="button" class="kg-tg-go" id="kgMailSend">Получить код</button></div>'+
+    '<div id="kgMailS2" hidden><p class="kg-mhint">Письмо отправлено на <b id="kgMailTo"></b>. Введите код из письма или нажмите ссылку в нём.</p>'+
+    '<div class="kg-mrow"><input id="kgMailCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Код из письма" aria-label="Код из письма"><button type="button" class="kg-tg-go" id="kgMailOk">Войти</button></div>'+
+    '<button type="button" class="kg-mlink" id="kgMailBack">Другая почта или новый код</button></div><p class="kg-mmsg" id="kgMailMsg" role="status"></p>';
+  box.appendChild(w);
+  const $m=id=>document.getElementById(id),msg=(t,bad)=>{const m=$m('kgMailMsg');m.textContent=t||'';m.classList.toggle('bad',!!bad);};
+  const sync=()=>{const ok=kgPdOk();['kgMailSend','kgMailOk'].forEach(id=>{const b=$m(id);if(b)b.disabled=!ok;});if(!ok)msg('Отметьте согласие выше, чтобы войти');else if(/согласие/.test($m('kgMailMsg').textContent))msg('');};
+  box.addEventListener('change',e=>{if(e.target.id==='kgPdChk')setTimeout(sync,0);});
+  sync();
+  let email='';
+  $m('kgMailSend').addEventListener('click',async()=>{
+    email=$m('kgMailEmail').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg('Проверьте адрес почты',true);return;}
+    const b=$m('kgMailSend');b.disabled=true;msg('Отправляем письмо…');
+    try{await kgMailSend(email);$m('kgMailTo').textContent=email;$m('kgMailS1').hidden=true;$m('kgMailS2').hidden=false;msg('');setTimeout(()=>$m('kgMailCode').focus(),50);}
+    catch(e){msg(e.message,true);}finally{b.disabled=!kgPdOk();}
+  });
+  const verify=async()=>{const code=$m('kgMailCode').value.replace(/\s+/g,'');if(!/^\d{6,10}$/.test(code)){msg('Введите код из письма — только цифры',true);return;}
+    const b=$m('kgMailOk');b.disabled=true;msg('Проверяем код…');
+    try{await kgMailVerify(email,code);msg('Готово — вы вошли как '+email);}catch(e){msg(e.message,true);}finally{b.disabled=!kgPdOk();}};
+  $m('kgMailOk').addEventListener('click',verify);
+  $m('kgMailCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verify();}});
+  $m('kgMailEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$m('kgMailSend').click();}});
+  $m('kgMailBack').addEventListener('click',()=>{$m('kgMailS2').hidden=true;$m('kgMailS1').hidden=false;$m('kgMailCode').value='';msg('');});
+}
 function kgTgMountUI(){
   const panel=document.getElementById('cloudPanel'),form=document.getElementById('cloudLoginForm');
   if(!panel||!form||document.getElementById('kgTgLogin'))return;
   const box=document.createElement('div');box.id='kgTgLogin';box.className='kg-tg-login';
-  box.innerHTML='<p><b>Войдите через Telegram</b>, чтобы старосты и помощники могли подтверждать ДЗ и публиковать изменения пар. Роли выдаются в боте.</p>'+
+  box.innerHTML='<p><b>Войдите через Telegram или по почте</b>, чтобы ваши ДЗ сохранялись за вами, а старосты и помощники могли подтверждать записи и публиковать изменения пар.</p>'+
     '<label class="kg-pd"><input type="checkbox" id="kgPdChk"'+(kgPdOk()?' checked':'')+'> <span>Я даю <a href="#" data-pd="consent">согласие на обработку персональных данных</a> и ознакомлен с <a href="#" data-pd="privacy">политикой конфиденциальности</a></span></label>'+
     '<div id="kgTgWidget"></div>';
   form.parentNode.insertBefore(box,form);
+  kgMailMount(box);
   const det=document.createElement('details');det.className='kg-mail-login';det.innerHTML='<summary>Вход по почте и паролю · режим редактора</summary>';
   form.parentNode.insertBefore(det,form);det.appendChild(form);
   const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}'+

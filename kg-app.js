@@ -211,6 +211,7 @@
       if (Math.abs(dx) > 70 && Math.abs(dy) < 45) shift(dx < 0 ? 1 : -1);
     }, { passive: true });
     window.addEventListener('popstate', onPop);
+    window.addEventListener('kg-auth', function () { renderSide(); if (state.page === 'settings') renderProfile(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (document.body.classList.contains('kg-drawer-open')) closeDrawer(); else if (state.page) back(); } });
   }
 
@@ -220,7 +221,8 @@
   function curNav() { return state.page && SIDE_PAGES[state.page] ? state.page : curTab(); }
   function renderSide() {
     var sd = $('cxSide'); if (!sd) return;
-    var c = curNav(), nn = unread(), u = tgUser(), r = role(), g = curGroup();
+    var c = curNav(), nn = unread(), u = tgUser(), r = role(), g = curGroup(), mu = !u && window.kgMailUser ? kgMailUser() : null;
+    if (mu) u = { name: mu.email };
     var nm = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : '';
     function it(id, icon, label, ex) { return '<button type="button" class="cx-nav' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
     sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
@@ -228,7 +230,7 @@
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
       (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
-      '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти через Telegram') + '</small></span>' + ic('gear') + '</button></div>';
+      '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти: Telegram или почта') + '</small></span>' + ic('gear') + '</button></div>';
   }
   /* только непрочитанные: всё, что новее последнего просмотренного объявления */
   function unread() { var nn = 0; try { var nw = newsList(), si = nw.map(function (x) { return String(x.id); }).indexOf(seenNews()); nn = si < 0 ? nw.length : si; } catch (e) {} return nn; }
@@ -1036,18 +1038,20 @@
   }
   function renderProfile() {
     var u = tgUser(), r = role(), g = selectedStudyGroup, theme = (typeof userPreferences !== 'undefined' && userPreferences.theme) || 'system';
-    var name = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : 'Гость';
+    var mu = !u && window.kgMailUser ? kgMailUser() : null;
+    var name = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : mu ? mu.email : 'Гость';
     var h = '<div class="cx-prof gl"><div class="kg-ava">' + esc((name.replace('@', '')[0] || '?').toUpperCase()) + '</div><div class="kg-prof-t"><small>' + esc(r ? ROLE[r] : 'Студент') + '</small><b>' + esc(name) + '</b><span>Группа ' + esc(g) + (groupCaption(g) ? ' · ' + esc(groupCaption(g)) : '') + '</span></div></div>' +
       '<div class="kg-lbox">' + row('Сменить группу', esc(g), 'group') + '</div>' +
       '<div class="kg-lt">Настройки</div><div class="kg-lbox kg-pad">' + (hasSubgroups() ? '<div class="cx-lab">Подгруппа</div>' + seg('sub', [['all', 'Обе'], ['1', '1-я'], ['2', '2-я']], typeof group !== 'undefined' ? group : 'all') : '') +
       '<div class="cx-lab">Тема</div>' + seg('theme', [['system', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], theme) + '</div>' +
       (botName() ? '<div class="kg-lbox">' + row('Напоминания о парах', 'в боте', 'bot') + '</div>' : '') +
       '<div class="kg-lt">Аккаунт</div><div class="kg-lbox" id="kgAccBox">' +
-      (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
+      (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>'
+        : mu ? row('Почта', esc(mu.email)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.10' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.11' : '9.2') + '</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
@@ -1103,8 +1107,8 @@
     var grp = adm ? '<input id="cxRlG" class="cx-in" inputmode="numeric" maxlength="12" placeholder="Группа, например 1307" value="' + esc(g) + '" aria-label="Группа">'
       : '<select id="cxRlG" class="cx-in" aria-label="Группа">' + my.map(function (x) { return '<option' + (x === g ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>';
     var roles = adm ? [['starosta', 'Староста'], ['editor', 'Помощник старосты'], ['admin', 'Администратор (все группы)']] : [['editor', 'Помощник старосты']];
-    var h = '<p class="cx-note" style="margin-top:0">Роли общие с Telegram-ботом: назначение здесь сразу видно в боте (/myrole, админ-панель) и наоборот. Человек должен хотя бы раз написать боту или войти на сайт через Telegram — иначе укажите его числовой ID.</p>' +
-      '<div class="kg-lt">Назначить</div><form class="kg-lbox kg-pad cx-rf" id="cxRlF"><input id="cxRlT" class="cx-in" autocomplete="off" maxlength="40" placeholder="@username или Telegram ID" aria-label="Кому" required>' + grp +
+    var h = '<p class="cx-note" style="margin-top:0">Роли общие с Telegram-ботом: назначение здесь сразу видно в боте (/myrole, админ-панель) и наоборот. Человек должен хотя бы раз написать боту или войти на сайт — через Telegram или по почте. Для Telegram можно указать числовой ID, для почты — адрес, с которым он входил.</p>' +
+      '<div class="kg-lt">Назначить</div><form class="kg-lbox kg-pad cx-rf" id="cxRlF"><input id="cxRlT" class="cx-in" autocomplete="off" maxlength="40" placeholder="@username, Telegram ID или почта" aria-label="Кому" required>' + grp +
       '<select id="cxRlR" class="cx-in" aria-label="Роль">' + roles.map(function (r) { return '<option value="' + r[0] + '">' + r[1] + '</option>'; }).join('') + '</select>' +
       '<button type="submit" class="kg-btn kg-wide">' + ic('plus') + 'Назначить</button><p class="cx-rmsg" id="cxRlM" role="status"></p></form>' +
       '<div class="kg-lt">' + (adm ? 'Все роли' : 'Роли группы ' + esc(my.join(', '))) + '</div><div id="cxRlL" class="cx-rows"><div class="cx-empty gl">Загрузка…</div></div>';
@@ -1131,9 +1135,9 @@
       var it = (j.items || []).slice().sort(function (a, b) { return String(a.study_group).localeCompare(String(b.study_group), 'ru', { numeric: true }); });
       var RU = { admin: 'Администратор', starosta: 'Староста', editor: 'Помощник' }, me = (tgUser() || {}).id;
       box.innerHTML = it.length ? it.map(function (r) {
-        var self = me && String(r.tg_id) === String(me);
+        var self = me && r.tg_id && String(r.tg_id) === String(me);
         return '<div class="cx-row gl">' + gIco(r.role === 'admin' ? 'gear' : r.role === 'starosta' ? 'flag' : 'user', '#D98A90', '#8C2B33') + '<div><b>' + esc(r.who) + (self ? ' · вы' : '') + '</b><span>' + esc(RU[r.role] || r.role) + (r.study_group !== '*' ? ' · группа ' + esc(r.study_group) : ' · все группы') + '</span></div>' +
-          (self && r.role === 'admin' ? '' : '<button type="button" class="cx-rx" data-rv="' + esc(r.tg_id) + '" data-g="' + esc(r.study_group) + '" data-rr="' + esc(RU[r.role] || r.role) + '" data-who="' + esc(r.who) + '" aria-label="Снять роль">' + ic('x') + '</button>') + '</div>';
+          (self && r.role === 'admin' ? '' : '<button type="button" class="cx-rx" data-rv="' + esc(r.tg_id || r.email) + '" data-g="' + esc(r.study_group) + '" data-rr="' + esc(RU[r.role] || r.role) + '" data-who="' + esc(r.who) + '" aria-label="Снять роль">' + ic('x') + '</button>') + '</div>';
       }).join('') : '<div class="cx-empty gl">Ролей пока нет</div>';
     }).catch(function (e) { box.innerHTML = '<div class="cx-empty gl"><b>Не удалось загрузить</b>' + esc(e.message) + '</div>'; });
   }
@@ -1183,6 +1187,7 @@
         'Оператор персональных данных — команда проекта «Расписание КГМУ». Связаться с командой можно в Telegram: контакты указаны на странице «Контакты». Сервис сделан студентами и не является официальным ресурсом КГМУ.',
         'Пользуясь расписанием без входа, вы не передаёте нам персональные данные. Вход через Telegram и Telegram-бот работают только с вашего согласия.']],
       ['2. Какие данные и зачем мы обрабатываем', ['Вход через Telegram, подпись записей и роли. Данные: идентификатор Telegram, имя и фамилия, имя пользователя (@username), ссылка на фото профиля, если Telegram её передаёт. Цель: подтвердить, что вы — это вы, показать автора записей ДЗ и модулей, назначить роли старост, помощников и администраторов.',
+        'Вход по почте. Данные: адрес электронной почты и одноразовый код входа, который приходит в письме. Цель: войти без Telegram, подписывать свои записи и получать роли в группе. Письма с кодом отправляет Supabase (раздел 5).',
         'Записи ДЗ, модулей, заявки на правку и объявления. Данные: текст записи, группа, дата, автор, статус проверки. Цель: обмен домашними заданиями и сведениями о модулях внутри группы.',
         'Telegram-бот. Данные: идентификатор чата, имя пользователя, группа, подгруппа, время напоминания, заявки на роль старосты. Цель: присылать расписание и напоминания, рассматривать заявки старост.',
         'Технические данные. Хостинг сайта и база данных автоматически получают IP-адрес и сведения о браузере, как любой сервер в интернете. Мы не используем их для отслеживания и не составляем по ним профили.',
@@ -1210,11 +1215,11 @@
   function showConsent() {
     var P = [
       ['Согласие на обработку персональных данных', ['Отмечая согласие на сайте или в мини-приложении «Расписание КГМУ» либо запуская Telegram-бот сервиса, я свободно, своей волей и в своём интересе даю согласие команде проекта «Расписание КГМУ» (далее — оператор) на обработку моих персональных данных на следующих условиях.',
-        'Данные: идентификатор Telegram, имя и фамилия, имя пользователя (@username), ссылка на фото профиля; идентификатор чата с ботом; учебная группа и подгруппа, время напоминания; созданные мной записи ДЗ и модулей, заявки и их статус.',
+        'Данные: идентификатор Telegram, имя и фамилия, имя пользователя (@username), ссылка на фото профиля; адрес электронной почты, если я вхожу по почте; идентификатор чата с ботом; учебная группа и подгруппа, время напоминания; созданные мной записи ДЗ и модулей, заявки и их статус.',
         'Цели: вход в сервис, подпись моих записей, назначение ролей в группе, отправка расписания и напоминаний в Telegram.',
         'Действия: сбор, запись, систематизация, хранение, уточнение, использование, передача обработчикам, блокирование, удаление, уничтожение; обработка автоматизированная.',
         'Я согласен на поручение обработки и трансграничную передачу данных Supabase Inc. (серверы в Германии) и GitHub Inc. (серверы в США) для хранения данных и работы сайта.',
-        'Согласие действует до его отзыва. Отозвать его можно, написав команде проекта в Telegram (контакты на странице «О проекте»); после отзыва данные удаляются в течение 30 дней.',
+        'Согласие действует до его отзыва. Отозвать его можно, написав команде проекта в Telegram (контакты на странице «Контакты»); после отзыва данные удаляются в течение 30 дней.',
         'Я ознакомлен с Политикой конфиденциальности сервиса.']]
     ];
     showPage('consent', 'Согласие на обработку данных', docHtml(P,
