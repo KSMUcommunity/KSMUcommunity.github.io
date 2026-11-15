@@ -390,8 +390,10 @@ async function cloudInit(){
   await kgMailFromHash();
   cloudUpdateUI();
   const tgNow=kgTgUser();
-  if(kgTgInit && kgPdOk() && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
-    try{await kgTgLogin({initData:kgTgInit},true);}catch(e){console.warn('TG auto-login:',e);}
+  if(kgTgInit && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
+    /* без галочки на этом устройстве — входим, только если согласие уже дано (в боте или раньше на сайте) */
+    try{const s=await kgTgLogin(kgPdOk()?{initData:kgTgInit}:{initData:kgTgInit,ifKnown:true},true);if(s){const c=document.getElementById('kgPdChk');if(c)c.checked=true;cloudUpdateUI();try{window.dispatchEvent(new Event('kg-auth'));}catch(_){}}}
+    catch(e){console.warn('TG auto-login:',e);}
   }
   if(cloudSession && !cloudSession.user?.is_anonymous)await cloudLoadPermissions();
   if(selectedStudyGroup)await cloudRefreshGroup();else cloudSetStatus('Выберите группу для загрузки общих записей');
@@ -442,7 +444,9 @@ async function kgTgLogin(payload,quiet=false,light=false){
   if(!quiet)cloudSetStatus('Входим через Telegram…');
   const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:JSON.stringify(payload)});
   const j=await r.json().catch(()=>({}));
+  if(r.ok&&j.known===false)return null; /* ifKnown: согласия в боте ещё не было */
   if(!r.ok||!j.session?.access_token)throw Error(j.error||'Не удалось войти через Telegram');
+  if(payload.ifKnown)kgPdSet(true); /* согласие уже дано в боте */
   cloudSaveSession(j.session);
   if(light)return j.session;
   await cloudLoadPermissions();
