@@ -1,4 +1,4 @@
-const CACHE='kgmu-v122-kgmu-20261115';
+const CACHE='kgmu-v123-kgmu-20261115';
 const ASSETS=['./','./index.html','./schedule.json','./schedule-data.js','./img/kgmu-logo.webp','./img/ksmu-mark.webp','./img/ksmu-logo.webp','./cloud-sync.js','./community-extras.js','./kg-theme.css','./kg-ui.js','./kg-app.css','./kg-e.css','./kg-apple.css','./fonts/inter-latin.woff2','./fonts/inter-cyrillic.woff2','./kg-app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kgmu-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
