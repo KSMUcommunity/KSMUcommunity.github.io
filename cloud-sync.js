@@ -455,6 +455,20 @@ window.kgTgOnAuth=async function(user){
   try{await kgTgLogin({widget:user});toast('✈️ Вы вошли через Telegram');}
   catch(e){cloudSetStatus('Ошибка входа: '+e.message);}
 };
+async function kgTgBotId(){
+  try{const c=localStorage.getItem('kg-tg-botid');if(c)return +c;}catch(_){}
+  const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:'{"action":"config"}'});
+  const j=await r.json().catch(()=>({}));
+  if(j.bot_id){try{localStorage.setItem('kg-tg-botid',String(j.bot_id));if(j.bot_username)localStorage.setItem('kg-tg-bot',j.bot_username);}catch(_){}}
+  return j.bot_id||0;
+}
+var kgTgWidgetJs=null; /* var: cloudInit() вызывается выше по файлу, let дал бы ошибку TDZ */
+function kgTgLoadWidgetJs(){
+  if(window.Telegram?.Login?.auth)return Promise.resolve();
+  if(kgTgWidgetJs)return kgTgWidgetJs;
+  kgTgWidgetJs=new Promise((ok,no)=>{const sc=document.createElement('script');sc.async=true;sc.src='https://telegram.org/js/telegram-widget.js?22';sc.onload=ok;sc.onerror=()=>{kgTgWidgetJs=null;no(Error('telegram.org недоступен'));};document.head.appendChild(sc);});
+  return kgTgWidgetJs;
+}
 async function kgTgBotName(){
   try{const c=localStorage.getItem('kg-tg-bot');if(c)return c;}catch(_){}
   const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:'{"action":"config"}'});
@@ -542,8 +556,7 @@ function kgTgMountUI(){
     '<div id="kgTgWidget"></div>';
   form.parentNode.insertBefore(box,form);
   kgMailMount(box);
-  const det=document.createElement('details');det.className='kg-mail-login';det.innerHTML='<summary>Вход по почте и паролю · режим редактора</summary>';
-  form.parentNode.insertBefore(det,form);det.appendChild(form);
+  form.hidden=true;form.classList.add('kg-gone'); /* вход по паролю для редакторов убран (16.11.2026): вход через Telegram или код из письма */
   const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}'+
     '.kg-pd{display:flex;gap:10px;align-items:flex-start;margin:4px 0 10px;font-size:13px;line-height:1.4;cursor:pointer}.kg-pd input{width:20px;height:20px;flex:none;margin:0;accent-color:#8C2B33}.kg-pd a{color:inherit;text-decoration:underline;text-underline-offset:2px}'+
     '.kg-tg-go{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:0;border-radius:12px;background:#2AABEE;color:#fff;font:inherit;font-weight:700;cursor:pointer}.kg-tg-go:disabled{opacity:.45;cursor:default}';
@@ -557,28 +570,33 @@ function kgTgMountUI(){
   const chk=box.querySelector('#kgPdChk');
   const draw=()=>{
     const w=document.getElementById('kgTgWidget');if(!w)return;
+    w.innerHTML='<button type="button" class="kg-tg-go kg-tg-main"'+(chk.checked?'':' disabled')+'><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.2-8.3c.4-.4-.1-.6-.6-.2L6.2 13.4l-4.9-1.5c-1.1-.3-1.1-1.1.2-1.6L20.6 3c.9-.3 1.6.2 1.3 1.3z"/></svg><span>Войти через Telegram</span></button><p class="kg-tg-msg" role="status"></p>';
+    const btn=w.firstChild,msg=t=>{w.querySelector('.kg-tg-msg').textContent=t||'';};
     if(kgTgInit){
-      w.innerHTML='<button type="button" class="kg-tg-go"'+(chk.checked?'':' disabled')+'>Войти через Telegram</button>';
-      w.firstChild.onclick=async()=>{
+      btn.onclick=async()=>{
         if(!chk.checked)return;
-        w.firstChild.disabled=true;
+        btn.disabled=true;
         try{await kgTgLogin({initData:kgTgInit});toast('✈️ Вы вошли через Telegram');}
-        catch(err){cloudSetStatus('Ошибка входа: '+err.message);w.firstChild.disabled=false;}
+        catch(err){msg('Ошибка входа: '+err.message);btn.disabled=false;}
         cloudUpdateUI();
       };
       return;
     }
-    if(!chk.checked){w.innerHTML='<small style="opacity:.7">Отметьте согласие, чтобы появилась кнопка входа.</small>';return;}
-    w.textContent='Загрузка кнопки…';
-    kgTgBotName().then(name=>{
+    /* сайт: своя кнопка открывает официальное окно входа Telegram (Telegram.Login.auth); данные проверяет tg-auth так же, как у виджета */
+    if(chk.checked){kgTgLoadWidgetJs().catch(()=>{});kgTgBotId().catch(()=>{});}
+    btn.onclick=async()=>{
       if(!chk.checked)return;
-      if(!name){w.textContent='Кнопка входа временно недоступна';return;}
-      w.textContent='';
-      const sc=document.createElement('script');sc.async=true;sc.src='https://telegram.org/js/telegram-widget.js?22';
-      sc.setAttribute('data-telegram-login',name);sc.setAttribute('data-size','large');sc.setAttribute('data-radius','12');
-      sc.setAttribute('data-onauth','kgTgOnAuth(user)');sc.setAttribute('data-request-access','write');
-      w.appendChild(sc);
-    }).catch(()=>{});
+      msg('');
+      try{
+        const id=await kgTgBotId();if(!id)throw Error('бот недоступен');
+        await kgTgLoadWidgetJs();
+        window.Telegram.Login.auth({bot_id:id,request_access:'write',lang:'ru'},data=>{
+          if(!data){msg('Вход отменён');return;}
+          btn.disabled=true;msg('Входим…');
+          Promise.resolve(window.kgTgOnAuth(data)).finally(()=>{btn.disabled=!chk.checked;msg('');cloudUpdateUI();});
+        });
+      }catch(err){msg('Кнопка входа недоступна: '+err.message);}
+    };
   };
   chk.addEventListener('change',()=>{kgPdSet(chk.checked);draw();});
   draw();
