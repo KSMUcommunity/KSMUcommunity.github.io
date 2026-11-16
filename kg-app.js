@@ -161,6 +161,13 @@
   }
   function tgUser() { try { return typeof kgTgUser === 'function' ? kgTgUser() : null; } catch (e) { return null; } }
   function botName() { try { return localStorage.getItem('kg-tg-bot') || ''; } catch (e) { return ''; } }
+  /* ссылка t.me/<бот>?start=<p>: в параметре только латиница/цифры/_/- (буква «и» в номере группы → i, бот поймёт) */
+  function botArg(g) { return String(g || '').toLowerCase().replace(/и/g, 'i').replace(/[^a-z0-9_-]/g, ''); }
+  function openBot(p) {
+    var b = botName(); if (!b) return;
+    if (inTG) tgPost('web_app_open_tg_link', { path_full: '/' + b + '?start=' + p });
+    else window.open('https://t.me/' + b + '?start=' + p, '_blank', 'noopener');
+  }
   function groupCaption(g) {
     try {
       var info = (typeof GROUP_INFO !== 'undefined' && GROUP_INFO[g]) || {};
@@ -549,7 +556,8 @@
       case 'tools': return showOld('settings', role() === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', true);
       case 'settings': return showSettings();
       case 'group': if (UI === 'cx') return showGroupPage(); goHome(); try { showGroupChooser(); } catch (e) {} return;
-      case 'bot': window.open('https://t.me/' + botName() + '?start=g-' + encodeURIComponent(selectedStudyGroup), '_blank'); return;
+      case 'bot': return openBot('g-' + botArg(selectedStudyGroup));
+      case 'starreq': return openBot('star_' + botArg(selectedStudyGroup));
       case 'report': try { reportProblem(); } catch (e) {} return;
       case 'useful': return showUseful();
       case 'about': return showAbout();
@@ -1049,7 +1057,8 @@
       '<div class="kg-lt">Аккаунт</div><div class="kg-lbox" id="kgAccBox">' +
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>'
         : mu ? row('Почта', esc(mu.email)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
-      (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
+      (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>'
+        : botName() ? '<div class="kg-lbox">' + row('Я староста группы ' + esc(g), 'заявка в боте', 'starreq') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
       '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.11' : '9.2') + '</div>';
