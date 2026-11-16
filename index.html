@@ -1015,7 +1015,7 @@ if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+
   caches.open('kgmu-data').then(function(c){return c.match(k).then(function(m){if(!m)return fetch(u).then(function(r){if(r.ok)return c.put(k,r)})})}).catch(function(){})}catch(e){}});}})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
-<link rel="stylesheet" href="./kg-e.css?v=34">
+<link rel="stylesheet" href="./kg-e.css?v=35">
 <link rel="stylesheet" href="./kg-apple.css?v=1" id="kgAppleCss">
 <script>/* основной дизайн — E; ?design=apple (вариант 2) действует только до закрытия вкладки/мини-приложения, ?design=e возвращает E.
    Раньше выбор хранился в localStorage навсегда — из-за этого в Telegram «застревал» вариант 2; старую запись стираем. */
@@ -2279,7 +2279,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=110"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=133"></script>
+<script src="./kg-app.js?v=134"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>

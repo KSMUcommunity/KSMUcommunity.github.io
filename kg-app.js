@@ -1058,7 +1058,7 @@
       (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>'
         : mu ? row('Почта', esc(mu.email)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
       (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>'
-        : botName() ? '<div class="kg-lbox">' + row('Я староста группы ' + esc(g), 'заявка в боте', 'starreq') + '</div>' : '') +
+        : botName() ? '<div class="kg-lbox">' + row('Подать заявку на старосту', esc(g), 'starreq', 'kg-accent') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
       '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.11' : '9.2') + '</div>';
