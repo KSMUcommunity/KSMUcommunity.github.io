@@ -598,7 +598,8 @@ function kgTgMountUI(){
       if(!chk.checked)return;
       msg('');
       try{
-        const id=await kgTgBotId();if(!id)throw Error('бот недоступен');
+        /* id бота — только свежий с сервера (запомненный мог остаться от прежнего бота → «Bot domain invalid») */
+        const id=(await kgTgConfig()).bot_id;if(!id)throw Error('нет связи с сервером входа, попробуйте ещё раз');
         await kgTgLoadWidgetJs();
         window.Telegram.Login.auth({bot_id:id,request_access:'write',lang:'ru'},data=>{
           if(!data){msg('Вход отменён');return;}
