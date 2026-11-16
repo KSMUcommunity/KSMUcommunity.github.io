@@ -1017,6 +1017,15 @@ if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+
 <link rel="stylesheet" href="./kg-app.css?v=90">
 <link rel="stylesheet" href="./kg-e.css?v=35">
 <link rel="stylesheet" href="./kg-apple.css?v=1" id="kgAppleCss">
+<style>html.kg-boot body{visibility:hidden}</style>
+<script>/* без вспышки старого интерфейса: страница скрыта, пока kg-app.js не соберёт новый (снимает kg-boot); запасной таймер 4 с */
+(function(){var d=document.documentElement,bg='#EEF2F8';d.classList.add('kg-boot');
+try{var h=new URLSearchParams(location.hash.slice(1)),tp=h.get('tgWebAppThemeParams');
+if(tp&&(tp=JSON.parse(tp)).bg_color)bg=tp.bg_color;
+else{var t=(JSON.parse(localStorage.getItem('kgmu-v8-settings-v1')||'{}')||{}).theme||'system';
+if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))bg='#0A0B12';}}catch(e){}
+d.style.background=bg;window.kgBootDone=function(){d.classList.remove('kg-boot');d.style.background='';};
+setTimeout(window.kgBootDone,4000);})();</script>
 <script>/* основной дизайн — E; ?design=apple (вариант 2) действует только до закрытия вкладки/мини-приложения, ?design=e возвращает E.
    Раньше выбор хранился в localStorage навсегда — из-за этого в Telegram «застревал» вариант 2; старую запись стираем. */
 (function(){var d=null;try{localStorage.removeItem('kgDesign');var m=location.search.match(/[?&]design=(e|apple)(?:&|$)/);if(m){d=m[1];sessionStorage.setItem('kgDesign',d)}else d=sessionStorage.getItem('kgDesign')}catch(e){}
@@ -2279,7 +2288,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=110"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=135"></script>
+<script src="./kg-app.js?v=136"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
