@@ -160,7 +160,13 @@
     return '';
   }
   function tgUser() { try { return typeof kgTgUser === 'function' ? kgTgUser() : null; } catch (e) { return null; } }
-  function botName() { try { return localStorage.getItem('kg-tg-bot') || ''; } catch (e) { return ''; } }
+  /* имя бота: из кэша; в мини-приложении (автовход по initData) кэша может не быть — спрашиваем tg-auth и пока берём основной бот */
+  var BOT_DEFAULT = 'KSMUcommunityBot';
+  function botName() {
+    var b = ''; try { b = localStorage.getItem('kg-tg-bot') || ''; } catch (e) {}
+    if (!b) { try { if (typeof kgTgConfig === 'function') kgTgConfig(); } catch (e) {} }
+    return b || BOT_DEFAULT;
+  }
   /* ссылка t.me/<бот>?start=<p>: в параметре только латиница/цифры/_/- (буква «и» в номере группы → i, бот поймёт) */
   function botArg(g) { return String(g || '').toLowerCase().replace(/и/g, 'i').replace(/[^a-z0-9_-]/g, ''); }
   function openBot(p) {
