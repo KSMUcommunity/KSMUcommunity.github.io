@@ -1670,8 +1670,10 @@
       box.insertBefore(b, box.firstChild);
     }
   }
+  /* показать страницу после первой отрисовки (класс kg-boot ставится в <head>) */
+  function bootDone() { try { if (window.kgBootDone) window.kgBootDone(); } catch (e) {} }
   function boot() {
-    if (UI === 'ext') { bootExt(); return; }
+    if (UI === 'ext') { bootExt(); bootDone(); return; }
     mount();
     wrap('render', renderSoon);
     wrap('applyTheme', applyTGTheme);
@@ -1681,6 +1683,7 @@
     if (UI === 'cx') bootCxHooks();
     applyTGTheme();
     render();
+    bootDone();
     setInterval(function () { if (!state.page && !document.hidden) render(); }, 60000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && !state.page) render(); });
   }
