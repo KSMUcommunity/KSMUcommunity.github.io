@@ -1111,6 +1111,26 @@
   function isAdm() { return myAssign().some(function (a) { return a.role === 'admin' && a.study_group === '*'; }); }
   function starGroups() { return myAssign().filter(function (a) { return a.role === 'starosta'; }).map(function (a) { return a.study_group; }); }
   function canRoles() { return !!tgUser() && (isAdm() || starGroups().length > 0); }
+  /* роли с сервера после загрузки/обновления страницы приходят не сразу: пока есть вход, но роли не загружены — «Проверяем доступ…», потом перерисовка */
+  var permsReady = false, waitTimer = null;
+  function accessWait(name, title) {
+    var s = null; try { s = typeof cloudSession !== 'undefined' ? cloudSession : null; } catch (e) {}
+    if (permsReady || !s) { state.accessWait = null; return false; }
+    state.accessWait = name;
+    showPage(name, title, '<div class="cx-empty gl"><b>Проверяем доступ…</b>Загружаем ваши роли</div>');
+    /* запасной путь: роли могли начать грузиться до запуска kg-app.js (тогда обёртка не сработает) */
+    var t0 = Date.now(); clearInterval(waitTimer);
+    waitTimer = setInterval(function () {
+      if (state.accessWait !== name) { clearInterval(waitTimer); return; }
+      if (myAssign().length || Date.now() - t0 > 8000) { clearInterval(waitTimer); permsDone(); }
+    }, 300);
+    return true;
+  }
+  function permsDone() {
+    permsReady = true;
+    var w = state.accessWait;
+    if (w && state.page === w && REOPEN[w]) { state.accessWait = null; state.noPush = true; try { REOPEN[w](); } finally { state.noPush = false; } }
+  }
   function rolesCall(body) {
     var tok = ''; try { tok = cloudSession && cloudSession.access_token; } catch (e) {}
     if (!tok) return Promise.reject(new Error('Войдите через Telegram'));
@@ -1118,6 +1138,8 @@
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || 'Ошибка ' + r.status); return j; }); });
   }
   function showRoles() {
+    if (!canRoles() && accessWait('roles', 'Роли и доступ')) return;
+    state.accessWait = null;
     if (!canRoles()) { showPage('roles', 'Роли и доступ', '<div class="cx-empty gl"><b>Нет доступа</b>Раздел для администраторов и старост, вошедших через Telegram</div>'); return; }
     var adm = isAdm(), my = starGroups(), g = curGroup();
     var grp = adm ? '<input id="cxRlG" class="cx-in" inputmode="numeric" maxlength="12" placeholder="Группа, например 1307" value="' + esc(g) + '" aria-label="Группа">'
@@ -1314,6 +1336,8 @@
     about: 'О проекте', privacy: 'Политика', consent: 'Согласие', settings: 'Профиль', group: 'Выбор группы', roles: 'Роли', tools: 'Инструменты', stats: 'Статистика' };
   function showStats(days) {
     state.statDays = days || state.statDays || 30;
+    if (!isAdm() && accessWait('stats', 'Статистика')) return;
+    state.accessWait = null;
     if (!isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
     var h = '<div class="cx-sg cx-mseg" role="group" aria-label="Период">' + [[7, '7 дней'], [30, '30 дней'], [90, '90 дней']].map(function (o) {
       return '<button type="button" data-st="d" data-v="' + o[0] + '" aria-pressed="' + (state.statDays === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSt"><div class="cx-empty gl">Загрузка…</div></div>' +
@@ -1679,6 +1703,12 @@
     wrap('applyTheme', applyTGTheme);
     wrap('newsRender', renderSoon);
     wrap('cloudLoadPermissions', renderSoon);
+    (function () {
+      var orig = window.cloudLoadPermissions;
+      if (typeof orig !== 'function') { permsReady = true; return; }
+      var f = function () { var r = orig.apply(this, arguments); Promise.resolve(r).then(permsDone, permsDone); return r; };
+      f.__kg = true; window.cloudLoadPermissions = f;
+    })();
     wrap('activateStudyGroup', function () { state.date = null; state.open = null; rememberGroup(); goHome(true); });
     if (UI === 'cx') bootCxHooks();
     applyTGTheme();
