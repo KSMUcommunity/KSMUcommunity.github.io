@@ -151,14 +151,25 @@ async function cloudRefreshToken(){
   try {return await cloudRefreshingAuth;}finally{cloudRefreshingAuth=null;}
 }
 async function cloudRequest(endpoint,options={},allowRefresh=true){
-  const signed=!!cloudSession?.access_token;
-  if(signed && cloudSession.expires_at && Date.now()/1000>cloudSession.expires_at-45)await cloudRefreshToken();
+  /* временный сбой обновления входа не мешает читать общие данные: GET повторяется без входа (только apikey) */
+  const signed=!!cloudSession?.access_token, isGet=!options.method||options.method==='GET';
+  let anon=false;
+  if(signed && cloudSession.expires_at && Date.now()/1000>cloudSession.expires_at-45){
+    try{await cloudRefreshToken();}catch(e){if(!isGet||!cloudSession)throw e;anon=true;}
+  }
   const response=await fetch(KGMU_CLOUD.url+endpoint,{
     ...options,
-    headers:cloudApiHeaders(true,options.headers||{}),
+    headers:cloudApiHeaders(!anon,options.headers||{}),
     cache:'no-store'
   });
-  if(response.status===401 && signed && allowRefresh){await cloudRefreshToken();return cloudRequest(endpoint,options,false);}
+  if(response.status===401 && signed && !anon && allowRefresh){
+    try{await cloudRefreshToken();}catch(e){if(!isGet)throw e;anon=true;}
+    if(!anon)return cloudRequest(endpoint,options,false);
+    const r2=await fetch(KGMU_CLOUD.url+endpoint,{...options,headers:cloudApiHeaders(false,options.headers||{}),cache:'no-store'});
+    const j2=await r2.json().catch(()=>null);
+    if(!r2.ok)throw Error((j2?.message||'Ошибка '+r2.status).slice(0,240));
+    return j2;
+  }
   const json=await response.json().catch(()=>null);
   if(!response.ok)throw Error((json?.message || json?.error_description || json?.details || json?.hint || json?.error || 'Ошибка '+response.status).slice(0,240));
   return json;
@@ -199,15 +210,16 @@ function cloudGroupChanged(){
   cloudRefreshGroup();
 }
 async function cloudLoadPermissions(){
-  if(!cloudSession){cloudAssignments=[];cloudUpdateUI();return;}
+  if(!cloudSession){cloudAssignments=[];cloudUpdateUI();return true;}
   const uid=cloudSession.user?.id;
   try{
     const roles=await cloudRequest('/rest/v1/rpc/kgmu_my_roles',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     /* пока ждали ответ, человек вышел или вошёл другим аккаунтом — чужие роли не применяем */
-    if(cloudSession?.user?.id!==uid)return;
+    if(cloudSession?.user?.id!==uid)return true;
     cloudAssignments=Array.isArray(roles)?roles:[];
-  }catch(e){if(cloudSession?.user?.id!==uid)return;cloudAssignments=[];cloudSetStatus('Не удалось получить права редактора: '+e.message);}
+  }catch(e){if(cloudSession?.user?.id!==uid)return true;cloudAssignments=[];cloudSetStatus('Не удалось получить права редактора: '+e.message);cloudUpdateUI();return false;}
   cloudUpdateUI();
+  return true;
 }
 async function cloudLogin(ev){
   ev.preventDefault();
@@ -448,7 +460,9 @@ function kgPdSet(on){try{if(on)localStorage.setItem('kg-pd-consent',new Date().t
 function kgTgUserFromInit(){try{return JSON.parse(new URLSearchParams(kgTgInit).get('user')||'null');}catch(_){return null;}}
 async function kgTgLogin(payload,quiet=false,light=false){
   if(!quiet)cloudSetStatus('Входим через Telegram…');
-  const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:JSON.stringify(payload)});
+  /* сервер ставит отметку согласия, только если галочка стоит (или согласие уже есть в базе — ifKnown) */
+  const body=payload.initData||payload.widget?{...payload,consent:!!kgPdOk()}:payload;
+  const r=await fetch(KG_TG_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':KGMU_CLOUD.key},body:JSON.stringify(body)});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.known===false)return null; /* ifKnown: согласия в боте ещё не было */
   if(!r.ok||!j.session?.access_token)throw Error(j.error||'Не удалось войти через Telegram');
@@ -507,8 +521,8 @@ async function kgMailSend(email){
   const back=location.origin+location.pathname;
   const r=await fetch(KGMU_CLOUD.url+'/auth/v1/otp?redirect_to='+encodeURIComponent(back),{method:'POST',headers:cloudApiHeaders(false,{'Content-Type':'application/json'}),
     body:JSON.stringify({email,create_user:true,data:{kg_mail:true}})});
-  try{localStorage.setItem('kg-mail-req',String(Date.now()));}catch(_){}
   if(!r.ok)throw Error(kgMailErr(await r.json().catch(()=>({}))));
+  try{localStorage.setItem('kg-mail-req',String(Date.now()));}catch(_){}
 }
 async function kgMailDone(session){
   cloudSaveSession(session);
@@ -535,7 +549,7 @@ async function kgMailFromHash(){
     s.user=await r.json();if(!r.ok||!s.user?.id)throw Error('нет пользователя');
     /* чужая ссылка с #access_token тихо впустила бы в аккаунт злоумышленника — спрашиваем, если вход не запрашивали */
     let asked=0;try{asked=+localStorage.getItem('kg-mail-req')||0;localStorage.removeItem('kg-mail-req');}catch(_){}
-    if(Date.now()-asked>24*3600*1000&&!confirm('Войти на сайт как '+(s.user.email||'этот аккаунт')+'?\n\nЕсли вы не запрашивали вход по почте — нажмите «Отмена».'))return;
+    if(Date.now()-asked>15*60*1000&&!confirm('Войти на сайт как '+(s.user.email||'этот аккаунт')+'?\n\nЕсли вы не запрашивали вход по почте — нажмите «Отмена».')){setTimeout(()=>{try{toast('Вход по ссылке отменён');}catch(_){}},600);return;}
     await kgMailDone(s);setTimeout(()=>{try{toast('Вход по почте выполнен');}catch(_){}},600);
   }catch(e){console.warn('Вход по ссылке:',e);}
 }

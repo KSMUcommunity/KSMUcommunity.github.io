@@ -745,7 +745,7 @@
   function amSig() {
     try {
       return amendments.length + ':' + amendments.map(function (a) {
-        return [a.id, a.eventId, a.date, a.kind, a.targetDate, a.newStart, a.newEnd].join('~');
+        return [a.id, a.eventId, a.date, a.kind, a.targetDate, a.newStart, a.newEnd, a.newLocation, a.newTeacher].join('~');
       }).join(',');
     } catch (e) { return 0; }
   }
@@ -1128,27 +1128,30 @@
   var permsReady = false, waitTimer = null;
   function accessWait(name, title) {
     var s = null; try { s = typeof cloudSession !== 'undefined' ? cloudSession : null; } catch (e) {}
-    if (permsReady || !s) { state.accessWait = null; return false; }
-    state.accessWait = name;
+    if (permsReady || !s || (s.user && s.user.is_anonymous)) { state.accessWait = null; return false; }
+    state.accessWait = name; state.accessTitle = title;
     showPage(name, title, '<div class="cx-empty gl"><b>Проверяем доступ…</b>Загружаем ваши роли</div>');
     /* запасной путь: роли могли начать грузиться до запуска kg-app.js (тогда обёртка не сработает) */
     var t0 = Date.now(); clearInterval(waitTimer);
     waitTimer = setInterval(function () {
       if (state.accessWait !== name) { clearInterval(waitTimer); return; }
       if (myAssign().length) { clearInterval(waitTimer); permsDone(); return; }
-      if (Date.now() - t0 > 8000) {
-        /* роли так и не пришли (плохая сеть): не «Нет доступа», а повтор; придут позже — permsDone перерисует */
-        clearInterval(waitTimer);
-        showPage(name, title, '<div class="cx-empty gl"><b>Не удалось проверить доступ</b>Проверьте интернет' +
-          '<button type="button" class="cx-btn" data-accretry>Повторить</button></div>');
-        var rb = document.querySelector('[data-accretry]');
-        if (rb) rb.addEventListener('click', function () {
-          var p = null; try { p = typeof cloudLoadPermissions === 'function' ? cloudLoadPermissions() : null; } catch (e) {}
-          accessWait(name, title); if (p && p.then) p.then(permsDone, function () {});
-        });
-      }
+      if (Date.now() - t0 > 8000) { clearInterval(waitTimer); permsFail(); }
     }, 300);
     return true;
+  }
+  /* роли не загрузились (нет сети, 5xx) или зависли: не «Нет доступа», а повтор; придут позже — permsDone перерисует */
+  function permsFail() {
+    var name = state.accessWait, title = state.accessTitle;
+    if (!name || state.page !== name) return;
+    clearInterval(waitTimer);
+    showPage(name, title, '<div class="cx-empty gl"><b>Не удалось проверить доступ</b>Проверьте интернет' +
+      '<button type="button" class="cx-btn" data-accretry>Повторить</button></div>');
+    var rb = document.querySelector('[data-accretry]');
+    if (rb) rb.addEventListener('click', function () {
+      showPage(name, title, '<div class="cx-empty gl"><b>Проверяем доступ…</b>Загружаем ваши роли</div>');
+      try { if (typeof cloudLoadPermissions === 'function') cloudLoadPermissions(); else permsFail(); } catch (e) { permsFail(); }
+    });
   }
   function permsDone() {
     permsReady = true;
@@ -1730,7 +1733,8 @@
     (function () {
       var orig = window.cloudLoadPermissions;
       if (typeof orig !== 'function') { permsReady = true; return; }
-      var f = function () { var r = orig.apply(this, arguments); Promise.resolve(r).then(permsDone, permsDone); return r; };
+      /* cloudLoadPermissions возвращает false при сбое загрузки ролей — тогда не «готово», а экран с повтором */
+      var f = function () { var r = orig.apply(this, arguments); Promise.resolve(r).then(function (ok) { if (ok === false) permsFail(); else permsDone(); }, permsFail); return r; };
       f.__kg = true; window.cloudLoadPermissions = f;
     })();
     wrap('activateStudyGroup', function () { state.date = null; state.open = null; rememberGroup(); goHome(true); });

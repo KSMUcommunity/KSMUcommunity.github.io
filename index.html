@@ -1016,7 +1016,7 @@ if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+
  window.addEventListener('load',function(){try{if(!window.caches)return;var u=new URL(kgGroupSrc(g),location.href),k=u.origin+u.pathname;
   caches.open('kgmu-data').then(function(c){return c.match(k).then(function(m){if(!m)return fetch(u).then(function(r){if(r.ok)return c.put(k,r)})})}).catch(function(){})}catch(e){}});}
 /* файлы групп, которых больше нет в расписании (прошлый семестр), — из офлайн-кэша долой */
-window.addEventListener('load',function(){setTimeout(function(){try{if(!window.caches)return;var keep={};
+window.addEventListener('load',function(){setTimeout(function(){try{if(!window.caches||Object.keys(G).length<50)return;var keep={};
  Object.keys(G).forEach(function(id){keep[new URL(kgGroupSrc(id),location.href).pathname]=1});
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
@@ -2092,7 +2092,7 @@ function hideGroupChooser(){
 function activateStudyGroup(id){
  if(!GROUP_IDS.includes(id))return;
  /* расписание группы ещё не загружено — загрузить и повторить */
- if(window.kgLoadGroup&&!(window.KGMU_LOADED||{})[id]){window.kgPendingGroup=id;kgLoadGroup(id).then(()=>{if(window.kgPendingGroup===id)activateStudyGroup(id);}).catch(()=>toast('Не удалось загрузить расписание группы '+id+' — проверьте интернет'));return;}
+ if(window.kgLoadGroup&&!(window.KGMU_LOADED||{})[id]){window.kgPendingGroup=id;kgLoadGroup(id).then(()=>{if(window.kgPendingGroup===id)activateStudyGroup(id);},()=>{if(window.kgPendingGroup===id)toast('Не удалось загрузить расписание группы '+id+' — проверьте интернет');});return;}
  window.kgPendingGroup=id;selectedStudyGroup=id;EVENT_DATA=ALL_SCHEDULES[id];
  try{localStorage.setItem(GROUP_STORAGE_KEY,id);}catch(e){}
  loadGroupData(id);
@@ -2291,10 +2291,10 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
-<script src="./cloud-sync.js?v=112"></script>
+<script src="./cloud-sync.js?v=113"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=139"></script>
+<script src="./kg-app.js?v=140"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
