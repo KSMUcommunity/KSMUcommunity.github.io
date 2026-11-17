@@ -3,6 +3,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
+<!-- CSP: чужие скрипты и отправка данных на чужие сайты запрещены (сессия входа лежит в localStorage) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://aqnpusacmyovveljyqdd.supabase.co; frame-src https://oauth.telegram.org https://telegram.org; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
 <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
 <meta content="#0f2340" name="theme-color"/>
 <title>КГМУ — Расписание занятий</title>
@@ -1012,7 +1014,11 @@ window.kgLoadGroup=function(id){return new Promise(function(ok,no){if(L[id])retu
 if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+kgGroupSrc(g)+'"><\/script>');
  /* для офлайна: файл своей группы — в кэш kgmu-data (при первом открытии офлайн-кэш ещё не перехватывает запросы) */
  window.addEventListener('load',function(){try{if(!window.caches)return;var u=new URL(kgGroupSrc(g),location.href),k=u.origin+u.pathname;
-  caches.open('kgmu-data').then(function(c){return c.match(k).then(function(m){if(!m)return fetch(u).then(function(r){if(r.ok)return c.put(k,r)})})}).catch(function(){})}catch(e){}});}})();</script>
+  caches.open('kgmu-data').then(function(c){return c.match(k).then(function(m){if(!m)return fetch(u).then(function(r){if(r.ok)return c.put(k,r)})})}).catch(function(){})}catch(e){}});}
+/* файлы групп, которых больше нет в расписании (прошлый семестр), — из офлайн-кэша долой */
+window.addEventListener('load',function(){setTimeout(function(){try{if(!window.caches)return;var keep={};
+ Object.keys(G).forEach(function(id){keep[new URL(kgGroupSrc(id),location.href).pathname]=1});
+ caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
 <link rel="stylesheet" href="./kg-e.css?v=35">
@@ -2285,10 +2291,10 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
-<script src="./cloud-sync.js?v=111"></script>
+<script src="./cloud-sync.js?v=112"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=138"></script>
+<script src="./kg-app.js?v=139"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>

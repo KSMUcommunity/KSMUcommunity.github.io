@@ -63,7 +63,10 @@
     window.TelegramGameProxy = window.TelegramGameProxy || {};
     window.TelegramGameProxy.receiveEvent = recv;
     window.TelegramGameProxy_receiveEvent = recv;
+    /* события Telegram Web приходят только от родительского окна (web.telegram.org); чужой сайт,
+       встроивший нас во фрейм, не должен управлять «Назад» и темой */
     window.addEventListener('message', function (ev) {
+      if (window.parent === window || ev.source !== window.parent || !/^https:\/\/([a-z0-9-]+\.)*telegram\.org$/.test(ev.origin)) return;
       try { var d = JSON.parse(ev.data); if (d && d.eventType) recv(d.eventType, d.eventData); } catch (e) {}
     });
     tgOn(function (type, data) { if (type === 'theme_changed' && data && data.theme_params) { tp = data.theme_params; try { sessionStorage.setItem('kg-tg-theme', JSON.stringify(tp)); } catch (e) {} applyTGTheme(); } });
@@ -1132,7 +1135,18 @@
     var t0 = Date.now(); clearInterval(waitTimer);
     waitTimer = setInterval(function () {
       if (state.accessWait !== name) { clearInterval(waitTimer); return; }
-      if (myAssign().length || Date.now() - t0 > 8000) { clearInterval(waitTimer); permsDone(); }
+      if (myAssign().length) { clearInterval(waitTimer); permsDone(); return; }
+      if (Date.now() - t0 > 8000) {
+        /* роли так и не пришли (плохая сеть): не «Нет доступа», а повтор; придут позже — permsDone перерисует */
+        clearInterval(waitTimer);
+        showPage(name, title, '<div class="cx-empty gl"><b>Не удалось проверить доступ</b>Проверьте интернет' +
+          '<button type="button" class="cx-btn" data-accretry>Повторить</button></div>');
+        var rb = document.querySelector('[data-accretry]');
+        if (rb) rb.addEventListener('click', function () {
+          var p = null; try { p = typeof cloudLoadPermissions === 'function' ? cloudLoadPermissions() : null; } catch (e) {}
+          accessWait(name, title); if (p && p.then) p.then(permsDone, function () {});
+        });
+      }
     }, 300);
     return true;
   }
