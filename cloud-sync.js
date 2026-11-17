@@ -38,7 +38,8 @@ function cloudNoteEditMode(n){return cloudCanEditNote(n)?'direct':(n?._remote&&c
 function cloudCanManage(gr=selectedStudyGroup){return Boolean(cloudSession?.access_token && cloudAssignments.some(a=>(a.role==='admin'||a.role==='starosta')&&(a.study_group===gr||a.study_group==='*')));}
 function cloudCanDeleteNote(n){return !n?false:(!n._remote || cloudCanManage() || (cloudIsMine(n) && n._status!=='approved'));}
 function cloudMyEdit(n){return cloudEdits.find(e=>e.editOf===n.id&&cloudIsMine(e)&&e._status!=='approved');}
-function kgTgUser(){ const m=cloudSession?.user?.user_metadata; return m?.tg_id ? m : null; }
+function kgTgIs(u){const id=u?.user_metadata?.tg_id;return !!id&&String(u.email||'').toLowerCase()==='tg'+id+'@tg.kgmu.local';}
+function kgTgUser(){ const u=cloudSession?.user; return kgTgIs(u) ? u.user_metadata : null; }
 function kgTgName(){ const u=kgTgUser(); return u ? (u.username ? '@'+u.username : (u.name || 'ID '+u.tg_id)) : ''; }
 function cloudRoleIn(gr=selectedStudyGroup){
   const mine=cloudAssignments.filter(a=>a.study_group===gr||a.study_group==='*');
@@ -104,7 +105,7 @@ function cloudSaveSession(session){
   cloudSession=session;
   try{
     if(session?.user?.is_anonymous) localStorage.setItem(CLOUD_VISITOR_KEY,JSON.stringify(session));
-    else if(session?.user?.user_metadata?.tg_id||session?.user?.user_metadata?.kg_mail) localStorage.setItem(CLOUD_TG_KEY,JSON.stringify(session));
+    else if(kgTgIs(session?.user)||session?.user?.user_metadata?.kg_mail) localStorage.setItem(CLOUD_TG_KEY,JSON.stringify(session));
     else if(session?.access_token) sessionStorage.setItem(CLOUD_SESSION_KEY,JSON.stringify(session));
     else sessionStorage.removeItem(CLOUD_SESSION_KEY);
   }catch(_){}
@@ -493,7 +494,7 @@ async function kgTgBotName(){
 }
 
 /* ---------- вход по почте для всех (16.11.2026): код из письма или ссылка из письма ---------- */
-function kgMailUser(){const u=cloudSession?.user;return u&&!u.is_anonymous&&u.email&&!u.user_metadata?.tg_id&&!/@tg\.kgmu\.local$/.test(u.email)?{email:u.email}:null;}
+function kgMailUser(){const u=cloudSession?.user;return u&&!u.is_anonymous&&u.email&&!kgTgIs(u)&&!/@tg\.kgmu\.local$/.test(u.email)?{email:u.email}:null;}
 window.kgMailUser=kgMailUser;
 function kgMailErr(j){const c=String(j?.error_code||''),m=String(j?.msg||j?.error_description||j?.message||j?.error||'');
   if(/rate_limit|over_email_send/.test(c)||/rate|seconds|too many/i.test(m))return 'Слишком часто — подождите минуту и попробуйте снова';
@@ -506,6 +507,7 @@ async function kgMailSend(email){
   const back=location.origin+location.pathname;
   const r=await fetch(KGMU_CLOUD.url+'/auth/v1/otp?redirect_to='+encodeURIComponent(back),{method:'POST',headers:cloudApiHeaders(false,{'Content-Type':'application/json'}),
     body:JSON.stringify({email,create_user:true,data:{kg_mail:true}})});
+  try{localStorage.setItem('kg-mail-req',String(Date.now()));}catch(_){}
   if(!r.ok)throw Error(kgMailErr(await r.json().catch(()=>({}))));
 }
 async function kgMailDone(session){
@@ -531,6 +533,9 @@ async function kgMailFromHash(){
   if(!s.access_token||!s.refresh_token)return;
   try{const r=await fetch(KGMU_CLOUD.url+'/auth/v1/user',{headers:{apikey:KGMU_CLOUD.key,Authorization:'Bearer '+s.access_token}});
     s.user=await r.json();if(!r.ok||!s.user?.id)throw Error('нет пользователя');
+    /* чужая ссылка с #access_token тихо впустила бы в аккаунт злоумышленника — спрашиваем, если вход не запрашивали */
+    let asked=0;try{asked=+localStorage.getItem('kg-mail-req')||0;localStorage.removeItem('kg-mail-req');}catch(_){}
+    if(Date.now()-asked>24*3600*1000&&!confirm('Войти на сайт как '+(s.user.email||'этот аккаунт')+'?\n\nЕсли вы не запрашивали вход по почте — нажмите «Отмена».'))return;
     await kgMailDone(s);setTimeout(()=>{try{toast('Вход по почте выполнен');}catch(_){}},600);
   }catch(e){console.warn('Вход по ссылке:',e);}
 }
