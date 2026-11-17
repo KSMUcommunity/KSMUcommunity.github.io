@@ -99,8 +99,10 @@ def detect(raw: Path, manifest):
         start, how = monday(min(in_window)), f"по первой дате циклов ({min(in_window).isoformat()})"
     elif in_window:
         # одна ранняя дата (пересдача, хвост прошлого цикла) сдвинула бы все недели — берём правило
-        start, how = monday(rule), (f"по правилу: первая дата циклов {min(in_window).isoformat()} дальше недели "
-                                    "от обычного начала — проверьте и при необходимости задайте дату вручную")
+        start, how = monday(rule), (f"первая дата циклов {min(in_window).isoformat()} дальше недели "
+                                    f"от обычного начала ({monday(rule).isoformat()})")
+        return {"title": title_of(season, y1, y2), "week1": start.isoformat(), "share": round(share, 2), "how": how,
+                "uncertain": True}
     else:
         start, how = monday(rule), "по правилу (файлов циклов с датами нет)"
     return {"title": title_of(season, y1, y2), "week1": start.isoformat(), "share": round(share, 2), "how": how}
