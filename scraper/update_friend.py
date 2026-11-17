@@ -45,6 +45,11 @@ def switch_semester(raw, manifest, template, out):
     if det["share"] < MIN_SHARE:
         summary(f"Похоже, начинается {det['title']}, но новых файлов пока {int(det['share'] * 100)}% — жду остальные.")
         return None
+    if det.get("uncertain"):
+        # дата начала по файлам сильно расходится с обычной — не угадываем: запуск красный, нужна ручная дата
+        summary(f"⚠️ Начинается {det['title']}, но 1-ю неделю определить надёжно не удалось ({det['how']}). "
+                "Задайте дату вручную: Actions → Run workflow → week1.")
+        sys.exit(1)
     start = FE.dt.date.fromisoformat(det["week1"])
     sem = {"title": det["title"], "week1": det["week1"], "weeks": MAX_WEEKS,
            "holidays": SA.default_holidays(start, MAX_WEEKS)}
@@ -85,7 +90,12 @@ if __name__ == "__main__":
         sys.exit("Нет файлов групп — сайт не обновляю")
     if g_dir.exists():
         g_dir.rename(g_old)
-    g_new.rename(g_dir)
+    try:
+        g_new.rename(g_dir)
+    except Exception:
+        if g_old.exists() and not g_dir.exists():
+            g_old.rename(g_dir)  # откат: без data/g коммит удалил бы все файлы групп
+        raise
     shutil.rmtree(g_old, ignore_errors=True)
     for name in ("schedule.json", "schedule-data.js"):
         part = ROOT / (name + ".part")

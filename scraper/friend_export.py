@@ -182,7 +182,7 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
     if all_groups:  # сначала узнаём все группы нужных направлений
         for m in manifest:
             prog = prog_of(m["prog"])
-            if not prog or not m["fn"].endswith(".xlsx"):
+            if not prog or not m["fn"].lower().endswith(".xlsx"):
                 continue
             _, res, _ = parse_file(raw / m["fn"])
             for g, v in res.items():
@@ -194,7 +194,7 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
         for g in new_meta:
             result.setdefault(g, [])
     for m in manifest:
-        if not prog_of(m["prog"]) or not m["fn"].endswith(".xlsx"):
+        if not prog_of(m["prog"]) or not m["fn"].lower().endswith(".xlsx"):
             continue
         if not all_groups and prog_of(m["prog"]) not in template["programs"]:
             continue

@@ -117,13 +117,20 @@ def fetch_all(raw_dir: Path):
                 url = href.split("?")[0].rstrip("/") + "/download"
                 data, hdr = http_get(url)
                 cd = hdr.get("Content-Disposition", "")
-                fn = (re.search(r'filename="([^"]+)"', cd) or [None, m.group(1) + ".bin"])[1]
+                fn = m.group(1) + ".bin"
+                star = re.search(r"filename\*=(?:UTF-8|utf-8)''([^;]+)", cd)  # RFC 5987: filename*=UTF-8''%D0%A0…
+                plain = re.search(r'filename="([^"]+)"', cd)
+                if star:
+                    from urllib.parse import unquote
+                    fn = unquote(star.group(1).strip())
+                elif plain:
+                    fn = plain.group(1)
                 # имя из заголовка сервера: только имя файла (без ../ и папок), без управляющих символов;
                 # одинаковые имена у разных ссылок — с токеном, иначе одно направление получило бы файл другого
                 fn = re.sub(r'[\x00-\x1f<>:"|?*]', "_", re.split(r"[\\/]", fn)[-1]).strip(" .") or m.group(1) + ".bin"
-                if fn in used:
+                if fn.lower() in used:  # Windows/macOS не различают регистр имён
                     fn = f"{m.group(1)}_{fn}"
-                used.add(fn)
+                used.add(fn.lower())
                 (raw_dir / fn).write_bytes(data)
                 manifest.append({"prog": prog, "label": re.sub(r"\s+", " ", label).strip(), "tok": m.group(1),
                                  "fn": fn, "lm": hdr.get("Last-Modified"), "size": len(data)})
@@ -136,7 +143,7 @@ def semester_start(raw_dir: Path, manifest):
     """Понедельник недели №1: осень — неделя с 1 сентября, весна — 2-я неделя февраля."""
     import openpyxl
     for m in manifest:
-        if m["fn"].endswith(".xlsx"):
+        if m["fn"].lower().endswith(".xlsx"):
             ws = openpyxl.load_workbook(raw_dir / m["fn"], read_only=True).worksheets[0]
             for row in ws.iter_rows(min_row=1, max_row=4, values_only=True):
                 for v in row:
