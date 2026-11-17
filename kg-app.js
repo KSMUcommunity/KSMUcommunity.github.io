@@ -417,7 +417,7 @@
     if (!slots.length) {
       var w = dateWeek(key);
       return '<div class="kg-empty">' + ic(dow(key) >= 5 ? 'sun' : 'cup') + '<b>' + (dow(key) === 6 ? 'Воскресенье' : w < 1 || w > LAST_WEEK ? 'Нет расписания на эту дату' : 'Пар нет') + '</b>' +
-        '<span>' + (w >= 1 && w <= LAST_WEEK ? 'Свайпните или нажмите стрелку, чтобы посмотреть другие дни' : 'Расписание опубликовано на недели 1–18') + '</span></div>';
+        '<span>' + (w >= 1 && w <= LAST_WEEK ? 'Свайпните или нажмите стрелку, чтобы посмотреть другие дни' : 'Расписание опубликовано на недели 1–' + LAST_WEEK) + '</span></div>';
     }
     var t = today(), now = kazanClockMinutes(), h = '', prevEnd = null, nextMarked = false;
     slots.forEach(function (s, i) {
@@ -661,7 +661,7 @@
     var h = list.length ? list.map(function (n) {
       var d = n.published_at ? new Date(n.published_at) : null;
       return '<article class="kg-news"><small>' + (d ? d.getDate() + ' ' + MON[d.getMonth()] : '') + (n.priority === 'urgent' ? ' · срочно' : n.priority === 'important' ? ' · важно' : '') + '</small><b>' + esc(n.title) + '</b>' +
-        (n.body ? '<p>' + esc(n.body) + '</p>' : '') + (n.link_url ? '<a class="kg-link" target="_blank" rel="noopener" href="' + esc(n.link_url) + '">' + esc(n.link_label || 'Подробнее') + '</a>' : '') + '</article>';
+        (n.body ? '<p>' + esc(n.body) + '</p>' : '') + (httpUrl(n.link_url) ? '<a class="kg-link" target="_blank" rel="noopener" href="' + esc(httpUrl(n.link_url)) + '">' + esc(n.link_label || 'Подробнее') + '</a>' : '') + '</article>';
     }).join('') : '<div class="kg-empty">' + ic('news') + '<b>Объявлений нет</b><span>Здесь появятся новости для вашей группы и курса</span></div>';
     if (role() === 'admin') h += '<button type="button" class="kg-btn kg-wide" data-go="tools">' + ic('tool') + 'Управление объявлениями</button>';
     showPage('news', 'Объявления', h);
@@ -736,10 +736,20 @@
   function liveOf(key) { return lessonsFor(key).filter(function (s) { return s.some(isLive); }); }
   /* номер пары по предмету за семестр: «3/17» — третья из 17 (лекции и практики считаются отдельно, отменённые не считаются) */
   var PROG = { k: '', m: {} };
+  /* ссылка только http(s): javascript:/data: в объявлении выполнили бы код на сайте */
+  function httpUrl(u) { try { var x = new URL(String(u || '')); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : ''; } catch (e) { return ''; } }
+  /* отпечаток изменений расписания для кэшей: правка существующего переноса тоже сбрасывает кэш */
+  function amSig() {
+    try {
+      return amendments.length + ':' + amendments.map(function (a) {
+        return [a.id, a.eventId, a.date, a.kind, a.targetDate, a.newStart, a.newEnd].join('~');
+      }).join(',');
+    } catch (e) { return 0; }
+  }
   function pkey(e) { return subjTitle(e.subject) + '|' + kindOf(e); }
   function progMap() {
     var g = typeof group !== 'undefined' ? String(group) : 'all', na = 0;
-    try { na = amendments.length + ':' + amendments.map(function (a) { return a.id; }).join(','); } catch (e) {}
+    na = amSig();
     var ck = selectedStudyGroup + '|' + g + '|' + na + '|' + LAST_WEEK;
     if (PROG.k === ck) return PROG.m;
     var s0 = (window.KGMU_SEM && window.KGMU_SEM.week1) || '2026-08-31', pos = {}, cnt = {}, m = {};
@@ -755,7 +765,7 @@
     var p; try { p = progMap()[key + '|' + sl[0].start + '|' + pkey(sl[0])]; } catch (e) { return ''; }
     return p && p[1] > 1 ? p[0] + '/' + p[1] : '';
   }
-  /* границы опубликованного расписания: недели 1–18 */
+  /* границы опубликованного расписания: недели 1–LAST_WEEK (semester.json) */
   var LAST_WEEK = sem().weeks;
   function semBounds(key) { var w = dateWeek(key), mon1 = addDays(key, -dow(key) - (w - 1) * 7); return { w: w, start: mon1, end: addDays(mon1, LAST_WEEK * 7 - 1) }; }
   function dayMonth(key) { var d = parseISO(key); return d.getDate() + ' ' + MON[d.getMonth()]; }
@@ -1411,7 +1421,7 @@
   var OCC = { k: '', list: [] };
   function occAll() {
     var g = typeof group !== 'undefined' ? String(group) : 'all', na = 0;
-    try { na = amendments.length; } catch (e) {}
+    na = amSig();
     var ck = selectedStudyGroup + '|' + g + '|' + na + '|' + LAST_WEEK;
     if (OCC.k === ck) return OCC.list;
     var s0 = (window.KGMU_SEM && window.KGMU_SEM.week1) || '2026-08-31', out = [];

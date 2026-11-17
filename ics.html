@@ -27,7 +27,7 @@ a.btn,button{display:block;width:100%;border:0;border-radius:14px;padding:14px;m
   try{ev=JSON.parse(decodeURIComponent(location.hash.slice(1)));}catch(e){}
   if(!ev||!/^\d{8}$/.test(ev.s||'')||!/^\d{8}$/.test(ev.e||'')){m.innerHTML='<small>Расписание КГМУ</small><h1 class="err">Событие не найдено</h1><p>Откройте ссылку из приложения ещё раз.</p>';return;}
   function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function safe(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+  function safe(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/[\u0000-\u001f\u007f]/g,'').replace(/,/g,'\\,').replace(/;/g,'\\;');}
   var stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//KGMU Student Schedule//RU','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT',
     'UID:'+String(ev.u||('kgmu-'+ev.s)).replace(/[^\w@.-]/g,''),'DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+ev.s,'DTEND;VALUE=DATE:'+ev.e,

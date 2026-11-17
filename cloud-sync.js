@@ -136,6 +136,8 @@ async function cloudRefreshToken(){
       body:JSON.stringify({refresh_token:cloudSession.refresh_token})
     });
     const payload=await response.json().catch(()=>({}));
+    /* 429/5xx/сеть — временный сбой Supabase: сессию не стираем, иначе человек «вылетает» из аккаунта */
+    if(!response.ok&&![400,401,403].includes(response.status))throw Error('Сервер входа временно недоступен, попробуйте позже');
     if(!response.ok){
       const anon=Boolean(cloudSession?.user?.is_anonymous);
       try{if(anon)localStorage.removeItem(CLOUD_VISITOR_KEY);else{sessionStorage.removeItem(CLOUD_SESSION_KEY);localStorage.removeItem(CLOUD_TG_KEY);}}catch(_){}
@@ -197,10 +199,13 @@ function cloudGroupChanged(){
 }
 async function cloudLoadPermissions(){
   if(!cloudSession){cloudAssignments=[];cloudUpdateUI();return;}
+  const uid=cloudSession.user?.id;
   try{
     const roles=await cloudRequest('/rest/v1/rpc/kgmu_my_roles',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    /* пока ждали ответ, человек вышел или вошёл другим аккаунтом — чужие роли не применяем */
+    if(cloudSession?.user?.id!==uid)return;
     cloudAssignments=Array.isArray(roles)?roles:[];
-  }catch(e){cloudAssignments=[];cloudSetStatus('Не удалось получить права редактора: '+e.message);}
+  }catch(e){if(cloudSession?.user?.id!==uid)return;cloudAssignments=[];cloudSetStatus('Не удалось получить права редактора: '+e.message);}
   cloudUpdateUI();
 }
 async function cloudLogin(ev){
