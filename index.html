@@ -2086,8 +2086,8 @@ function hideGroupChooser(){
 function activateStudyGroup(id){
  if(!GROUP_IDS.includes(id))return;
  /* расписание группы ещё не загружено — загрузить и повторить */
- if(window.kgLoadGroup&&!(window.KGMU_LOADED||{})[id]){kgLoadGroup(id).then(()=>activateStudyGroup(id)).catch(()=>toast('Не удалось загрузить расписание группы '+id+' — проверьте интернет'));return;}
- selectedStudyGroup=id;EVENT_DATA=ALL_SCHEDULES[id];
+ if(window.kgLoadGroup&&!(window.KGMU_LOADED||{})[id]){window.kgPendingGroup=id;kgLoadGroup(id).then(()=>{if(window.kgPendingGroup===id)activateStudyGroup(id);}).catch(()=>toast('Не удалось загрузить расписание группы '+id+' — проверьте интернет'));return;}
+ window.kgPendingGroup=id;selectedStudyGroup=id;EVENT_DATA=ALL_SCHEDULES[id];
  try{localStorage.setItem(GROUP_STORAGE_KEY,id);}catch(e){}
  loadGroupData(id);
  group=userPreferences.subgroups[id]||'all';userPreferences.group=group;savePreferences();
@@ -2144,7 +2144,7 @@ function saveChangeEditor(e){
  persistAmendments();$('changeEditor').hidden=true;renderCalendar();renderDayDetail();render();toast('Изменение занятия сохранено');
 }
 function deleteChange(id){const a=amendments.find(a=>a.id===id);if(!a)return;if(a._remote && typeof cloudDeleteAmendment==='function')return cloudDeleteAmendment(a);if(!confirm('Удалить это изменение занятия?'))return;amendments=amendments.filter(x=>x.id!==id);persistAmendments();renderCalendar();renderDayDetail();render();toast('Изменение удалено');}
-function icsSafe(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+function icsSafe(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/[\u0000-\u001f\u007f]/g,'').replace(/,/g,'\\,').replace(/;/g,'\\;');}
 function exportICS(id){
  const n=notes.find(n=>n.id===id&&n.type==='module');if(!n)return;
  const day=parseISO(n.date);day.setDate(day.getDate()+1);const start=n.date.replace(/-/g,''),end=dateISO(day).replace(/-/g,'');
@@ -2285,10 +2285,10 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
-<script src="./cloud-sync.js?v=110"></script>
+<script src="./cloud-sync.js?v=111"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=137"></script>
+<script src="./kg-app.js?v=138"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
