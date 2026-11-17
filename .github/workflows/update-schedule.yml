@@ -22,16 +22,19 @@ on:
         default: false
   push:
     branches: [main]
+# по умолчанию только чтение; запись — тем заданиям, которым она нужна
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # коммит обновлённого расписания
+    outputs:
+      scrape: ${{ steps.scrape.outcome }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,8 +55,10 @@ jobs:
             python scraper/new_semester.py --week1 "$W1" ${TITLE:+--title "$TITLE"} --weeks "${WEEKS:-18}"
           fi
       - name: Свежее расписание с сайта КГМУ
+        id: scrape
         if: github.event_name != 'push'
-        run: python scraper/update_friend.py || echo "::warning::Не удалось обновить расписание, оставляю прошлые данные"
+        continue-on-error: true   # сайт всё равно публикуется с прошлыми данными, а запуск ниже станет красным
+        run: python scraper/update_friend.py
       - name: Сохранить расписание в репозиторий
         if: github.event_name != 'push'
         run: |
@@ -72,9 +77,21 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - id: d
         uses: actions/deploy-pages@v4
+  # сбой обновления не должен проходить незамеченным: запуск красный, GitHub пришлёт письмо
+  report:
+    needs: [build, deploy]
+    if: always() && needs.build.outputs.scrape == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Не удалось обновить расписание с сайта КГМУ — на сайте прежние данные. Смотрите шаг «Свежее расписание» в задании build."
+          exit 1

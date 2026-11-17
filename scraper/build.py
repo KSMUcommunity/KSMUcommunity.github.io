@@ -104,7 +104,7 @@ def fetch_all(raw_dir: Path):
     html, _ = http_get(PAGE)
     tp = TableParser()
     tp.feed(html.decode("utf-8", "replace"))
-    manifest = []
+    manifest, used = [], set()
     for row in tp.rows:
         if not row or not row[0]["t"].strip() or not any(c["a"] for c in row[1:]):
             continue
@@ -118,6 +118,12 @@ def fetch_all(raw_dir: Path):
                 data, hdr = http_get(url)
                 cd = hdr.get("Content-Disposition", "")
                 fn = (re.search(r'filename="([^"]+)"', cd) or [None, m.group(1) + ".bin"])[1]
+                # имя из заголовка сервера: только имя файла (без ../ и папок), без управляющих символов;
+                # одинаковые имена у разных ссылок — с токеном, иначе одно направление получило бы файл другого
+                fn = re.sub(r'[\x00-\x1f<>:"|?*]', "_", re.split(r"[\\/]", fn)[-1]).strip(" .") or m.group(1) + ".bin"
+                if fn in used:
+                    fn = f"{m.group(1)}_{fn}"
+                used.add(fn)
                 (raw_dir / fn).write_bytes(data)
                 manifest.append({"prog": prog, "label": re.sub(r"\s+", " ", label).strip(), "tok": m.group(1),
                                  "fn": fn, "lm": hdr.get("Last-Modified"), "size": len(data)})

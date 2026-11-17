@@ -74,11 +74,23 @@ if __name__ == "__main__":
         sys.exit(0)
     changed = [g for g in template["groups"] if payload["groups"].get(g) != template["groups"].get(g)]
     print(f"Изменилось расписание групп: {', '.join(changed)}")
-    for name in ("schedule.json", "schedule-data.js"):
-        (ROOT / name).write_text((tmp / name).read_text("utf-8"), "utf-8")
+    # запись почти атомарная: сначала новые файлы групп целиком подменяют старую папку,
+    # потом schedule.json и последним schedule-data.js (он ссылается на файлы групп)
     import shutil
-    shutil.rmtree(ROOT / "data" / "g", ignore_errors=True)
-    shutil.copytree(tmp / "data" / "g", ROOT / "data" / "g")
+    g_dir, g_new, g_old = ROOT / "data" / "g", ROOT / "data" / "g.new", ROOT / "data" / "g.old"
+    shutil.rmtree(g_new, ignore_errors=True)
+    shutil.rmtree(g_old, ignore_errors=True)
+    shutil.copytree(tmp / "data" / "g", g_new)
+    if not any(g_new.glob("*.js")):
+        sys.exit("Нет файлов групп — сайт не обновляю")
+    if g_dir.exists():
+        g_dir.rename(g_old)
+    g_new.rename(g_dir)
+    shutil.rmtree(g_old, ignore_errors=True)
+    for name in ("schedule.json", "schedule-data.js"):
+        part = ROOT / (name + ".part")
+        part.write_text((tmp / name).read_text("utf-8"), "utf-8")
+        os.replace(part, ROOT / name)
     if sem:
         SA.save(sem)  # настройку семестра сохраняем только вместе с успешно собранным расписанием
     print("✓ schedule.json, schedule-data.js и data/g/ обновлены")
