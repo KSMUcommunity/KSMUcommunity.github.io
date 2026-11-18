@@ -242,7 +242,7 @@
     var nm = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : '';
     function it(id, icon, label, ex) { return '<button type="button" class="cx-nav' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
     sd.innerHTML = '<div class="cx-brand"><span class="cx-brand-logo"><i class="ksmu-mark"></i></span><div><b>KSMU <span>Community</span></b><small>' + esc(sem().title) + '</small></div></div>' +
-      (g ? '<button type="button" class="cx-sgrp" data-tab="group" aria-label="Сменить группу ' + esc(g) + '"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em></span>' + ic('chev') + '</button>' : '') +
+      (g ? '<button type="button" class="cx-sgrp" data-tab="group"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em><span class="kg-sr">, сменить группу</span></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
       (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
@@ -268,15 +268,24 @@
   function openSide() {
     if (desk()) return;
     renderSide();
+    sideOpener = document.activeElement;
     document.body.classList.add('cx-dr-open');
+    ['kgHome', 'kgPage', 'kgSubBar', 'kgTabbar'].forEach(function (id) { var el = $(id); if (el) el.inert = true; });
     var mb = $('kgMenuB'); if (mb) mb.setAttribute('aria-expanded', 'true');
     setTimeout(function () { var f = document.querySelector('#cxSide .cx-nav.on') || document.querySelector('#cxSide .cx-nav'); if (f) f.focus({ preventScroll: true }); }, 60);
   }
   function closeSide() {
     if (!document.body.classList.contains('cx-dr-open')) return;
     document.body.classList.remove('cx-dr-open');
+    ['kgHome', 'kgPage', 'kgSubBar', 'kgTabbar'].forEach(function (id) { var el = $(id); if (el) el.inert = false; });
     var mb = $('kgMenuB'); if (mb) mb.setAttribute('aria-expanded', 'false');
+    /* фокус — туда, откуда открыли меню (если кнопка ещё на экране), иначе на видимую ☰ */
+    var back = sideOpener && document.contains(sideOpener) && sideOpener.offsetParent ? sideOpener : null;
+    if (!back) back = [mb, document.querySelector('#kgCx [data-cx="menu"]')].filter(function (x) { return x && x.offsetParent; })[0];
+    sideOpener = null;
+    if (back && document.activeElement && document.activeElement.closest && document.activeElement.closest('#cxSide')) { try { back.focus({ preventScroll: true }); } catch (e) {} }
   }
+  var sideOpener = null;
   function onTab(ev) {
     var b = ev.target.closest('[data-tab]'); if (!b) return;
     var id = b.dataset.tab;
@@ -783,7 +792,7 @@
     var g = selectedStudyGroup, u = tgUser(), h = Math.floor(kazanClockMinutes() / 60);
     var greet = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
     var ini = u && (u.name || u.username) ? esc(String(u.name || u.username).replace('@', '').slice(0, 1).toUpperCase()) : ic('user');
-    return '<div class="cx-hd"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню' + (unread() ? ', есть новые объявления' : '') + '" aria-controls="cxSide">' + ic('menu') + (unread() ? '<i class="cx-dot" aria-hidden="true"></i>' : '') + '</button><button type="button" class="cx-who" data-cx="group" aria-label="Сменить группу"><span class="cx-av" aria-hidden="true"><b>' + ini + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong></span></button>' +
+    return '<h1 class="kg-sr">Расписание группы ' + esc(g) + '</h1><div class="cx-hd"><button type="button" class="cx-ib gl cx-mb" data-cx="menu" aria-label="Меню' + (unread() ? ', есть новые объявления' : '') + '" aria-controls="cxSide">' + ic('menu') + (unread() ? '<i class="cx-dot" aria-hidden="true"></i>' : '') + '</button><button type="button" class="cx-who" data-cx="group"><span class="cx-av" aria-hidden="true"><b>' + ini + '</b></span><span style="min-width:0"><small>' + greet + ' · ' + dShort(today()) + '</small><strong>Группа ' + esc(g) + ic('chev') + '</strong><span class="kg-sr">, сменить группу</span></span></button>' +
       '<button type="button" class="cx-ib gl" data-cx="profile" aria-label="Профиль и настройки">' + ic('gear') + '</button></div>' +
       '<button type="button" class="cx-search gl" data-cx="search">' + ic('search') + 'Предмет, преподаватель, аудитория…</button>';
   }
@@ -903,9 +912,9 @@
     var subjects = []; s.forEach(function (x) { var tt = subjTitle(x.subject); if (subjects.indexOf(tt) < 0) subjects.push(tt); });
     var nts = notesFor(key, subjects);
     nts.forEach(function (n) { chips += '<span class="cx-chip w">' + (n.type === 'module' ? 'Модуль' : 'ДЗ') + (n.title ? ': ' + esc(n.title.length > 36 ? n.title.slice(0, 35) + '…' : n.title) : '') + '</span>'; });
-    var h = '<article class="cx-card ' + (isNow ? 'live' : 'gl') + (past ? ' past' : '') + (!live ? ' cancel' : '') + '" style="' + kv(kindOf(e)) + '" data-cx="open" data-id="' + id + '" role="button" tabindex="0" aria-expanded="' + (state.open === id) + '">' +
+    var h = '<article class="cx-card ' + (isNow ? 'live' : 'gl') + (past ? ' past' : '') + (!live ? ' cancel' : '') + '" style="' + kv(kindOf(e)) + '" data-cx="open" data-id="' + id + '">' +
       (isNow ? '<i class="kg-sheen"></i><span class="cx-left">ещё ' + dur(mins(e.end) - now) + '</span>' : '') + (past && live ? '<span class="cx-chk" aria-label="Прошла"><svg class="kg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>' : '') +
-      '<h3>' + esc(names.join(' / ')) + '</h3><div class="m">' + esc([kindName(e) + cyclePeriod(e), sub].filter(Boolean).join(' · ')) + '</div>' + (teachers.length ? '<div class="m">' + esc(teachers.slice(0, 2).join(', ')) + '</div>' : '') +
+      '<h3><button type="button" class="cx-open" data-cx="open" data-id="' + id + '" aria-expanded="' + (state.open === id) + '">' + esc(names.join(' / ')) + '</button></h3><div class="m">' + esc([kindName(e) + cyclePeriod(e), sub].filter(Boolean).join(' · ')) + '</div>' + (teachers.length ? '<div class="m">' + esc(teachers.slice(0, 2).join(', ')) + '</div>' : '') +
       '<div class="ch">' + (function () { var pg = progOf(s, key); return pg ? '<span class="cx-chip cx-prog" title="' + pg.split('/')[0] + '-я пара по предмету из ' + pg.split('/')[1] + ' (' + kindName(e).toLowerCase() + ')">' + pg + '</span>' : ''; })() + chips + '</div>';
     if (isNow) h += '<div class="cx-pb"><i style="width:' + Math.max(0, Math.min(100, Math.round((now - mins(e.start)) / Math.max(1, mins(e.end) - mins(e.start)) * 100))) + '%"></i></div>';
     if (state.open === id) {
@@ -1035,7 +1044,7 @@
     var app = document.createElement('div');
     app.id = 'kgApp';
     app.innerHTML = '<div class="kg-subbar" id="kgSubBar"><span class="kg-sl"><button type="button" class="kg-mb" id="kgMenuB" aria-label="Меню" aria-controls="cxSide" aria-expanded="false">' + ic('menu') + '</button><button type="button" class="kg-back" id="kgBack" aria-label="Назад">' + ic('left') + '<span>Назад</span></button></span><b id="kgSubTitle"></b><span></span></div>' +
-      '<section class="kg-home cx-home" id="kgHome"><div id="kgCx"></div></section><section class="kg-page" id="kgPage"></section>' +
+      '<section class="kg-home cx-home" id="kgHome" role="main"><div id="kgCx"></div></section><section class="kg-page" id="kgPage" role="main"></section>' +
       '<nav class="kg-tabbar" id="kgTabbar" aria-label="Разделы"></nav><aside class="cx-side" id="cxSide" aria-label="Меню"></aside>';
     document.body.insertBefore(app, document.body.firstChild);
     $('cxSide').addEventListener('click', onTab);
@@ -1130,7 +1139,7 @@
     var s = null; try { s = typeof cloudSession !== 'undefined' ? cloudSession : null; } catch (e) {}
     if (permsReady || !s || (s.user && s.user.is_anonymous)) { state.accessWait = null; return false; }
     state.accessWait = name; state.accessTitle = title;
-    showPage(name, title, '<div class="cx-empty gl"><b>Проверяем доступ…</b>Загружаем ваши роли</div>');
+    showPage(name, title, '<div class="cx-empty gl" role="status"><b>Проверяем доступ…</b>Загружаем ваши роли</div>');
     /* запасной путь: роли могли начать грузиться до запуска kg-app.js (тогда обёртка не сработает) */
     var t0 = Date.now(); clearInterval(waitTimer);
     waitTimer = setInterval(function () {
@@ -1145,7 +1154,7 @@
     var name = state.accessWait, title = state.accessTitle;
     if (!name || state.page !== name) return;
     clearInterval(waitTimer);
-    showPage(name, title, '<div class="cx-empty gl"><b>Не удалось проверить доступ</b>Проверьте интернет' +
+    showPage(name, title, '<div class="cx-empty gl" role="status"><b>Не удалось проверить доступ</b>Проверьте интернет' +
       '<button type="button" class="cx-btn" data-accretry>Повторить</button></div>');
     var rb = document.querySelector('[data-accretry]');
     if (rb) rb.addEventListener('click', function () {
