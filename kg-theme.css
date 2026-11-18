@@ -20,36 +20,31 @@ html body{background:var(--bg)!important;color:var(--ink);font-family:var(--kg-f
 html body h1,html body h2,html body h3{letter-spacing:-.02em;font-weight:700}
 html body ::selection{background:var(--accent-soft)}
 
-/* Шапка: светлое «стекло» вместо тёмного градиента */
-html body .herohead{background:var(--kg-glass)!important;color:var(--ink)!important;border-bottom:1px solid var(--line)!important;
-  -webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);position:sticky;top:0;z-index:50;box-shadow:none!important}
-html body .herohead .mini-title{color:var(--ink);font-weight:700;letter-spacing:-.03em}
-html body .herohead .mini-title strong,html body .header-group-button{font-weight:800;color:var(--ink)}
-html body .header-group-button{text-decoration:none!important;background:var(--accent-soft)!important;color:var(--accent-ink)!important;padding:2px 8px!important;border-radius:8px!important}
-html body .mini-caption{color:var(--sub)!important;font-weight:500}
-html body .mini-logo{background:#fff;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:none}
-html body .header-icon-btn{background:var(--panel-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:12px!important;font-size:0!important;display:grid;place-items:center}
-html body .header-icon-btn svg{width:20px;height:20px}
-html body .header-icon-btn:hover{background:var(--accent-soft)!important;color:var(--accent-ink)!important}
-html body .semester-pill{color:var(--sub);background:var(--panel-2);border-color:var(--line)}
 
-/* Нижняя навигация */
-html body .app-tabs{background:var(--kg-glass)!important;-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);
-  border:0!important;border-top:1px solid var(--line)!important;box-shadow:0 -4px 24px rgba(15,23,42,.05)!important}
+
+
+
+
+
+
+
+
+
+
+
 html body .app-tab{color:var(--sub)!important;background:transparent!important;font-weight:600!important;box-shadow:none!important}
 html body .app-tab.active{color:var(--accent-ink)!important;background:var(--accent-soft)!important}
 html body .app-tab .tab-icon{font-size:0!important;display:grid;place-items:center;height:22px}
 html body .app-tab .tab-icon svg{width:22px;height:22px}
-@media (min-width:821px){html body .app-tabs{position:static!important;border:1px solid var(--line)!important;border-radius:14px!important;box-shadow:none!important}}
+
 
 /* Карточки и поверхности */
 html body :is(.toolbar-card,.calendar-board,.calendar-day-panel,.utility-panel,.today-columns>*,.modules-board,.search-board,.data-tools,.kg-news,.today-panel,.today-card,.day-card,.week-card,.session){
   border-radius:var(--radius)!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
-html body :is(.today-metrics>*,.today-metric){background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:14px!important}
 
-/* «Ваш учебный день» и экран выбора группы: ровный акцент без градиентов */
-html body .today-hero{background:var(--accent)!important;box-shadow:0 8px 24px rgba(140,43,51,.2)!important;border-radius:20px!important}
-html[data-theme="dark"] body .today-hero{background:#5A1E26!important}
+
+
+
 html body .chooser-view{background:var(--bg)!important}
 html body .chooser-hero{background:var(--accent)!important;box-shadow:0 10px 30px rgba(140,43,51,.2)!important;border-radius:22px!important}
 html[data-theme="dark"] body .chooser-hero{background:#5A1E26!important}
@@ -75,7 +70,7 @@ body:not(.kg-editor) #cloudPanel :is(#cloudStatus,#cloudSourceHint,.cloud-warnin
 #cloudPanel .kg-tg-login{background:var(--accent-soft)!important;border:0!important;border-radius:14px!important}
 
 @media (prefers-reduced-motion:reduce){html body *{transition:none!important;animation:none!important}}
-html body .today-hero :is(.groupbuttons,.today-group-row .groupbuttons){background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.18)!important}
+
 html body #cloudPanel{border-left:0!important;padding-left:0!important;background:transparent!important;box-shadow:none!important}
 body:not(.kg-editor) #cloudPanel p:has(> #cloudRoles){display:none!important}
 body:not(.kg-tg) #cloudPanel #cloudAccount{display:none!important}
