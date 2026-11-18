@@ -111,3 +111,6 @@ html.kg-e[data-theme="dark"].kg-desk .cx-side{background:#161618!important}
 
 /* переключатели-сегменты как в iOS: выбранный — белый на сером */
 html.kg-e #kgApp .kg-seg button.active{background:var(--cx-pressed);color:var(--a-text)!important;box-shadow:0 1px 3px rgba(0,0,0,.12)!important}
+/* выбранная кнопка при выборе группы: общий фон карточек (!important) перебивал .on — была белой без текста */
+html.kg-e #kgApp .cx-pick.on{background:#8C2B33!important;color:#fff!important}
+html.kg-e #kgApp .cx-pick.on small{color:rgba(255,255,255,.85)!important}

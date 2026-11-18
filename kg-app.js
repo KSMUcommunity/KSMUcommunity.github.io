@@ -25,6 +25,24 @@
   }
   var tgSubs = [];
   function tgOn(f) { tgSubs.push(f); }
+  /* лёгкая вибрация в мини-приложении: 'sel' — смена выбора (день, вкладка), 'tap' — нажатие, 'ok' — успех */
+  function haptic(kind) {
+    if (!inTG) return;
+    if (kind === 'sel') tgPost('web_app_trigger_haptic_feedback', { type: 'selection_change' });
+    else if (kind === 'ok') tgPost('web_app_trigger_haptic_feedback', { type: 'notification', notification_type: 'success' });
+    else tgPost('web_app_trigger_haptic_feedback', { type: 'impact', impact_style: 'light' });
+  }
+  /* заглушка загрузки: серые мигающие плашки в форме будущего содержимого */
+  function skel(kind) {
+    var row = '<div class="cx-sk-row"><i class="cx-sk-ic"></i><span><i style="width:62%"></i><i style="width:38%"></i></span></div>';
+    var body = kind === 'stats'
+      ? '<div class="cx-sts">' + '<div class="cx-sk-tile"></div>'.repeat(3) + '</div><div class="cx-sk-chart"></div><div class="cx-sk-box">' + row + row + row + '</div>'
+      : '<div class="cx-sk-box">' + row + row + row + row + '</div>';
+    return '<div class="cx-skel" role="status"><span class="kg-sr">Загрузка…</span><div aria-hidden="true">' + body + '</div></div>';
+  }
+  /* демо-режим только для локальной проверки: 127.0.0.1/localhost + ?demo=1 (на живом сайте не включается) */
+  var DEMO = /^(127\.0\.0\.1|localhost)$/.test(location.hostname) && /[?&]demo=1\b/.test(location.search);
+  function motionOk() { return !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function lum(hex) {
     var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 1;
     var n = parseInt(m[1], 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
@@ -146,7 +164,7 @@
     tool: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>', pin: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>', layers: '<path d="M12 3 3 8l9 5 9-5z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 17 9 5 9-5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>', book: '<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>', link: '<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>', ext: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>', chev: '<path d="m9 18 6-6-6-6"/>'
+    plus: '<path d="M12 5v14M5 12h14"/>', share: '<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', book: '<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>', link: '<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>', ext: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>', chev: '<path d="m9 18 6-6-6-6"/>'
   };
   var SUN = '<svg class="kg-sun" viewBox="0 0 170 170" aria-hidden="true"><defs><radialGradient id="kgsg"><stop offset="0%" stop-color="#FFE3A3"/><stop offset="45%" stop-color="#FFB45E" stop-opacity=".9"/><stop offset="100%" stop-color="#FF8A5B" stop-opacity="0"/></radialGradient></defs><g stroke="rgba(255,226,170,.45)" stroke-width="3" stroke-linecap="round"><path d="M85 8v16M85 146v16M8 85h16M146 85h16M30 30l11 11M129 129l11 11M30 140l11-11M129 41l11-11"/></g><circle cx="85" cy="85" r="60" fill="url(#kgsg)"/><circle cx="85" cy="85" r="26" fill="#FFE7B0"/></svg>';
   function ic(n, cls) { return '<svg class="kg-ic ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[n] + '</svg>'; }
@@ -245,7 +263,7 @@
       (g ? '<button type="button" class="cx-sgrp" data-tab="group"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em><span class="kg-sr">, сменить группу</span></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
-      (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
+      (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() || DEMO ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
       '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти: Telegram или почта') + '</small></span>' + ic('gear') + '</button></div>';
   }
   /* только непрочитанные: всё, что новее последнего просмотренного объявления */
@@ -289,6 +307,7 @@
   function onTab(ev) {
     var b = ev.target.closest('[data-tab]'); if (!b) return;
     var id = b.dataset.tab;
+    haptic('sel');
     closeSide();
     if (id === 'home' || id === 'week') {
       state.tab = id === 'week' ? 'day' : 'home'; state.open = null; state.dayFrom = null;
@@ -306,6 +325,7 @@
   }
 
   function shift(n) {
+    haptic('sel');
     state.open = null;
     state.date = addDays(state.date, state.week ? n * 7 : n);
     if (!state.week && dow(state.date) === 6) state.date = addDays(state.date, n > 0 ? 1 : -1);
@@ -636,6 +656,13 @@
     document.body.classList.remove('kg-mode-home', 'kg-mode-old', 'kg-tools');
     document.body.classList.add('kg-mode-page');
     $('kgPage').innerHTML = html + cxFoot();
+    pageIn($('kgPage'), state.noPush ? 0 : 1);
+  }
+  /* плавное появление экрана: вперёд — сдвиг справа, назад/обновление — лёгкое затухание */
+  function pageIn(el, dir) {
+    if (!el || !el.animate || !motionOk()) return;
+    el.animate(dir ? [{ opacity: 0, transform: 'translateX(14px)' }, { opacity: 1, transform: 'none' }] : [{ opacity: .4 }, { opacity: 1 }],
+      { duration: dir ? 240 : 160, easing: 'cubic-bezier(.2,.8,.2,1)' });
   }
   function goHome(fromPop) {
     var had = !!state.page;
@@ -646,6 +673,7 @@
     tgPost('web_app_setup_back_button', { is_visible: false });
     if (had && !fromPop) { try { history.back(); } catch (e) {} }
     render();
+    if (had) pageIn($('kgHome'), 0);
   }
   function back() {
     var prev = state.stack && state.stack.pop();
@@ -964,7 +992,8 @@
     var sub = [live.length ? countLabel(live) + ' · ' + live[0][0].start + ' – ' + live[live.length - 1][0].end : 'Пар нет', w >= 1 && w <= LAST_WEEK ? w + ' неделя' : w > LAST_WEEK ? 'вне семестра' : 'до начала семестра'].join(' · ');
     var d = parseISO(key);
     var vw = '<div class="cx-vtools">' + (desk() ? '<div class="cx-sg" role="group" aria-label="Вид">' + [['1', 'Неделя'], ['0', 'День']].map(function (o) { return '<button type="button" data-cx="board" data-v="' + o[0] + '" aria-pressed="' + ((o[0] === '1') === board) + '">' + o[1] + '</button>'; }).join('') + '</div>' : '') +
-      '<button type="button" class="cx-mbtn" data-cx="calendar">' + ic('cal') + 'Месяц</button></div>';
+      '<button type="button" class="cx-mbtn" data-cx="calendar">' + ic('cal') + 'Месяц</button>' +
+      (!board && liveOf(key).length ? '<button type="button" class="cx-mbtn" data-cx="share" aria-label="Поделиться расписанием дня картинкой">' + ic('share') + '<span>Поделиться</span></button>' : '') + '</div>';
     if (board) {
       var wl = [], wn = 0; days.forEach(function (k) { var s = liveOf(k); wn += s.length; });
       var thisWeek = addDays(t, -dow(t)) === days[0];
@@ -991,10 +1020,78 @@
       L += '<div class="cx-slot"><div class="cx-tm">' + esc(e.start) + '<span>' + esc(e.end) + '</span></div>' + cxCard(s, key, i, isT, now) + '</div>';
       prevEnd = prevEnd === null ? mins(e.end) : Math.max(prevEnd, mins(e.end));
     });
-    return h + '<div class="cx-list">' + L + '</div>' + cxFoot();
+    return h + '<div class="cx-list">' + L + '</div>' + cxLegend(true) + cxFoot();
   }
-  function cxLegend() {
-    return '<div class="cx-leg cx-leg-k"><span><i style="' + kv('lec') + '"></i>Лекция</span><span><i style="' + kv('pr') + '"></i>Практика</span><span><i style="' + kv('cyc') + '"></i>Цикл</span><span>Нажмите на занятие — откроются аудитория, преподаватель и ДЗ</span></div>';
+  /* «Поделиться днём»: картинка 1080×1350 с парами дня — удобно скинуть в чат группы */
+  function shareDay(key) {
+    var sl = liveOf(key); if (!sl.length) return;
+    var W = 1080, P = 72, TW = W - P * 2 - 230;
+    var cv = document.createElement('canvas'); cv.width = W;
+    var x = cv.getContext('2d'), F = 'Inter, system-ui, sans-serif';
+    var KC = { lec: '#6E7C9A', pr: '#8C2B33', cyc: '#9A7A3E' };
+    var fit = function (s, max) { s = String(s); if (x.measureText(s).width <= max) return s; while (s.length > 1 && x.measureText(s + '…').width > max) s = s.slice(0, -1); return s.trim() + '…'; };
+    /* название пары — до двух строк */
+    var wrap2 = function (s, max) {
+      var w = String(s).split(/\s+/), a = '';
+      while (w.length && x.measureText((a ? a + ' ' : '') + w[0]).width <= max) a = (a ? a + ' ' : '') + w.shift();
+      if (!a) a = w.shift() || '';
+      return w.length ? [a, fit(w.join(' '), max)] : [a];
+    };
+    x.font = '700 38px ' + F;
+    var lines = sl.map(function (s) { return wrap2(namesOf(s).join(' / '), TW); });
+    var rows = lines.map(function (l) { return l.length > 1 ? 196 : 152; });
+    var H = 390 + rows.reduce(function (a, b) { return a + b + 22; }, 0) + 110;
+    cv.height = H;
+    var draw = function (logo) {
+      x.fillStyle = '#F4F6FA'; x.fillRect(0, 0, W, H);
+      var g = x.createLinearGradient(0, 0, W, 330); g.addColorStop(0, '#8C2B33'); g.addColorStop(1, '#5E1820');
+      x.fillStyle = g; x.fillRect(0, 0, W, 330);
+      if (logo) x.drawImage(logo, W - P - 92, 56, 92, 100);
+      x.fillStyle = 'rgba(255,255,255,.75)'; x.font = '600 34px ' + F; x.fillText('Группа ' + selectedStudyGroup + (typeof group !== 'undefined' && group !== 'all' ? ' · ' + group + '-я подгруппа' : ''), P, 104);
+      /* в чате «сегодня» быстро устаревает — пишем день недели */
+      x.fillStyle = '#fff'; x.font = '800 72px ' + F; x.fillText(fit(DOW[dow(key)] + ', ' + parseISO(key).getDate() + ' ' + MON[parseISO(key).getMonth()], W - P * 2 - 110), P, 196);
+      x.fillStyle = 'rgba(255,255,255,.8)'; x.font = '500 34px ' + F; x.fillText(countLabel(sl) + ' · ' + sl[0][0].start + ' – ' + sl[sl.length - 1][0].end, P, 262);
+      var y = 390;
+      sl.forEach(function (s, i) {
+        var e = s[0], c = KC[kindOf(e)] || '#8C2B33', rh = rows[i], ln = lines[i];
+        x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(P, y, W - P * 2, rh, 28) : x.rect(P, y, W - P * 2, rh); x.fill();
+        x.fillStyle = c; x.beginPath(); x.roundRect ? x.roundRect(P, y, 12, rh, [28, 0, 0, 28]) : x.rect(P, y, 12, rh); x.fill();
+        x.fillStyle = '#14161C'; x.font = '800 40px ' + F; x.fillText(e.start, P + 44, y + 62);
+        x.fillStyle = '#7A8194'; x.font = '500 30px ' + F; x.fillText(e.end, P + 44, y + 106);
+        x.fillStyle = '#14161C'; x.font = '700 38px ' + F;
+        ln.forEach(function (t, j) { x.fillText(t, P + 210, y + 62 + j * 46); });
+        x.fillStyle = c; x.font = '600 30px ' + F;
+        x.fillText(fit([kindName(e), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · '), TW), P + 210, y + rh - 42);
+        y += rh + 22;
+      });
+      x.fillStyle = '#7A8194'; x.font = '600 30px ' + F; x.fillText('KSMU Community · ksmucommunity.github.io', P, H - 56);
+      cv.toBlob(function (b) { if (b) shareShow(b, key); }, 'image/png');
+    };
+    /* эмблема — белая маска; на бордовой шапке рисуем как есть */
+    var im = new Image(); im.onload = function () { draw(im); }; im.onerror = function () { draw(null); }; im.src = 'img/ksmu-mark.webp';
+  }
+  function shareShow(blob, key) {
+    var url = URL.createObjectURL(blob), name = 'raspisanie-' + selectedStudyGroup + '-' + key + '.png';
+    var file = null; try { file = new File([blob], name, { type: 'image/png' }); } catch (e) {}
+    var canShare = !!(file && navigator.canShare && navigator.canShare({ files: [file] }));
+    var ov = document.createElement('div'); ov.className = 'cx-shov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Картинка с расписанием дня');
+    ov.innerHTML = '<div class="cx-shbox"><img src="' + url + '" alt="Расписание группы ' + esc(selectedStudyGroup) + ' на ' + esc(ddmm(key)) + '"><p>' + (inTG ? 'Нажмите на картинку и удерживайте, чтобы сохранить или переслать' : 'Отправьте картинку в чат группы') + '</p><div class="r">' +
+      (canShare ? '<button type="button" class="cx-btn" data-sh="share">' + ic('send') + 'Отправить</button>' : '') +
+      '<a class="cx-btn g" href="' + url + '" download="' + esc(name) + '">Сохранить</a><button type="button" class="cx-btn g" data-sh="close">Закрыть</button></div></div>';
+    var close = function () { ov.remove(); URL.revokeObjectURL(url); document.removeEventListener('keydown', onKey); };
+    var onKey = function (e) { if (e.key === 'Escape') close(); };
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-sh]');
+      if (e.target === ov || (b && b.dataset.sh === 'close')) return close();
+      if (b && b.dataset.sh === 'share') navigator.share({ files: [file], title: 'Расписание ' + selectedStudyGroup }).catch(function () {});
+    });
+    document.addEventListener('keydown', onKey);
+    ($('kgApp') || document.body).appendChild(ov);
+    var f = ov.querySelector('[data-sh]'); if (f) f.focus();
+    haptic('ok');
+  }
+  function cxLegend(short) {
+    return '<div class="cx-leg cx-leg-k' + (short ? ' cx-leg-s' : '') + '"><span><i style="' + kv('lec') + '"></i>Лекция</span><span><i style="' + kv('pr') + '"></i>Практика</span><span><i style="' + kv('cyc') + '"></i>Цикл</span>' + (short ? '' : '<span>Нажмите на занятие — откроются аудитория, преподаватель и ДЗ</span>') + '</div>';
   }
   function renderCx(dir) {
     var box = $('kgCx'); if (!box) return;
@@ -1016,6 +1113,8 @@
     if (ev.target.closest('a')) return;
     var a = ev.target.closest('[data-cx]'); if (!a) return;
     var k = a.dataset.cx;
+    haptic(/^(date|wk|sg|board)$/.test(k) ? 'sel' : 'tap');
+    if (k === 'share') { shareDay(state.date); return; }
     if (k === 'menu') openSide();
     else if (k === 'dback') { var from = state.dayFrom; state.dayFrom = null; state.open = null;
       if (from === 'calendar') { state.tab = 'home'; state.viaMenu = true; try { showCal(state.date); } finally { state.viaMenu = false; } }
@@ -1185,7 +1284,7 @@
       '<div class="kg-lt">Назначить</div><form class="kg-lbox kg-pad cx-rf" id="cxRlF"><input id="cxRlT" class="cx-in" autocomplete="off" maxlength="40" placeholder="@username, Telegram ID или почта" aria-label="Кому" required>' + grp +
       '<select id="cxRlR" class="cx-in" aria-label="Роль">' + roles.map(function (r) { return '<option value="' + r[0] + '">' + r[1] + '</option>'; }).join('') + '</select>' +
       '<button type="submit" class="kg-btn kg-wide">' + ic('plus') + 'Назначить</button><p class="cx-rmsg" id="cxRlM" role="status"></p></form>' +
-      '<div class="kg-lt">' + (adm ? 'Все роли' : 'Роли группы ' + esc(my.join(', '))) + '</div><div id="cxRlL" class="cx-rows"><div class="cx-empty gl">Загрузка…</div></div>';
+      '<div class="kg-lt">' + (adm ? 'Все роли' : 'Роли группы ' + esc(my.join(', '))) + '</div><div id="cxRlL" class="cx-rows">' + skel() + '</div>';
     showPage('roles', 'Роли и доступ', h);
     var msg = function (t, bad) { var m = $('cxRlM'); if (m) { m.textContent = t; m.classList.toggle('bad', !!bad); } };
     $('cxRlF').addEventListener('submit', function (ev) {
@@ -1372,13 +1471,14 @@
     about: 'О проекте', privacy: 'Политика', consent: 'Согласие', settings: 'Профиль', group: 'Выбор группы', roles: 'Роли', tools: 'Инструменты', stats: 'Статистика' };
   function showStats(days) {
     state.statDays = days || state.statDays || 30;
-    if (!isAdm() && accessWait('stats', 'Статистика')) return;
+    if (!DEMO && !isAdm() && accessWait('stats', 'Статистика')) return;
     state.accessWait = null;
-    if (!isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
+    if (!DEMO && !isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
     var h = '<div class="cx-sg cx-mseg" role="group" aria-label="Период">' + [[7, '7 дней'], [30, '30 дней'], [90, '90 дней']].map(function (o) {
-      return '<button type="button" data-st="d" data-v="' + o[0] + '" aria-pressed="' + (state.statDays === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSt"><div class="cx-empty gl">Загрузка…</div></div>' +
+      return '<button type="button" data-st="d" data-v="' + o[0] + '" aria-pressed="' + (state.statDays === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSt">' + skel('stats') + '</div>' +
       '<p class="cx-note">Считаются устройства, а не люди: телефон и компьютер одного студента — два устройства. Статистика анонимная, без имён и Telegram-аккаунтов; при включённом в браузере «Не отслеживать» не собирается.</p>';
     showPage('stats', 'Статистика', h);
+    if (DEMO) { var dd = state.statDays; setTimeout(function () { if (state.page === 'stats' && state.statDays === dd) renderStats(demoStats(dd)); }, 900); return; }
     var tok = ''; try { tok = cloudSession && cloudSession.access_token; } catch (e) {}
     fetch(KGMU_CLOUD.url + '/rest/v1/rpc/kgmu_stats_summary', { method: 'POST', headers: { apikey: KGMU_CLOUD.key, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify({ days: state.statDays }) })
       .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || ('Ошибка ' + r.status)); return j; }); })
@@ -1388,11 +1488,23 @@
   function renderStats(j) {
     var box = $('cxSt'); if (!box) return;
     var daily = j.daily || [], max = Math.max.apply(null, daily.map(function (d) { return d.users; }).concat([1]));
-    var tile = function (v, l) { return '<div class="cx-stt gl"><b>' + v + '</b><span>' + l + '</span></div>'; };
-    var h = '<div class="cx-sts">' + tile(j.today || 0, 'сегодня') + tile(j.week || 0, 'за 7 дней') + tile(j.month || 0, 'за 30 дней') + '</div>';
-    h += '<div class="cx-lab">Устройств в день</div><section class="cx-stc gl"><div class="cx-bars2" role="img" aria-label="' + esc(daily.map(function (d) { return ddmm(d.day) + ': ' + d.users; }).join(', ')) + '">' +
-      daily.map(function (d) { var pct = Math.round(d.users / max * 100); return '<span class="cx-bar2" title="' + ddmm(d.day) + ' — ' + plural(d.users, 'устройство', 'устройства', 'устройств') + ', открытий: ' + d.opens + '"><i style="height:' + Math.max(pct, d.users ? 4 : 0) + '%"></i></span>'; }).join('') +
-      '</div><div class="cx-bax"><span>' + (daily[0] ? ddmm(daily[0].day) : '') + '</span><span>макс. ' + max + '</span><span>' + (daily.length ? ddmm(daily[daily.length - 1].day) : '') + '</span></div></section>';
+    state.statDaily = daily;
+    /* сравнение с прошлым периодом: prev_* — те же счётчики за предыдущие 1/7/30 дней (нужны в kgmu_stats_summary) */
+    var delta = function (v, p) {
+      if (p == null || !p) return '';
+      var pc = Math.round((v - p) / p * 100);
+      return '<em class="cx-dl ' + (pc > 0 ? 'up' : pc < 0 ? 'dn' : '') + '" title="Предыдущий период: ' + p + '">' + (pc > 0 ? '↑ ' : pc < 0 ? '↓ ' : '') + Math.abs(pc) + '%</em>';
+    };
+    var tile = function (v, l, p) { return '<div class="cx-stt gl"><b>' + v + '</b><span>' + l + '</span>' + delta(v, p) + '</div>'; };
+    var h = '<div class="cx-sts">' + tile(j.today || 0, 'сегодня', j.prev_today) + tile(j.week || 0, 'за 7 дней', j.prev_week) + tile(j.month || 0, 'за 30 дней', j.prev_month) + '</div>';
+    var DL = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'], few = daily.length <= 31;
+    h += '<div class="cx-lab">Устройств в день</div><section class="cx-stc gl"><div class="cx-stcap" id="cxStCap" aria-live="polite"></div><div class="cx-bars2' + (few ? '' : ' many') + '">' +
+      daily.map(function (d, i) {
+        var pct = Math.round(d.users / max * 100), we = dow(d.day) >= 5;
+        return '<button type="button" class="cx-bar2' + (we ? ' we' : '') + '" data-sb="' + i + '" aria-label="' + esc(DOW[dow(d.day)] + ', ' + ddmm(d.day) + ': ' + plural(d.users, 'устройство', 'устройства', 'устройств') + ', открытий ' + d.opens) + '"><i style="height:' + Math.max(pct, d.users ? 4 : 0) + '%"></i></button>';
+      }).join('') + '</div>' +
+      (few ? '<div class="cx-bdw" aria-hidden="true">' + daily.map(function (d) { return '<span class="' + (dow(d.day) >= 5 ? 'we' : '') + '">' + DL[dow(d.day)] + '</span>'; }).join('') + '</div>' : '') +
+      '<div class="cx-bax"><span>' + (daily[0] ? ddmm(daily[0].day) : '') + '</span><span><i class="cx-wek"></i>суббота и воскресенье</span><span>' + (daily.length ? ddmm(daily[daily.length - 1].day) : '') + '</span></div></section>';
     var pl = j.platform || {}, pt = (pl.tg || 0) + (pl.web || 0) + (pl.pwa || 0);
     var row = function (label, n, tot, extra) { var pc = tot ? Math.round(n / tot * 100) : 0; return '<div class="cx-str"><span>' + label + '</span><b>' + n + (extra || '') + '</b><i style="--w:' + pc + '%"></i></div>'; };
     h += '<div class="cx-lab">Где открывают</div><section class="cx-stl gl">' + (pt ? row('Мини-приложение Telegram', pl.tg || 0, pt) + row('Сайт в браузере', pl.web || 0, pt) + row('Установленное приложение', pl.pwa || 0, pt) : '<span class="cx-stn">Пока нет данных</span>') + '</section>';
@@ -1402,6 +1514,27 @@
     h += '<div class="cx-lab">Разделы</div><section class="cx-stl gl">' + (ss.length ? ss.map(function (x) { return row(esc(SEC_RU[x.section] || x.section), x.views, smax); }).join('') : '<span class="cx-stn">Пока нет данных</span>') + '</section>';
     h += '<div class="cx-lab">Аккаунты</div><section class="cx-stl gl"><div class="cx-str"><span>Вошли через Telegram</span><b>' + (j.tg_accounts || 0) + '</b></div></section>';
     box.innerHTML = h;
+    statPick(daily.length - 1);
+  }
+  /* выбранный столбик (касание или клик) — подпись над графиком */
+  function statPick(i) {
+    var d = (state.statDaily || [])[i], cap = $('cxStCap'); if (!d || !cap) return;
+    cap.innerHTML = '<b>' + plural(d.users, 'устройство', 'устройства', 'устройств') + '</b><span>' + DOW[dow(d.day)] + ', ' + parseISO(d.day).getDate() + ' ' + MON[parseISO(d.day).getMonth()] + ' · открытий ' + d.opens + '</span>';
+    document.querySelectorAll('#cxSt .cx-bar2').forEach(function (b) { b.classList.toggle('on', +b.dataset.sb === i); b.setAttribute('aria-pressed', String(+b.dataset.sb === i)); });
+  }
+  /* ДЕМО (только локально, ?demo=1): выдуманные числа, чтобы показать экран без входа админа */
+  function demoStats(n) {
+    var t = today(), daily = [], seed = 7;
+    var rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    for (var i = n - 1; i >= 0; i--) {
+      var k = addDays(t, -i), we = dow(k) >= 5, u = Math.round((we ? 70 : 190) + rnd() * 60 + (n - i) * 0.8);
+      daily.push({ day: k, users: u, opens: Math.round(u * (1.6 + rnd() * .6)) });
+    }
+    return { today: daily[daily.length - 1].users, prev_today: 201, week: 612, prev_week: 548, month: 1384, prev_month: 1420,
+      daily: daily, platform: { tg: 702, web: 541, pwa: 64 },
+      groups: [{ grp: '1307', users: 41 }, { grp: '1101', users: 33 }, { grp: '2205', users: 29 }, { grp: '1512', users: 22 }, { grp: '4103', users: 17 }],
+      sections: [{ section: 'week', views: 1820 }, { section: 'calendar', views: 940 }, { section: 'modules', views: 610 }, { section: 'search', views: 302 }, { section: 'news', views: 188 }],
+      tg_accounts: 385 };
   }
 
   /* ---------- модули и зачёты (новый экран вместо старого V8.8) ---------- */
@@ -1589,6 +1722,7 @@
     if ($('cxGpBody')) $('cxGpBody').innerHTML = h;
   }
   function pickGroup(id) {
+    haptic('ok');
     var first = gp && gp.first;
     gp = null; document.body.classList.remove('kg-cx-first');
     function go() { if (go.done) return; go.done = true; try { selectStudyGroup(id); } catch (e) { console.warn(e); } }
@@ -1650,6 +1784,8 @@
   function onCxPage(ev) {
     var r = ev.target.closest('#cxCalDay [data-cx="day"]');
     if (r) { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
+    var sb = ev.target.closest('[data-sb]');
+    if (sb) { haptic('sel'); statPick(+sb.dataset.sb); return; }
     var st = ev.target.closest('[data-st]');
     if (st) { state.noPush = true; try { showStats(+st.dataset.v); } finally { state.noPush = false; } return; }
     var m = ev.target.closest('[data-mod],[data-sr]');
