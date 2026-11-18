@@ -1021,7 +1021,7 @@ window.addEventListener('load',function(){setTimeout(function(){try{if(!window.c
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=90">
 <link rel="stylesheet" href="./kg-app.css?v=90">
-<link rel="stylesheet" href="./kg-e.css?v=35">
+<link rel="stylesheet" href="./kg-e.css?v=36">
 <link rel="stylesheet" href="./kg-apple.css?v=1" id="kgAppleCss">
 <style>html.kg-boot body{visibility:hidden}</style>
 <script>/* без вспышки старого интерфейса: страница скрыта, пока kg-app.js не соберёт новый (снимает kg-boot); запасной таймер 4 с */
@@ -2294,7 +2294,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=113"></script>
 <script src="./community-extras.js"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=140"></script>
+<script src="./kg-app.js?v=141"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>

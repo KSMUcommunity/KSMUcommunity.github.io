@@ -757,3 +757,29 @@ html.kg-desk .cx-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax
 
 /* строка «Подать заявку на старосту» в профиле — акцентом, как кнопка */
 #kgApp .kg-lrow.kg-accent>span:first-child{color:var(--a-acc);font-weight:600}
+
+/* ===== 9.12 · доступность и читаемость (проверка 18.11) ===== */
+/* скрытый текст для программ чтения с экрана */
+.kg-sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* мелкий смысловой текст — не меньше 12 px (было 10–11) */
+.cx-segl,.cx-first small,.cx-row .tm small,.cx-tm span,.cx-chip,.cx-brk,.cx-now span,.cx-cw,.cx-d small,.cx-wgd small{font-size:12px}
+.cx-ring span,.cx-now b,.cx-bct i,#kgApp .kg-tab{font-size:11px}
+/* белый текст на градиентах — без полупрозрачности; середина «свободного» героя темнее (белый ≥ 4.5:1) */
+.cx-segl{color:#fff}.cx-first small,.cx-first span{opacity:1}
+.cx-hero.is-free{background:linear-gradient(150deg,#46526D 0%,#56637F 50%,#8C2B33 100%)}
+/* значки-счётчики: белый на тёмно-малиновом (≈5.8:1 вместо ≈3:1) */
+.cx-nb,.kg-tab .kg-bd{background:#C0255E!important}
+/* перерывы в светлой теме — текст темнее */
+html.kg-e:not([data-theme="dark"]){--cx-brk:#3F4A66}
+/* видимый фокус с клавиатуры */
+html.kg-e :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid var(--a-acc);outline-offset:2px}
+html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) :focus-visible{outline-color:#fff}
+#kgApp .cx-gq:focus-within,#kgApp .cx-in:focus{box-shadow:0 0 0 3px var(--a-acc)}
+/* карточка пары: заголовок — настоящая кнопка раскрытия (вид прежний) */
+#kgApp .cx-card h3 .cx-open{all:unset;display:block;cursor:pointer;font:inherit;color:inherit;overflow-wrap:anywhere}
+#kgApp .cx-card h3 .cx-open:focus-visible{outline:3px solid var(--a-acc);outline-offset:3px;border-radius:6px}
+#kgApp .cx-card.live h3 .cx-open:focus-visible{outline-color:#fff}
+/* меньше движения — для всех анимаций и плавной прокрутки */
+@media (prefers-reduced-motion:reduce){html.kg-e *,html.kg-e *::before,html.kg-e *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+/* ссылки в заголовках разделов («Весь день ›», «Модули ›») — на подложке: под стеклом бывает цветное пятно (контраст был 3.9:1) */
+#kgApp .cx-sh button,#kgApp .cx-sh a{background:var(--e-chip);border-radius:999px;padding:7px 12px;margin:-7px -4px;font-weight:700}
