@@ -1,7 +1,7 @@
-const CACHE='kgmu-v160-kgmu-20261115';
+const CACHE='kgmu-v161-kgmu-20261115';
 /* расписание групп (data/g/*.js) — отдельный кэш: при выходе новой версии сайта не стирается, иначе офлайн пропадали бы пары */
 const DATA='kgmu-data';
-const ASSETS=['./','./index.html','./schedule-data.js','./img/kgmu-logo.webp','./img/ksmu-mark.webp','./img/ksmu-logo.webp','./cloud-sync.js','./community-extras.js','./kg-theme.css','./kg-ui.js','./kg-app.css','./kg-e.css','./kg-apple.css','./fonts/inter-latin.woff2','./fonts/inter-cyrillic.woff2','./kg-app.js','./manifest.webmanifest','./img/favicon-32.png','./img/favicon-64.png','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const ASSETS=['./','./index.html','./schedule-data.js','./img/kgmu-logo.webp','./img/ksmu-mark.webp','./img/ksmu-logo.webp','./cloud-sync.js','./community-extras.js','./kg-theme.css','./kg-ui.js','./kg-app.css','./kg-e.css','./fonts/inter-latin.woff2','./fonts/inter-cyrillic.woff2','./kg-app.js','./manifest.webmanifest','./img/favicon-32.png','./img/favicon-64.png','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kgmu-')&&k!==CACHE&&k!==DATA).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 /* Страницу (index.html) всегда сверяем с сервером: GitHub Pages разрешает кэшировать HTML 10 минут,

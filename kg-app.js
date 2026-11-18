@@ -272,15 +272,7 @@
     renderSide();
     var tb = $('kgTabbar'); if (!tb) return;
     /* дизайн E: нижнего меню нет — разделы в боковом меню (☰) */
-    if (window.KG_DESIGN === 'e') { document.documentElement.classList.add('kg-notab'); tb.innerHTML = ''; tb.hidden = true; return; }
-    var c = curTab(), nn = unread();
-    function t(id, icon, label, ex) { return '<button type="button" class="kg-tab' + (c === id ? ' on' : '') + '" data-tab="' + id + '"' + (c === id ? ' aria-current="page"' : '') + '>' + ic(icon) + '<span>' + label + '</span>' + (ex || '') + '</button>'; }
-    var bd = nn ? '<span class="kg-bd">' + nn + '</span>' : '';
-    tb.innerHTML = window.KG_DESIGN === 'e'
-      ? t('news', 'news', 'Объявления', bd) + t('week', 'week', 'Неделя') +
-        '<button type="button" class="kg-fab' + (c === 'home' ? ' on' : '') + '" data-tab="home" aria-label="Главная"' + (c === 'home' ? ' aria-current="page"' : '') + '>' + ic('home') + '</button>' +
-        t('modules', 'layers', 'Модули') + t('profile', 'user', 'Профиль')
-      : t('home', 'home', 'Главная') + t('week', 'week', 'Неделя') + t('modules', 'layers', 'Модули') + t('news', 'news', 'Объявления', bd) + t('profile', 'user', 'Профиль');
+    document.documentElement.classList.add('kg-notab'); tb.innerHTML = ''; tb.hidden = true;
   }
   /* телефон: боковое меню выезжает слева */
   function openSide() {
@@ -1188,7 +1180,7 @@
         : botName() ? '<div class="kg-lbox">' + row('Подать заявку на старосту', esc(g), 'starreq', 'kg-accent') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия ' + (window.KG_DESIGN === 'e' ? '9.11' : '9.2') + '</div>';
+      '<div class="kg-ver">Версия 9.13</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
