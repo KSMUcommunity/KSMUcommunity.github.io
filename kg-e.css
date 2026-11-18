@@ -783,3 +783,53 @@ html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) 
 @media (prefers-reduced-motion:reduce){html.kg-e *,html.kg-e *::before,html.kg-e *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 /* ссылки в заголовках разделов («Весь день ›», «Модули ›») — на подложке: под стеклом бывает цветное пятно (контраст был 3.9:1) */
 #kgApp .cx-sh button,#kgApp .cx-sh a{background:var(--e-chip);border-radius:999px;padding:7px 12px;margin:-7px -4px;font-weight:700}
+
+/* ===== 9.13 · визуал (демо): заглушки, статистика, пустые экраны, легенда, «Поделиться днём» ===== */
+/* заглушки загрузки */
+@keyframes cxsk{0%{background-position:120% 0}100%{background-position:-20% 0}}
+.cx-skel .cx-sk-tile,.cx-skel .cx-sk-chart,.cx-skel .cx-sk-ic,.cx-skel .cx-sk-row span i{background:linear-gradient(90deg,var(--e-sep) 0%,var(--e-chip) 45%,var(--e-sep) 90%);background-size:220% 100%;animation:cxsk 1.3s ease-in-out infinite}
+.cx-skel .cx-sk-tile{height:86px;border-radius:18px}
+.cx-skel .cx-sk-chart{height:168px;border-radius:18px;margin:26px 0 12px}
+.cx-skel .cx-sk-box{display:flex;flex-direction:column;gap:8px}
+.cx-skel .cx-sk-row{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:var(--a-card,rgba(255,255,255,.6))}
+.cx-skel .cx-sk-ic{width:40px;height:40px;border-radius:12px;flex:none}
+.cx-skel .cx-sk-row span{flex:1;display:flex;flex-direction:column;gap:8px}
+.cx-skel .cx-sk-row span i{display:block;height:12px;border-radius:6px}
+/* пустые экраны: бледная эмблема KSMU над текстом */
+.cx-empty::before{content:"";display:block;width:52px;height:56px;margin:0 auto 12px;background:var(--ksmu,#A8141B);opacity:.16;-webkit-mask:url(./img/ksmu-mark.webp) center/contain no-repeat;mask:url(./img/ksmu-mark.webp) center/contain no-repeat}
+.cx-skel .cx-empty::before{display:none}
+/* легенда цветов под лентой дня (телефон) */
+.cx-leg-s{justify-content:center;margin:14px 4px 0}
+/* статистика: касание по столбику, дни недели, выходные, сравнение с прошлым периодом */
+.cx-stt em{font-style:normal;font-size:12px;font-weight:700;margin-top:2px;color:var(--a-hint)}
+.cx-stt em.up{color:var(--a-green,#2E7D4F)}
+.cx-stt em.dn{color:var(--a-red,#B3261E)}
+.cx-stcap{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-height:24px;margin-bottom:10px;font-size:13px;color:var(--a-hint)}
+.cx-stcap b{font-size:16px;color:var(--a-text)}
+#kgApp .cx-bar2{all:unset;flex:1;height:100%;display:flex;align-items:flex-end;min-width:0;cursor:pointer;border-radius:4px 4px 0 0}
+#kgApp .cx-bar2 i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--a-acc);opacity:.78;transition:opacity .15s}
+#kgApp .cx-bar2.we i{background:var(--e-lec,#6E7C9A);opacity:.6}
+#kgApp .cx-bar2:hover i,#kgApp .cx-bar2.on i{opacity:1}
+#kgApp .cx-bar2.on{box-shadow:inset 0 -3px 0 var(--a-text)}
+#kgApp .cx-bar2:focus-visible{outline:3px solid var(--a-acc);outline-offset:2px}
+.cx-bars2.many{gap:1px}
+.cx-bdw{display:flex;gap:2px;margin-top:4px}
+.cx-bdw span{flex:1;min-width:0;text-align:center;font-size:10.5px;font-weight:600;color:var(--a-hint);overflow:hidden}
+.cx-bdw span.we{color:var(--e-lec,#6E7C9A)}
+.cx-bax .cx-wek{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--e-lec,#6E7C9A);opacity:.6;margin-right:5px;vertical-align:-1px}
+/* «Поделиться днём» */
+@media (max-width:400px){#kgApp .cx-mbtn[data-cx="share"] span{display:none}}
+.cx-shov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,12,18,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cx-shbox{width:min(420px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:24px;background:var(--a-card2,#fff);box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.cx-shbox img{display:block;width:100%;height:auto;border-radius:14px}
+.cx-shbox p{margin:0;text-align:center;font-size:13px;color:var(--a-hint)}
+.cx-shbox .r{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){.cx-shov{animation:cxfade .18s ease-out}.cx-shbox{animation:cxpop .22s cubic-bezier(.2,.8,.2,1)}}
+@keyframes cxfade{from{opacity:0}}
+@keyframes cxpop{from{opacity:0;transform:scale(.96) translateY(8px)}}
+/* старая панель записей в календаре: текст на всю ширину, кнопки под ним */
+#cxCalSlot .entry-top{flex-direction:column;align-items:stretch;gap:10px}
+#cxCalSlot .entry-title{font-size:15px;font-weight:700;line-height:1.4}
+#cxCalSlot .entry-sub{margin-top:4px;font-size:12.5px;color:var(--a-hint)}
+#cxCalSlot .entry-controls{flex-direction:row;margin-top:0}
+#cxCalSlot .entry-controls button{flex:1}
