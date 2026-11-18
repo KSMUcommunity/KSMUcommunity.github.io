@@ -40,8 +40,6 @@
       : '<div class="cx-sk-box">' + row + row + row + row + '</div>';
     return '<div class="cx-skel" role="status"><span class="kg-sr">Загрузка…</span><div aria-hidden="true">' + body + '</div></div>';
   }
-  /* демо-режим только для локальной проверки: 127.0.0.1/localhost + ?demo=1 (на живом сайте не включается) */
-  var DEMO = /^(127\.0\.0\.1|localhost)$/.test(location.hostname) && /[?&]demo=1\b/.test(location.search);
   function motionOk() { return !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function lum(hex) {
     var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 1;
@@ -263,7 +261,7 @@
       (g ? '<button type="button" class="cx-sgrp" data-tab="group"><span><small>Группа</small><b>' + esc(g) + '</b><em>' + esc(groupCaption(g)) + '</em><span class="kg-sr">, сменить группу</span></span>' + ic('chev') + '</button>' : '') +
       '<nav class="cx-navs" aria-label="Разделы">' + it('home', 'home', 'Главная') + it('week', 'week', 'Неделя') + it('calendar', 'cal', 'Календарь') + it('modules', 'layers', 'Модули и зачёты') +
       it('news', 'news', 'Объявления', nn ? '<span class="cx-nb" aria-label="непрочитанных: ' + nn + '">' + nn + '</span>' : '') + it('search', 'search', 'Поиск') + it('useful', 'link', 'Полезное') + it('contacts', 'send', 'Контакты') + it('about', 'heart', 'О проекте') +
-      (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() || DEMO ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
+      (canRoles() ? it('roles', 'users', 'Роли') : '') + (isAdm() ? it('stats', 'table', 'Статистика') : '') + (r ? it('tools', 'tool', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') + '</nav>' +
       '<div class="cx-side-foot"><button type="button" class="cx-me' + (c === 'profile' ? ' on' : '') + '" data-tab="profile"' + (c === 'profile' ? ' aria-current="page"' : '') + '><span class="cx-me-av" aria-hidden="true">' + (u ? esc(nm.replace('@', '').slice(0, 1).toUpperCase()) : ic('user')) + '</span><span><b>' + (u ? esc(nm) : 'Профиль') + '</b><small>' + (u ? esc(r ? ROLE[r] : 'Студент') : 'Войти: Telegram или почта') + '</small></span>' + ic('gear') + '</button></div>';
   }
   /* только непрочитанные: всё, что новее последнего просмотренного объявления */
@@ -1463,14 +1461,13 @@
     about: 'О проекте', privacy: 'Политика', consent: 'Согласие', settings: 'Профиль', group: 'Выбор группы', roles: 'Роли', tools: 'Инструменты', stats: 'Статистика' };
   function showStats(days) {
     state.statDays = days || state.statDays || 30;
-    if (!DEMO && !isAdm() && accessWait('stats', 'Статистика')) return;
+    if (!isAdm() && accessWait('stats', 'Статистика')) return;
     state.accessWait = null;
-    if (!DEMO && !isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
+    if (!isAdm()) { showPage('stats', 'Статистика', '<div class="cx-empty gl"><b>Нет доступа</b>Статистику видят только администраторы</div>'); return; }
     var h = '<div class="cx-sg cx-mseg" role="group" aria-label="Период">' + [[7, '7 дней'], [30, '30 дней'], [90, '90 дней']].map(function (o) {
       return '<button type="button" data-st="d" data-v="' + o[0] + '" aria-pressed="' + (state.statDays === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div><div id="cxSt">' + skel('stats') + '</div>' +
       '<p class="cx-note">Считаются устройства, а не люди: телефон и компьютер одного студента — два устройства. Статистика анонимная, без имён и Telegram-аккаунтов; при включённом в браузере «Не отслеживать» не собирается.</p>';
     showPage('stats', 'Статистика', h);
-    if (DEMO) { var dd = state.statDays; setTimeout(function () { if (state.page === 'stats' && state.statDays === dd) renderStats(demoStats(dd)); }, 900); return; }
     var tok = ''; try { tok = cloudSession && cloudSession.access_token; } catch (e) {}
     fetch(KGMU_CLOUD.url + '/rest/v1/rpc/kgmu_stats_summary', { method: 'POST', headers: { apikey: KGMU_CLOUD.key, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify({ days: state.statDays }) })
       .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || ('Ошибка ' + r.status)); return j; }); })
@@ -1513,20 +1510,6 @@
     var d = (state.statDaily || [])[i], cap = $('cxStCap'); if (!d || !cap) return;
     cap.innerHTML = '<b>' + plural(d.users, 'устройство', 'устройства', 'устройств') + '</b><span>' + DOW[dow(d.day)] + ', ' + parseISO(d.day).getDate() + ' ' + MON[parseISO(d.day).getMonth()] + ' · открытий ' + d.opens + '</span>';
     document.querySelectorAll('#cxSt .cx-bar2').forEach(function (b) { b.classList.toggle('on', +b.dataset.sb === i); b.setAttribute('aria-pressed', String(+b.dataset.sb === i)); });
-  }
-  /* ДЕМО (только локально, ?demo=1): выдуманные числа, чтобы показать экран без входа админа */
-  function demoStats(n) {
-    var t = today(), daily = [], seed = 7;
-    var rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-    for (var i = n - 1; i >= 0; i--) {
-      var k = addDays(t, -i), we = dow(k) >= 5, u = Math.round((we ? 70 : 190) + rnd() * 60 + (n - i) * 0.8);
-      daily.push({ day: k, users: u, opens: Math.round(u * (1.6 + rnd() * .6)) });
-    }
-    return { today: daily[daily.length - 1].users, prev_today: 201, week: 612, prev_week: 548, month: 1384, prev_month: 1420,
-      daily: daily, platform: { tg: 702, web: 541, pwa: 64 },
-      groups: [{ grp: '1307', users: 41 }, { grp: '1101', users: 33 }, { grp: '2205', users: 29 }, { grp: '1512', users: 22 }, { grp: '4103', users: 17 }],
-      sections: [{ section: 'week', views: 1820 }, { section: 'calendar', views: 940 }, { section: 'modules', views: 610 }, { section: 'search', views: 302 }, { section: 'news', views: 188 }],
-      tg_accounts: 385 };
   }
 
   /* ---------- модули и зачёты (новый экран вместо старого V8.8) ---------- */
