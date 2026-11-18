@@ -39,58 +39,55 @@ html.kg-e .kg-card,html.kg-e .kg-wday,html.kg-e .kg-lbox,html.kg-e .kg-news,html
 html.kg-e .kg-subbar{border-width:0 0 1px}
 html.kg-e .kg-home,html.kg-e .kg-page{max-width:480px;padding:14px 16px calc(112px + env(safe-area-inset-bottom))}
 html.kg-e body.kg-mode-old main.wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
-html.kg-e .kg-top-title{font-size:24px;font-weight:800}
 
-/* главная карточка */
-html.kg-e .kg-status{position:relative;overflow:hidden;border:0;border-radius:26px;padding:18px;color:#fff;background:var(--e-hero);box-shadow:var(--e-hero-sh),inset 0 1px 0 rgba(255,255,255,.45)}
-html.kg-e .kg-status.is-morning{background:linear-gradient(155deg,#C4636A 0%,#8C2B33 55%,#5C6B8A 100%);box-shadow:0 18px 40px rgba(140,43,51,.32),inset 0 1px 0 rgba(255,255,255,.45)}
-html.kg-e .kg-status.is-break{background:linear-gradient(150deg,#A0703A 0%,#8C2B33 55%,#4E5B78 100%);box-shadow:0 18px 40px rgba(120,50,45,.3),inset 0 1px 0 rgba(255,255,255,.45)}
-html.kg-e .kg-status.is-done{background:linear-gradient(150deg,#2E3850 0%,#4E5B78 50%,#6B2E37 100%)}
-html.kg-e .kg-status.is-free{background:linear-gradient(150deg,#4E5B78 0%,#6E7C9A 50%,#8C2B33 100%);box-shadow:0 18px 40px rgba(78,91,120,.35),inset 0 1px 0 rgba(255,255,255,.45)}
-html.kg-e .kg-status>*{position:relative}
-html.kg-e .kg-status>.kg-glow,html.kg-e .kg-status>.kg-sheen,html.kg-e .kg-status>.kg-sun{position:absolute;pointer-events:none}
+
+
+
+
+
+
+
+
 .kg-glow{width:180px;height:180px;border-radius:50%;right:-50px;top:-70px;background:radial-gradient(circle,rgba(255,255,255,.35),rgba(255,255,255,0) 70%)}
 .kg-sheen{inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.25) 45%,rgba(255,255,255,0) 60%);background-size:250% 100%;animation:kgsheen 5.5s ease-in-out infinite}
 @keyframes kgsheen{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
 .kg-sun{right:-36px;top:-40px;width:170px;height:170px;animation:kgrise 6s ease-in-out infinite alternate}
 @keyframes kgrise{0%{transform:translateY(8px) scale(.95);opacity:.85}100%{transform:translateY(-6px) scale(1.05);opacity:1}}
-html.kg-e .kg-status-label,html.kg-e .kg-status.is-now .kg-status-label{display:inline-flex;color:#fff;text-transform:none;letter-spacing:0;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 10px}
-html.kg-e .kg-status-title{font-size:23px;color:#fff;margin-top:10px;overflow-wrap:anywhere}
-html.kg-e .kg-status-sub{color:rgba(255,255,255,.9);font-size:14px}
-html.kg-e .kg-status .kg-progress{height:6px;background:rgba(255,255,255,.25)}
-html.kg-e .kg-status .kg-progress span{background:#fff;box-shadow:0 0 10px rgba(255,255,255,.8)}
-html.kg-e #kgApp .kg-alert{margin-top:10px;border-radius:18px;color:var(--a-red)}
-html.kg-e #kgApp .kg-alert-news{color:var(--a-acc)}
 
-/* навигатор дня */
-html.kg-e .kg-nav{border-radius:20px;padding:6px;margin:16px 0 12px}
-html.kg-e #kgApp .kg-ibtn{border-radius:14px}
-html.kg-e #kgApp .kg-ibtn.active{background:var(--e-hero);color:#fff;box-shadow:0 6px 16px rgba(140,43,51,.35)}
 
-/* пары */
-html.kg-e .kg-card{overflow:hidden;padding:12px 14px 13px 18px}
-html.kg-e .kg-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#D98A90,#8C2B33)}
-html.kg-e .kg-card.lecture::before{background:linear-gradient(180deg,#A7B3CB,#5C6B8A)}
-html.kg-e .kg-card.cycle::before{background:linear-gradient(180deg,#DCC59A,#9A7A3E)}
-html.kg-e .kg-tag{color:var(--e-pr);background:var(--e-pr-bg)}
-html.kg-e .kg-tag.lecture{color:var(--e-lec);background:var(--e-lec-bg)}
-html.kg-e .kg-tag.cycle{color:var(--e-cyc);background:var(--e-cyc-bg)}
-html.kg-e .kg-room{color:var(--e-chipink);background:var(--e-chip);border:1px solid var(--e-chipb)}
-html.kg-e .kg-row.is-now .kg-card{background:var(--e-hero);color:#fff;border:0;box-shadow:var(--e-hero-sh),inset 0 1px 0 rgba(255,255,255,.45)}
-html.kg-e .kg-row.is-now .kg-card::before{display:none}
-html.kg-e .kg-row.is-now .kg-meta,html.kg-e .kg-row.is-now .kg-more-item small,html.kg-e .kg-row.is-now .kg-more-t{color:rgba(255,255,255,.88)}
-html.kg-e .kg-row.is-now .kg-tag,html.kg-e .kg-row.is-now .kg-room{color:#fff;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}
-html.kg-e .kg-row.is-now .kg-progress{height:6px;background:rgba(255,255,255,.25)}
-html.kg-e .kg-row.is-now .kg-progress span{background:#fff;box-shadow:0 0 10px rgba(255,255,255,.8)}
-html.kg-e .kg-row.is-now .kg-link{color:#fff}
-html.kg-e .kg-row.is-now .kg-time b{color:var(--a-acc)}
-html.kg-e .kg-row.is-done{opacity:.6}
-html.kg-e .kg-window{border:0;justify-content:center;color:var(--e-pr);font-size:12px;font-weight:700;padding:4px 0;gap:6px}
-html.kg-e .kg-window span{background:var(--e-pr-bg);border-radius:999px;padding:3px 10px}
-html.kg-e .kg-wday.is-today{border-color:color-mix(in srgb,var(--a-acc) 55%,transparent)}
-html.kg-e .kg-wrow{border-top-color:var(--e-sep)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 html.kg-e #kgApp .kg-btn{background:var(--e-chip);border:1px solid var(--e-chipb);border-radius:14px}
-html.kg-e .kg-more{border-top-color:var(--e-sep)}
+
 
 /* нижнее меню */
 .kg-tabbar{position:fixed;z-index:95;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(calc(100% - 28px),448px);height:68px;border-radius:28px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;padding:0 6px}
@@ -98,10 +95,10 @@ html.kg-e[data-theme="dark"] .kg-tabbar{background:linear-gradient(135deg,rgba(3
 #kgApp .kg-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:var(--a-hint);min-height:56px;text-align:center}
 #kgApp .kg-tab .kg-ic{width:22px;height:22px}
 #kgApp .kg-tab.on{color:var(--a-acc);font-weight:700}
-#kgApp .kg-fab{width:54px;height:54px;border-radius:20px;margin:0 auto;display:grid;place-items:center;background:var(--e-hero);color:#fff;box-shadow:0 10px 24px rgba(140,43,51,.5),inset 0 1px 0 rgba(255,255,255,.5)}
-#kgApp .kg-fab .kg-ic{width:24px;height:24px}
-body.kg-drawer-open .kg-tabbar{display:none}
-html.kg-e .kg-drawer{background:var(--e-bg)}
+
+
+
+
 html.kg-e #kgApp .kg-seg button.active{background:var(--e-hero);color:#fff!important;box-shadow:0 4px 12px rgba(140,43,51,.35)}
 @media (prefers-reduced-motion:reduce){.kg-blobs i,.kg-sheen,.kg-sun{animation:none}}
 
@@ -237,8 +234,8 @@ html.kg-e .cx-home{max-width:480px;padding:18px 16px calc(112px + env(safe-area-
 .cx-lab{font-size:12px;font-weight:700;color:var(--a-hint);margin:6px 6px 6px}
 .cx-lab:first-child{margin-top:0}
 #kgApp .kg-tab{position:relative}
-.kg-tab .kg-bd{position:absolute;top:4px;left:50%;margin-left:6px;min-width:16px;height:16px;border-radius:8px;background:linear-gradient(135deg,#FF6B6B,#F0437A);color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center;padding:0 4px}
-#kgApp .kg-fab.on{box-shadow:0 0 0 4px color-mix(in srgb,#8C2B33 25%,transparent),0 10px 24px rgba(140,43,51,.5),inset 0 1px 0 rgba(255,255,255,.5)}
+
+
 @media (prefers-reduced-motion:reduce){.cx-pulse,.cx-now i{animation:none}}
 
 /* ===== выбор группы (вместо старого экрана) ===== */
@@ -260,12 +257,12 @@ body.kg-cx-first .kg-tabbar,body.kg-cx-first .kg-subbar{display:none!important}
 #kgApp .cx-gt small{font-size:11.5px;color:var(--a-hint)}
 #kgApp .cx-gt.on{background:var(--e-hero);color:#fff;border-color:transparent;box-shadow:var(--e-hero-sh)}
 #kgApp .cx-gt.on small{color:rgba(255,255,255,.85)}
-.cx-gp-hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:18px;border-radius:26px;color:#fff;background:var(--e-hero);box-shadow:var(--e-hero-sh),inset 0 1px 0 rgba(255,255,255,.45);margin:4px 0 6px}
+
 .cx-gp-logo{width:58px;height:58px;flex:none;border-radius:18px;background:#fff;display:grid;place-items:center;overflow:hidden}
 .cx-gp-logo img{width:48px;height:48px;object-fit:contain}
-.cx-gp-hero small{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
-.cx-gp-hero b{display:block;font-size:21px;font-weight:800;letter-spacing:-.02em;margin:2px 0 3px}
-.cx-gp-hero span{display:block;font-size:13px;opacity:.9;line-height:1.35}
+
+
+
 
 /* ===== календарь и ДЗ ===== */
 .cx-cal{border-radius:26px;padding:12px 10px 14px}
@@ -297,7 +294,7 @@ body.kg-cx-first .kg-tabbar,body.kg-cx-first .kg-subbar{display:none!important}
 /* ===== старые экраны (модули, поиск, панель дня) в цветах дизайна E ===== */
 html.kg-e body.kg-on :is(.calendar-day-panel,.utility-panel,.data-tools){background:linear-gradient(135deg,var(--gl1),var(--gl2))!important;-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);border:1px solid var(--a-line)!important;box-shadow:var(--a-shadow)!important;border-radius:24px!important;color:var(--a-text)!important}
 html.kg-e body.kg-on :is(.entry,.day-lesson,.lesson-place,.inline-empty,.today-empty,.module-detail-card,.module-summary,.search-result,.reveal-entry,.lesson-reveal,.editor,.module-details,.empty){background:var(--a-card2)!important;border:1px solid var(--a-line)!important;color:var(--a-text)!important;border-radius:18px!important;box-shadow:none!important}
-html.kg-e body.kg-on .search-result:hover{background:var(--a-acc-soft)!important}
+
 html.kg-e body.kg-on :is(.panel-date,.utility-header h2,.module-detail-card h3,.module-detail-card b,.entry-title,.search-result-title,.editor h3,.form-field label){color:var(--a-text)!important}
 html.kg-e body.kg-on :is(.panel-sub,.entry-sub,.entry-desc,.utility-header p,.search-meta,.field-help,.day-lesson-person,.day-lesson-place,.module-detail-card p,.search-result-bottom,.inline-empty,.module-summary span){color:var(--a-hint)!important}
 html.kg-e body.kg-on :is(.utility-kicker,.panel-section-title,.module-summary strong){color:var(--a-acc)!important}
@@ -306,8 +303,8 @@ html.kg-e body.kg-on :is(.primary,.search-filter.active,.panel-tools #addHomewor
 html.kg-e body.kg-on :is(.action-red,.module-label,.module-date-pill,.cal-count.red){background:var(--a-red-soft)!important;color:var(--a-red)!important;border-color:transparent!important}
 html.kg-e body.kg-on :is(.homework-label,.cal-count.blue){background:var(--a-acc-soft)!important;color:var(--a-acc)!important}
 html.kg-e body.kg-on :is(.editor input:not([type=checkbox]),.editor select,.editor textarea,.search-control input){background:var(--e-chip)!important;color:var(--a-text)!important;border:1px solid var(--e-chipb)!important;border-radius:12px!important}
-html.kg-e body.kg-on .search-control{background:var(--e-chip)!important;border:1px solid var(--e-chipb)!important;border-radius:16px!important;color:var(--a-hint)}
-html.kg-e body.kg-on .search-control input{border:0!important;background:transparent!important}
+
+
 #cxCalSlot :is(.panel-tools button,.ics-button,.small-btn,.form-actions button,.entry-controls button,.map-link){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:9px 14px!important;font-size:14px;font-weight:650}
 #cxCalSlot .panel-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0 4px}
 #cxCalSlot .entry-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
@@ -558,14 +555,13 @@ html.kg-desk body.kg-cx-first .cx-ggrid{grid-template-columns:repeat(auto-fill,m
   html.kg-desk body.kg-cx-first .cx-foot{width:calc(100% - 56px)}
   html.kg-desk body.kg-cx-first .cx-wl-copy h1{font-size:clamp(36px,4.2vw,52px)}}
 
-/* ===== 9.4: быстрый доступ, контакты, роли ===== */
-.cx-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:6px}
-#kgApp .cx-qa{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px 10px;border-radius:18px;color:var(--a-text);text-align:center;min-width:0}
-#kgApp .cx-qa b{font-size:12px;font-weight:700;line-height:1.15}
-#kgApp .cx-qa small{font-size:10.5px;color:var(--a-hint);line-height:1.2}
-html.kg-desk .cx-aside .cx-quick{grid-template-columns:repeat(2,minmax(0,1fr))}
-html.kg-desk #kgApp .cx-aside .cx-qa{flex-direction:row;text-align:left;padding:10px 12px;gap:10px}
-html.kg-desk #kgApp .cx-aside .cx-qa small{display:none}
+
+
+
+
+
+
+
 .cx-rf{display:flex;flex-direction:column;gap:10px}
 #kgApp .cx-in{width:100%;box-sizing:border-box;min-height:44px;padding:0 14px;border-radius:14px;border:1px solid var(--e-sep);background:var(--e-chip);color:var(--a-text);font:inherit;font-size:15px}
 #kgApp .cx-in:focus{outline:2px solid color-mix(in srgb,var(--a-acc) 45%,transparent);outline-offset:1px}
@@ -608,10 +604,10 @@ html.kg-e:not(.kg-desk) body.cx-dr-open .cx-side{transform:none;visibility:visib
 .cx-scrim{position:fixed;inset:0;z-index:129;background:rgba(10,12,20,.42);opacity:0;pointer-events:none;transition:opacity .25s}
 html:not(.kg-desk) body.cx-dr-open .cx-scrim{opacity:1;pointer-events:auto}
 body.cx-dr-open{overflow:hidden}
-.cx-squick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-#kgApp .cx-sq{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 2px 8px;border-radius:14px;font-size:11.5px;font-weight:650;color:var(--a-text);background:var(--a-card2)}
-#kgApp .cx-sq .kg-ic{width:20px;height:20px;color:var(--a-acc)}
-#kgApp .cx-sq:active{transform:scale(.96)}
+
+
+
+
 @media (prefers-reduced-motion:reduce){.cx-side,.cx-scrim{transition:none!important}}
 
 /* ===== 9.6: без нижнего меню (дизайн E) ===== */

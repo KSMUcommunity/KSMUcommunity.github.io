@@ -169,7 +169,7 @@
 
   /* ---------- состояние ---------- */
   var state = { date: null, week: false, open: null, page: null, tab: 'home', stack: [] };
-  try { state.week = localStorage.getItem('kg-week-mode') === '1'; } catch (e) {}
+  try { localStorage.removeItem('kg-week-mode'); } catch (e) {}
 
   function ready() { return typeof dayLessons === 'function' && typeof selectedStudyGroup !== 'undefined' && selectedStudyGroup; }
   function role() {
@@ -204,47 +204,7 @@
   /* ---------- каркас ---------- */
   function mount() {
     if ($('kgApp')) return;
-    if (UI === 'cx') { var mc = mountCx(); deepPage(); return mc; }
-    var app = document.createElement('div');
-    app.id = 'kgApp';
-    app.innerHTML =
-      '<div class="kg-subbar" id="kgSubBar"><button type="button" class="kg-back" id="kgBack">' + ic('left') + 'Назад</button><b id="kgSubTitle"></b><span></span></div>' +
-      '<section class="kg-home" id="kgHome">' +
-        (inTG ? '' : '<div class="kg-top"><div class="kg-top-title">Расписание <b id="kgTopGroup"></b></div><div class="kg-top-sub" id="kgTopSub"></div></div>') +
-        '<div id="kgStatus"></div>' +
-        '<div class="kg-nav"><button type="button" class="kg-ibtn" id="kgMenuBtn" aria-label="Меню">' + ic('menu') + '</button>' +
-          '<button type="button" class="kg-ibtn kg-ghost" id="kgPrev" aria-label="Назад">' + ic('left') + '</button>' +
-          '<button type="button" class="kg-nav-mid" id="kgNavMid"><b id="kgNavTitle"></b><span id="kgNavSub"></span></button>' +
-          '<button type="button" class="kg-ibtn kg-ghost" id="kgNext" aria-label="Вперёд">' + ic('right') + '</button>' +
-          '<button type="button" class="kg-ibtn" id="kgModeBtn" aria-label="Вся неделя">' + ic('week') + '</button></div>' +
-        '<div id="kgList" class="kg-list"></div>' +
-      '</section>' +
-      '<section class="kg-page" id="kgPage"></section>' +
-      '<div class="kg-scrim" id="kgScrim"></div>' +
-      '<aside class="kg-drawer" id="kgDrawer" aria-label="Меню"></aside>';
-    document.body.insertBefore(app, document.body.firstChild);
-    var bl = document.createElement('div'); bl.className = 'kg-blobs'; bl.setAttribute('aria-hidden', 'true'); bl.innerHTML = '<i></i><i></i><i></i><i></i>'; document.body.appendChild(bl);
-    var tb = document.createElement('nav'); tb.className = 'kg-tabbar'; tb.id = 'kgTabbar'; tb.setAttribute('aria-label', 'Разделы'); app.appendChild(tb);
-    tb.addEventListener('click', onTab);
-    document.body.classList.add('kg-on', 'kg-mode-home');
-
-    $('kgMenuBtn').onclick = openDrawer;
-    $('kgScrim').onclick = closeDrawer;
-    $('kgPrev').onclick = function () { shift(-1); };
-    $('kgNext').onclick = function () { shift(1); };
-    $('kgNavMid').onclick = function () { state.date = today(); state.open = null; render(); };
-    $('kgModeBtn').onclick = function () { state.week = !state.week; try { localStorage.setItem('kg-week-mode', state.week ? '1' : '0'); } catch (e) {} render(); };
-    $('kgBack').onclick = back;
-    $('kgList').addEventListener('click', onListClick);
-    var sx = 0, sy = 0;
-    $('kgList').addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
-    $('kgList').addEventListener('touchend', function (e) {
-      var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-      if (Math.abs(dx) > 70 && Math.abs(dy) < 45) shift(dx < 0 ? 1 : -1);
-    }, { passive: true });
-    window.addEventListener('popstate', onPop);
-    window.addEventListener('kg-auth', function () { renderSide(); if (state.page === 'settings') renderProfile(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (document.body.classList.contains('kg-drawer-open')) closeDrawer(); else if (state.page) back(); } });
+    var mc = mountCx(); deepPage(); return mc;
   }
 
   /* ---------- нижнее меню: Объявления · Неделя · [Главная] · Модули · Профиль ---------- */
@@ -332,145 +292,6 @@
   function notesFor(key, subjects) {
     try { return visibleNotes(key).filter(function (n) { return !subjects || subjects.indexOf(n.subject) >= 0; }); } catch (e) { return []; }
   }
-  function statusCard() {
-    var key = state.date, t = today(), slots = lessonsFor(key);
-    var live = slots.filter(function (s) { return s.some(isLive); });
-    var label, title, sub = '', icon = 'sun', cls = '', prog = -1;
-    if (key === t) {
-      var now = kazanClockMinutes();
-      var cur = live.find(function (s) { return mins(s[0].start) <= now && now < mins(s[0].end); });
-      var next = live.find(function (s) { return mins(s[0].start) > now; });
-      if (!live.length) { label = slots.length ? 'пары отменены' : 'выходной'; title = 'Сегодня пар нет'; sub = 'Можно отдохнуть'; cls = 'is-free'; }
-      else if (cur) {
-        var e = cur[0], left = mins(e.end) - now;
-        label = 'сейчас идёт'; icon = 'play'; cls = 'is-now';
-        title = fullName(e); sub = 'До конца ' + plural(left, 'минута', 'минуты', 'минут') + (roomChip(e.shortLocation || e.location) ? ' · ' + roomChip(e.shortLocation || e.location) : '');
-        prog = Math.round((now - mins(e.start)) / Math.max(1, mins(e.end) - mins(e.start)) * 100);
-      } else if (next && now < mins(live[0][0].start)) {
-        label = 'пары ещё не начались'; icon = 'clock'; cls = 'is-morning'; title = 'Первая пара в ' + next[0].start; sub = 'через ' + dur(mins(next[0].start) - now) + ' · ' + fullName(next[0]);
-      } else if (next) {
-        label = 'перерыв'; icon = 'cup'; cls = 'is-break'; title = 'Следующая в ' + next[0].start; sub = 'через ' + dur(mins(next[0].start) - now) + ' · ' + fullName(next[0]);
-      } else {
-        label = 'на сегодня всё'; icon = 'moon'; cls = 'is-done'; title = 'Пары закончились';
-        var tm = addDays(t, 1); if (dow(tm) === 6) tm = addDays(tm, 1);
-        var nx = lessonsFor(tm).filter(function (s) { return s.some(isLive); });
-        sub = nx.length ? (tm === addDays(t, 1) ? 'Завтра' : 'В понедельник') + ' первая в ' + nx[0][0].start : 'Можно отдохнуть';
-      }
-    } else {
-      var diff = Math.round((parseISO(key) - parseISO(t)) / 864e5);
-      label = diff === 1 ? 'завтра' : diff === -1 ? 'вчера' : DOWL[dow(key)];
-      if (!live.length) { title = 'Пар нет'; sub = slots.length ? 'Все занятия отменены' : 'Выходной'; cls = 'is-free'; }
-      else { icon = 'cal'; title = plural(live.length, 'пара', 'пары', 'пар'); sub = live[0][0].start + ' – ' + live[live.length - 1][0].end; }
-    }
-    var h = '<div class="kg-status ' + cls + '">' + (UI === 'cx' ? '<i class="kg-glow"></i><i class="kg-sheen"></i>' + (cls === 'is-morning' ? SUN : '') : '') + '<div class="kg-status-label">' + ic(icon) + esc(label.charAt(0).toUpperCase() + label.slice(1)) + '</div>' +
-      '<div class="kg-status-title">' + esc(title) + '</div><div class="kg-status-sub">' + esc(sub) + '</div>' +
-      (prog >= 0 ? '<div class="kg-progress"><span style="width:' + prog + '%"></span></div>' : '') + '</div>';
-    // ближайший модуль и свежие объявления
-    try {
-      var soon = notes.filter(function (n) { return n.type === 'module' && n.date >= t && n.date <= addDays(t, 7) && noteRelevant(n); })
-        .sort(function (a, b) { return a.date.localeCompare(b.date); })[0];
-      if (soon) {
-        var dd = Math.round((parseISO(soon.date) - parseISO(t)) / 864e5);
-        h += '<button type="button" class="kg-alert" data-go="modules">' + ic('flag') + '<span><b>' + esc(dd === 0 ? 'Сегодня' : dd === 1 ? 'Завтра' : 'Через ' + plural(dd, 'день', 'дня', 'дней')) +
-          ': ' + esc(soon.subject) + '</b><small>' + esc(soon.title) + '</small></span>' + ic('chev') + '</button>';
-      }
-    } catch (e) {}
-    var nw = newsList();
-    if (nw.length && nw[0].id !== seenNews()) {
-      h += '<button type="button" class="kg-alert kg-alert-news" data-go="news">' + ic('news') + '<span><b>' + esc(nw[0].title) + '</b><small>Объявление</small></span>' + ic('chev') + '</button>';
-    }
-    return h;
-  }
-  function slotHTML(s, key, idx, nowState) {
-    var e = s[0], subjects = [], seen = {};
-    var names = [], seenN = {};
-    s.forEach(function (x) { var t = subjTitle(x.subject); if (!seen[t]) { seen[t] = 1; subjects.push(t); } var f = fullName(x); if (!seenN[f]) { seenN[f] = 1; names.push(f); } });
-    var allCancel = !s.some(isLive);
-    var flag = (s.find(function (x) { return x.changeFlag; }) || {}).changeFlag || '';
-    var flagText = { cancel: 'Отменено', 'moved-away': 'Перенесено', 'moved-in': 'Перенесено сюда', move: 'Новое время', change: 'Изменено' }[flag] || '';
-    var type = e.lessonType === 'cycle' ? 'Цикл' : e.lecture ? 'Лекция' : 'Практика';
-    var tcls = e.lessonType === 'cycle' ? 'cycle' : e.lecture ? 'lecture' : 'practice';
-    var loc = e.shortLocation || e.location || '';
-    var chips = [];
-    s.forEach(function (x) { var c = roomChip(x.shortLocation || x.location); if (c && chips.indexOf(c) < 0) chips.push(c); });
-    var nts = notesFor(key, subjects);
-    var hw = nts.filter(function (n) { return n.type === 'homework'; }).length, md = nts.filter(function (n) { return n.type === 'module'; }).length;
-    var teachers = [];
-    s.forEach(function (x) { if (x.teacher && teachers.indexOf(x.teacher) < 0) teachers.push(x.teacher); });
-    var sub = s.length > 1 && s.some(function (x) { return x.subgroup; }) ? 'обе подгруппы' : (e.subgroup ? e.subgroup + '-я подгруппа' : '');
-    var h = '<div class="kg-row ' + (nowState || '') + '"><div class="kg-time"><b>' + esc(e.start) + '</b><span>' + esc(e.end) + '</span></div>' +
-      '<div class="kg-card ' + tcls + (allCancel ? ' is-cancel' : '') + (state.open === idx ? ' open' : '') + '" data-slot="' + idx + '" role="button" tabindex="0">' +
-      '<div class="kg-card-top"><span class="kg-tag ' + tcls + '">' + type + '</span>' + (flagText ? '<span class="kg-flag ' + esc(flag) + '">' + flagText + '</span>' : '') +
-      (md ? '<span class="kg-mark mod">Модуль</span>' : '') + (hw ? '<span class="kg-mark hw">ДЗ</span>' : '') +
-      '<span class="kg-chips">' + chips.slice(0, 2).map(function (c) { return '<span class="kg-room">' + esc(c) + '</span>'; }).join('') + '</span></div>' +
-      '<div class="kg-subj">' + esc(names.join(' / ')) + '</div>' +
-      '<div class="kg-meta">' + esc([teachers.slice(0, 2).join(', '), sub].filter(Boolean).join(' · ')) + '</div>';
-    if (nowState === 'is-now') {
-      var now = kazanClockMinutes(), p = Math.round((now - mins(e.start)) / Math.max(1, mins(e.end) - mins(e.start)) * 100);
-      h += '<div class="kg-progress"><span style="width:' + Math.max(0, Math.min(100, p)) + '%"></span></div>';
-    }
-    if (state.open === idx) {
-      h += '<div class="kg-more">';
-      s.forEach(function (x) {
-        var v = null; try { v = placeInfo(x); } catch (er) {}
-        var place = x.location || x.shortLocation || '';
-        h += '<div class="kg-more-item">' + (x.subgroup && s.length > 1 ? '<div class="kg-more-sg">' + esc(x.subgroup) + '-я подгруппа · ' + esc(fullName(x)) + '</div>' : '') +
-          '<div>' + ic('pin') + '<span>' + esc(place) + (v && v.address ? '<br><small>' + esc(v.address) + '</small>' : '') + '</span></div>' +
-          (x.teacher ? '<div class="kg-more-t">' + esc(x.teacher) + '</div>' : '') +
-          (place ? '<a class="kg-link" target="_blank" rel="noopener" href="' + esc(mapLink(v && v.address ? v.address : place)) + '">Открыть на карте</a>' : '') + '</div>';
-        if (x.amendment && x.amendment.comment) h += '<div class="kg-more-note">' + esc(x.amendment.comment) + '</div>';
-      });
-      nts.forEach(function (n) {
-        h += '<div class="kg-note ' + (n.type === 'module' ? 'mod' : 'hw') + '"><b>' + (n.type === 'module' ? 'Модуль: ' : 'ДЗ: ') + esc(n.title) + '</b>' +
-          (n.details ? '<span>' + esc(n.details) + '</span>' : '') + (n._status === 'pending' ? '<small>ждёт подтверждения старосты</small>' : '') + '</div>';
-      });
-      h += '<div class="kg-more-actions"><button type="button" class="kg-btn" data-add="homework" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'ДЗ</button>' +
-        '<button type="button" class="kg-btn" data-add="module" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'Модуль</button></div></div>';
-    }
-    return h + '</div></div>';
-  }
-  function gapHTML(from, to) {
-    var g = mins(to) - mins(from);
-    return '<div class="kg-row kg-gap"><div class="kg-time"><b>' + esc(from) + '</b><span>' + esc(to) + '</span></div>' +
-      '<div class="kg-window">' + ic('cup') + '<span>Окно · ' + (g >= 60 ? Math.floor(g / 60) + ' ч ' + (g % 60 ? g % 60 + ' мин' : '') : g + ' мин') + '</span></div></div>';
-  }
-  function dayHTML() {
-    var key = state.date, slots = lessonsFor(key);
-    if (!slots.length) {
-      var w = dateWeek(key);
-      return '<div class="kg-empty">' + ic(dow(key) >= 5 ? 'sun' : 'cup') + '<b>' + (dow(key) === 6 ? 'Воскресенье' : w < 1 || w > LAST_WEEK ? 'Нет расписания на эту дату' : 'Пар нет') + '</b>' +
-        '<span>' + (w >= 1 && w <= LAST_WEEK ? 'Свайпните или нажмите стрелку, чтобы посмотреть другие дни' : 'Расписание опубликовано на недели 1–' + LAST_WEEK) + '</span></div>';
-    }
-    var t = today(), now = kazanClockMinutes(), h = '', prevEnd = null, nextMarked = false;
-    slots.forEach(function (s, i) {
-      var e = s[0], st = '';
-      if (key === t && s.some(isLive)) {
-        if (mins(e.start) <= now && now < mins(e.end)) st = 'is-now';
-        else if (mins(e.end) <= now) st = 'is-done';
-        else if (!nextMarked) { st = 'is-next'; nextMarked = true; }
-      } else if (key < t) st = 'is-done';
-      if (prevEnd && mins(e.start) - mins(prevEnd) >= 40) h += gapHTML(prevEnd, e.start);
-      h += slotHTML(s, key, i, st);
-      if (!prevEnd || mins(e.end) > mins(prevEnd)) prevEnd = e.end;
-    });
-    return h;
-  }
-  function weekHTML() {
-    var w = dateWeek(state.date), h = '', t = today();
-    for (var di = 0; di < 6; di++) {
-      var key = dateISO(dayDate(w, di)), slots = lessonsFor(key);
-      h += '<div class="kg-wday' + (key === t ? ' is-today' : '') + '" data-day="' + key + '"><div class="kg-wday-head"><b>' + DOWL[di] + '</b><span>' + ddmm(key) + '</span></div>';
-      if (!slots.length) h += '<div class="kg-wrow kg-wnone">Пар нет</div>';
-      slots.forEach(function (s) {
-        var e = s[0], subj = [], seen = {}, live = s.some(isLive);
-        s.forEach(function (x) { var tt = fullName(x); if (!seen[tt]) { seen[tt] = 1; subj.push(tt); } });
-        var c = roomChip(e.shortLocation || e.location);
-        h += '<div class="kg-wrow' + (live ? '' : ' is-cancel') + '"><span class="kg-wt">' + esc(e.start) + '</span><span class="kg-ws">' + esc(subj.join(' / ')) + '</span>' + (c ? '<span class="kg-room">' + esc(c) + '</span>' : '') + '</div>';
-      });
-      h += '</div>';
-    }
-    return h;
-  }
   function render(dir) {
     if (!$('kgApp')) return;
     if (!ready()) { document.body.classList.remove('kg-ready'); return; }
@@ -480,58 +301,19 @@
       try { var u = new URLSearchParams(location.search).get('date'); if (u && /^\d{4}-\d{2}-\d{2}$/.test(u)) return u; } catch (e) {}
       return dow(t) === 6 && !inTG ? t : t;
     })();
-    if (UI === 'cx') { renderCx(dir); saveView(); return; }
-    var g = selectedStudyGroup;
-    if ($('kgTopGroup')) { $('kgTopGroup').textContent = g; $('kgTopSub').textContent = groupCaption(g); }
-    var w = dateWeek(state.date);
-    if (state.week) {
-      $('kgNavTitle').textContent = 'Вся неделя';
-      var mon = dateISO(dayDate(w, 0)), sat = dateISO(dayDate(w, 5));
-      $('kgNavSub').textContent = (w >= 1 ? 'неделя ' + w + ' · ' : '') + ddmm(mon) + '–' + ddmm(sat);
-    } else {
-      $('kgNavTitle').textContent = niceDate(state.date);
-      $('kgNavSub').textContent = w >= 1 && w <= LAST_WEEK ? 'неделя ' + w : w > LAST_WEEK ? 'вне семестра' : 'до начала семестра';
-    }
-    $('kgModeBtn').classList.toggle('active', state.week);
-    $('kgModeBtn').innerHTML = ic(state.week ? 'cal' : 'week');
-    $('kgModeBtn').setAttribute('aria-label', state.week ? 'Один день' : 'Вся неделя');
-    $('kgStatus').innerHTML = statusCard();
-    renderTabs();
-    var list = $('kgList');
-    list.className = 'kg-list' + (state.week ? ' kg-week' : '');
-    list.innerHTML = state.week ? weekHTML() : dayHTML();
-    if (dir && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      list.animate([{ opacity: 0, transform: 'translateX(' + (dir > 0 ? 18 : -18) + 'px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    }
-    if (state.page === 'settings') renderSettingsPage();
-    if (!document.body.classList.contains('kg-drawer-open')) renderDrawer();
+    renderCx(dir); saveView();
   }
   var renderTimer = null;
   function renderSoon() { clearTimeout(renderTimer); renderTimer = setTimeout(function () { render(); }, 80); }
 
-  function onListClick(ev) {
-    var add = ev.target.closest('[data-add]');
-    if (add) { ev.stopPropagation(); openEditorFor(add.dataset.add, add.dataset.subj, state.date); return; }
-    if (ev.target.closest('a')) return;
-    var day = ev.target.closest('[data-day]');
-    if (day && state.week) { state.week = false; try { localStorage.setItem('kg-week-mode', '0'); } catch (e) {} state.date = day.dataset.day; render(); window.scrollTo({ top: 0 }); return; }
-    var card = ev.target.closest('[data-slot]');
-    if (card) { var i = +card.dataset.slot; state.open = state.open === i ? null : i; render(); }
-  }
   document.addEventListener('click', function (ev) {
     var go = ev.target.closest('#kgApp [data-go]');
     if (go) { ev.preventDefault(); navigate(go.dataset.go); }
   });
   function openEditorFor(type, subject, key) {
-    if (UI === 'cx') {
-      showCal(key);
-      try { openEditor(type, subject); } catch (e) { console.warn(e); }
-      setTimeout(function () { var r = $('recordEditor'); if (r) r.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120);
-      return;
-    }
-    showOld('calendar', 'Календарь и ДЗ');
-    try { selectDate(key, false); openEditor(type, subject); } catch (e) { console.warn(e); }
-    setTimeout(function () { var r = $('recordEditor'); if (r) r.scrollIntoView({ block: 'start' }); }, 120);
+    showCal(key);
+    try { openEditor(type, subject); } catch (e) { console.warn(e); }
+    setTimeout(function () { var r = $('recordEditor'); if (r) r.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120);
   }
 
   /* ---------- меню ---------- */
@@ -543,47 +325,18 @@
     } catch (e) { return []; }
   }
   function seenNews() { try { return localStorage.getItem('kg-news-seen') || ''; } catch (e) { return ''; } }
-  function renderDrawer() {
-    var d = $('kgDrawer'); if (!d || !ready()) return;
-    var u = tgUser(), r = role(), g = selectedStudyGroup;
-    var name = u ? (u.name || (u.username ? '@' + u.username : 'Студент')) : 'Гость';
-    var nnews = newsList().length;
-    function item(go, icon, color, label, extra) {
-      return '<button type="button" class="kg-mi" data-go="' + go + '"><span class="kg-mi-ic ' + color + '">' + ic(icon) + '</span><span class="kg-mi-l">' + label + '</span>' + (extra || '') + '</button>';
-    }
-    d.innerHTML = '<div class="kg-dr-head"><b>Меню</b><button type="button" class="kg-ibtn kg-ghost" data-go="close" aria-label="Закрыть">' + ic('x') + '</button></div>' +
-      '<div class="kg-profile"><div class="kg-ava">' + esc((name.replace('@', '')[0] || '?').toUpperCase()) + '</div><div class="kg-prof-t"><small>' + esc(r ? ROLE[r] : 'Студент') + '</small><b>' + esc(name) + '</b><span>Группа ' + esc(g) + (groupCaption(g) ? ' · ' + esc(groupCaption(g)) : '') + '</span></div></div>' +
-      (u ? '' : '<button type="button" class="kg-login-cta" data-go="settings">' + ic('send') + 'Войти через Telegram</button>') +
-      '<nav class="kg-menu">' +
-        item('news', 'news', 'c-orange', 'Объявления', nnews ? '<span class="kg-badge">' + nnews + '</span>' : '') +
-        item('calendar', 'cal', 'c-blue', 'Календарь и ДЗ') +
-        item('modules', 'flag', 'c-red', 'Модули и зачёты') +
-        item('search', 'search', 'c-cyan', 'Поиск по расписанию') +
-        item('schedule', 'table', 'c-violet', 'Таблица по неделям') +
-        item('group', 'users', 'c-green', 'Сменить группу') +
-        item('useful', 'link', 'c-blue', 'Полезные ссылки') +
-        (botName() && !inTG ? item('bot', 'send', 'c-tg', 'Напоминания в Telegram') : '') +
-        item('settings', 'gear', 'c-gray', 'Настройки') +
-        (r ? item('tools', 'tool', 'c-amber', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты') : '') +
-      '</nav>' +
-      '<button type="button" class="kg-mi kg-mi-support" data-go="report"><span class="kg-mi-ic c-pink">' + ic('heart') + '</span><span class="kg-mi-l">Сообщить о проблеме</span></button>' +
-      '<div class="kg-dr-foot">Разработчики · <a href="https://t.me/brainfucker01" target="_blank" rel="noopener">@brainfucker01</a> · <a href="https://t.me/dkkk111111" target="_blank" rel="noopener">@dkkk111111</a></div>';
-  }
-  function openDrawer() { renderDrawer(); document.body.classList.add('kg-drawer-open'); }
-  function closeDrawer() { document.body.classList.remove('kg-drawer-open'); }
 
   function navigate(go) {
-    closeDrawer();
     switch (go) {
       case 'close': return;
       case 'news': return showNews();
-      case 'calendar': return UI === 'cx' ? showCal(state.tab === 'day' && !state.page ? state.date : null) : showOld('calendar', 'Календарь и ДЗ');
-      case 'modules': return UI === 'cx' ? showModules() : showOld('modules', 'Модули и зачёты');
-      case 'search': return UI === 'cx' ? showSearch() : showOld('search', 'Поиск');
+      case 'calendar': return showCal(state.tab === 'day' && !state.page ? state.date : null);
+      case 'modules': return showModules();
+      case 'search': return showSearch();
       case 'schedule': return showOld('schedule', 'По неделям');
       case 'tools': return showOld('settings', role() === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', true);
       case 'settings': return showSettings();
-      case 'group': if (UI === 'cx') return showGroupPage(); goHome(); try { showGroupChooser(); } catch (e) {} return;
+      case 'group': return showGroupPage();
       case 'bot': return openBot('g-' + botArg(selectedStudyGroup));
       case 'starreq': return openBot('star_' + botArg(selectedStudyGroup));
       case 'report': try { reportProblem(); } catch (e) {} return;
@@ -707,37 +460,7 @@
   function row(label, value, go, cls) {
     return '<' + (go ? 'button type="button" data-go="' + go + '"' : 'div') + ' class="kg-lrow ' + (cls || '') + '"><span>' + label + '</span><span class="kg-lval">' + value + (go ? ic('chev') : '') + '</span></' + (go ? 'button' : 'div') + '>';
   }
-  function renderSettingsPage() {
-    var u = tgUser(), r = role(), g = selectedStudyGroup, theme = (typeof userPreferences !== 'undefined' && userPreferences.theme) || 'system';
-    var h = '<div class="kg-lt">Профиль</div><div class="kg-lbox">' +
-      row('Роль', esc(r ? ROLE[r] : 'Студент')) +
-      row('Имя', esc(u ? (u.name || '@' + u.username) : 'Не выполнен вход')) +
-      row('Группа', esc(g), 'group') +
-      (groupCaption(g) ? row('Направление', esc(groupCaption(g))) : '') + '</div>' +
-      '<div class="kg-lt">Подгруппа</div><div class="kg-lbox kg-pad">' + seg('sub', [['all', 'Обе'], ['1', '1-я'], ['2', '2-я']], typeof group !== 'undefined' ? group : 'all') + '</div>' +
-      '<div class="kg-lt">Оформление</div><div class="kg-lbox kg-pad">' + seg('theme', [['system', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], theme) + '</div>' +
-      (inTG ? '' : '<div class="kg-lt">Вид сайта</div><div class="kg-lbox kg-pad">' + seg('ui', [['cx', 'Компактный'], ['ext', 'Расширенный']], 'cx') + '</div>') +
-      (botName() ? '<div class="kg-lt">Уведомления</div><div class="kg-lbox">' + row('Напоминания о парах', 'в боте', 'bot') + '</div>' : '') +
-      '<div class="kg-lt">Аккаунт</div><div class="kg-lbox" id="kgAccBox">' +
-      (u ? row('Telegram', esc(u.username ? '@' + u.username : u.name)) + '<button type="button" class="kg-lrow kg-danger" id="kgLogout"><span>Выйти</span></button>' : '<div class="kg-pad" id="kgTgSlot"></div>') + '</div>' +
-      (r ? '<div class="kg-lbox">' + row(r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '', 'tools') + '</div>' : '') +
-      '<div class="kg-lbox"><button type="button" class="kg-lrow kg-danger" data-go="group"><span>Сменить группу</span></button></div>' +
-      '<div class="kg-ver">Версия 8.8 · Разработчики <a href="https://t.me/brainfucker01" target="_blank" rel="noopener">@brainfucker01</a> · <a href="https://t.me/dkkk111111" target="_blank" rel="noopener">@dkkk111111</a></div>';
-    restoreMoved();
-    $('kgPage').innerHTML = h;
-    if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
-    if ($('kgLogout')) $('kgLogout').onclick = function () { try { cloudLogout(); } catch (e) {} setTimeout(renderSettingsPage, 300); };
-    $('kgPage').querySelectorAll('[data-seg]').forEach(function (box) {
-      box.addEventListener('click', function (ev) {
-        var b = ev.target.closest('button[data-v]'); if (!b) return;
-        if (box.dataset.seg === 'ui') { if (b.dataset.v === 'ext') setUI('ext'); return; }
-        if (box.dataset.seg === 'sub') { try { setGroup(b.dataset.v); } catch (e) {} }
-        else { var t = document.querySelector('[data-theme-choice="' + b.dataset.v + '"]'); if (t) t.click(); setTimeout(applyTGTheme, 30); }
-        renderSettingsPage();
-      });
-    });
-  }
-  function showSettings() { if (UI === 'cx') { showPage('settings', 'Профиль', ''); renderProfile(); return; } showPage('settings', 'Настройки', ''); renderSettingsPage(); }
+  function showSettings() { showPage('settings', 'Профиль', ''); renderProfile(); }
 
   /* ---------- компактный вид: экраны по референсу ---------- */
   var DOWS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
@@ -1186,7 +909,6 @@
     $('kgPage').querySelectorAll('[data-seg]').forEach(function (box) {
       box.addEventListener('click', function (ev) {
         var b = ev.target.closest('button[data-v]'); if (!b) return;
-        if (box.dataset.seg === 'ui') { if (b.dataset.v === 'ext') setUI('ext'); return; }
         if (box.dataset.seg === 'sub') { try { setGroup(b.dataset.v); } catch (e) {} }
         else { var t = document.querySelector('[data-theme-choice="' + b.dataset.v + '"]'); if (t) t.click(); setTimeout(applyTGTheme, 30); }
         renderProfile();
@@ -1830,21 +1552,9 @@
       if (g && g !== cur) { u.searchParams.set('studyGroup', cur); history.replaceState(history.state, '', u); }
     } catch (e) {}
   }
-  function bootExt() {
-    wrap('activateStudyGroup', rememberGroup);
-    var box = document.querySelector('.header-actions');
-    if (box && !$('kgToCx')) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.id = 'kgToCx'; b.className = 'header-icon-btn'; b.title = 'Компактный вид'; b.setAttribute('aria-label', 'Компактный вид');
-      b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>';
-      b.onclick = function () { setUI('cx'); };
-      box.insertBefore(b, box.firstChild);
-    }
-  }
   /* показать страницу после первой отрисовки (класс kg-boot ставится в <head>) */
   function bootDone() { try { if (window.kgBootDone) window.kgBootDone(); } catch (e) {} }
   function boot() {
-    if (UI === 'ext') { bootExt(); bootDone(); return; }
     mount();
     wrap('render', renderSoon);
     wrap('applyTheme', applyTGTheme);
@@ -1858,7 +1568,7 @@
       f.__kg = true; window.cloudLoadPermissions = f;
     })();
     wrap('activateStudyGroup', function () { state.date = null; state.open = null; rememberGroup(); goHome(true); });
-    if (UI === 'cx') bootCxHooks();
+    bootCxHooks();
     applyTGTheme();
     render();
     bootDone();
