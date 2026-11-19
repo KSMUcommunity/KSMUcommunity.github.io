@@ -63,6 +63,9 @@ def grid_event(e, short_names):
     weeks = sorted(w for w in e.get("w", []) if 1 <= w <= MAX_WEEK)
     loc = e.get("l") or e.get("lraw") or ""
     lec = bool(e.get("lec0")) or e.get("k") == "lec"
+    if e.get("ts"):  # тема занятия с описанием (1103/1203/1303): название — тема, описание — в topic
+        return {**grid_event({k: v for k, v in e.items() if k != "ts"}, short_names),
+                "subject": e["ts"], "fullSubject": e["ts"], "topic": title}
     return {
         "day": e["d"], "start": e["s"], "end": e["e"], "row": e.get("row", 0),
         "subject": e.get("ts") or short_names.get(title, title), "fullSubject": title,

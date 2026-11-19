@@ -662,7 +662,8 @@
       h += '<div class="cx-more">';
       s.forEach(function (x) {
         var p = placeOf(x);
-        h += '<div>' + (x.subgroup && s.length > 1 ? '<b>' + esc(x.subgroup) + '-я подгруппа · ' + esc(fullName(x)) + '</b><br>' : '') + (p.text ? esc(p.text) + (p.addr ? '<br><small>' + esc(p.addr) + '</small>' : '') : '') + (x.teacher && s.length > 1 ? '<br><small>' + esc(x.teacher) + '</small>' : '') + (p.url ? '<br><a href="' + esc(p.url) + '" target="_blank" rel="noopener">Открыть на карте</a>' : '') + (x.amendment && x.amendment.comment ? '<br><small>' + esc(x.amendment.comment) + '</small>' : '') + '</div>';
+        /* x.topic — тема занятия с описанием (интегрированная программа 1103/1203/1303) */
+        h += (x.topic ? '<div class="cx-topic">' + esc(x.topic) + '</div>' : '') + '<div>' + (x.subgroup && s.length > 1 ? '<b>' + esc(x.subgroup) + '-я подгруппа · ' + esc(fullName(x)) + '</b><br>' : '') + (p.text ? esc(p.text) + (p.addr ? '<br><small>' + esc(p.addr) + '</small>' : '') : '') + (x.teacher && s.length > 1 ? '<br><small>' + esc(x.teacher) + '</small>' : '') + (p.url ? '<br><a href="' + esc(p.url) + '" target="_blank" rel="noopener">Открыть на карте</a>' : '') + (x.amendment && x.amendment.comment ? '<br><small>' + esc(x.amendment.comment) + '</small>' : '') + '</div>';
       });
       nts.forEach(function (n) { h += '<div><b>' + (n.type === 'module' ? 'Модуль: ' : 'ДЗ: ') + esc(n.title) + '</b>' + (n.details ? '<br><small>' + esc(n.details) + '</small>' : '') + (n._status === 'pending' ? '<br><small>ждёт подтверждения старосты</small>' : '') + '</div>'; });
       h += '<div class="r"><button type="button" class="cx-btn g" data-cx="add" data-t="homework" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'ДЗ</button><button type="button" class="cx-btn g" data-cx="add" data-t="module" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'Модуль</button></div></div>';
@@ -1306,7 +1307,7 @@
     if (f === 'all' || f === 'class') {
       var byS = {}, order = [];
       occAll().forEach(function (o) {
-        var e = o.s[0], hay = nrm(o.s.map(function (x) { return [subjTitle(x.subject), x.fullSubject, x.teacher, x.location, x.shortLocation, roomChip(x.shortLocation || x.location)].join(' '); }).join(' '));
+        var e = o.s[0], hay = nrm(o.s.map(function (x) { return [subjTitle(x.subject), x.fullSubject, x.topic || '', x.teacher, x.location, x.shortLocation, roomChip(x.shortLocation || x.location)].join(' '); }).join(' '));
         if (hay.indexOf(q) < 0) return;
         var id = pkey(e);
         if (!byS[id]) { byS[id] = { e: e, occ: [], teachers: {}, places: {} }; order.push(id); }
