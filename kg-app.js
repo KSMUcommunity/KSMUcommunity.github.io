@@ -15,7 +15,10 @@
     tp = JSON.parse(hash.get('tgWebAppThemeParams') || sessionStorage.getItem('kg-tg-theme') || 'null');
     if (tp) sessionStorage.setItem('kg-tg-theme', JSON.stringify(tp));
   } catch (e) { tp = null; }
-  var inTG = !!(window.TelegramWebviewProxy || hash.get('tgWebAppPlatform') || hash.get('tgWebAppData') ||
+  /* мини-приложение — только по параметрам запуска (tgWebApp* в адресе или initData, сохранённая в этой вкладке).
+     window.TelegramWebviewProxy есть и во встроенном браузере Telegram (обычная ссылка на сайт): там команды
+     мини-приложения (web_app_open_tg_link и др.) молча игнорируются — кнопки «Подать заявку», «Напоминания в боте» не работали (19.11.2026). */
+  var inTG = !!(hash.get('tgWebAppPlatform') || hash.get('tgWebAppData') ||
     (function () { try { return sessionStorage.getItem('kg-tg-initdata'); } catch (e) { return ''; } })());
   function tgPost(type, data) {
     try {
@@ -190,8 +193,12 @@
   function botArg(g) { return String(g || '').toLowerCase().replace(/и/g, 'i').replace(/[^a-z0-9_-]/g, ''); }
   function openBot(p) {
     var b = botName(); if (!b) return;
-    if (inTG) tgPost('web_app_open_tg_link', { path_full: '/' + b + '?start=' + p });
-    else window.open('https://t.me/' + b + '?start=' + p, '_blank', 'noopener');
+    var url = 'https://t.me/' + b + '?start=' + p;
+    if (inTG) { tgPost('web_app_open_tg_link', { path_full: '/' + b + '?start=' + p }); return; }
+    /* встроенный браузер Telegram: ссылку t.me в этой же вкладке Telegram перехватывает и открывает бота */
+    if (window.TelegramWebviewProxy) { location.href = url; return; }
+    var w = null; try { w = window.open(url, '_blank'); if (w) w.opener = null; } catch (e) {}
+    if (!w) location.href = url; /* новое окно заблокировано — открываем здесь */
   }
   function groupCaption(g) {
     try {
