@@ -65,7 +65,7 @@ def grid_event(e, short_names):
     lec = bool(e.get("lec0")) or e.get("k") == "lec"
     return {
         "day": e["d"], "start": e["s"], "end": e["e"], "row": e.get("row", 0),
-        "subject": short_names.get(title, title), "fullSubject": title,
+        "subject": e.get("ts") or short_names.get(title, title), "fullSubject": title,
         "lecture": lec, "teacher": e.get("p", "") or "",
         "location": loc, "shortLocation": loc,
         "weeks": weeks, "subgroup": str(e["sg"]) if e.get("sg") else None,
@@ -209,7 +209,7 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
             continue
         _, res, _ = parse_file(path)
         for g, v in res.items():
-            if g in groups_wanted and g not in dev_groups:
+            if g in groups_wanted:  # «пустые» группы тоже разбираем: раньше они скрывались навсегда (1103/1203/1303)
                 for e in v["events"]:
                     only = re.search(r"\{гр\.?\s*([^}]*)\}", e.get("tf") or e.get("t", ""))
                     if only and g not in [x.strip() for x in only.group(1).split(",")]:
@@ -218,8 +218,8 @@ def export(raw: Path, template: dict, out: Path, all_groups: bool = True):
                 used_sources.setdefault(g, m["fn"])
     problems, gone = [], []
     for g in groups_wanted:
-        if g in dev_groups:
-            result[g] = []
+        if g in dev_groups and not any(e["weeks"] for e in result[g]):
+            result[g] = []  # группа была пустой и в источнике по-прежнему нет занятий — остаётся «в разработке»
             continue
         seen, uniq = set(), []
         for e in result[g]:
@@ -312,6 +312,8 @@ def write_site_data(payload, out):
         "window.KGMU_EMBEDDED_GROUPS=" + J({g: [] for g in payload["groups"]}) + ";\n"
         "window.KGMU_LOADED={};\n"
         "window.KGMU_GROUP_V=" + J(vers) + ";\n"
+        # группы без занятий — сайт показывает заставку «В разработке» (раньше список был вписан в index.html)
+        "window.KGMU_DEV_GROUPS=" + J(sorted(g for g, ev in payload["groups"].items() if not ev)) + ";\n"
         "window.KGMU_DATA_UPDATED=" + J(payload.get("updated")) + ";\n"
         "window.KGMU_PROGRAMS=" + J(payload["programs"]) + ";\n"
         "window.KGMU_GROUP_INFO=" + J(payload["groupMeta"]) + ";\n"
