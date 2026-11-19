@@ -406,6 +406,7 @@ async function cloudInit(){
   document.getElementById('cloudPublishLocal')?.addEventListener('click',cloudPublishLocal);
   kgTgMountUI();
   await kgMailFromHash();
+  await kgTgFromHash();
   cloudUpdateUI();
   const tgNow=kgTgUser();
   if(kgTgInit && (!tgNow || String(tgNow.tg_id)!==String(kgTgUserFromInit()?.id))){
@@ -479,6 +480,26 @@ window.kgTgOnAuth=async function(user){
   try{await kgTgLogin({widget:user});toast('✈️ Вы вошли через Telegram');}
   catch(e){cloudSetStatus('Ошибка входа: '+e.message);}
 };
+/* вход без всплывающего окна (19.11.2026): встроенный браузер Telegram и часть мобильных браузеров открывают окно входа в той же вкладке,
+   а Telegram возвращает на сайт с #tgAuthResult=<base64 JSON>. Подпись (hash) проверяет tg-auth, как у виджета. */
+async function kgTgFromHash(){
+  const re=/[#?&]tgAuthResult=([A-Za-z0-9\-_=]*)$/,m=location.hash.match(re);
+  if(!m)return;
+  const rest=location.hash.replace(re,'');
+  try{history.replaceState(history.state,'',location.pathname+location.search+(rest.length>1?rest:''));}catch(_){}
+  let data=null;
+  try{let b=m[1].replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
+    data=JSON.parse(decodeURIComponent(escape(atob(b))));}catch(_){data=null;}
+  let asked=0;try{asked=+localStorage.getItem('kg-tg-req')||0;localStorage.removeItem('kg-tg-req');}catch(_){}
+  if(!data||!data.id||!data.hash){setTimeout(()=>{try{toast('Вход через Telegram отменён');}catch(_){}},600);return;}
+  /* чужая ссылка с tgAuthResult впустила бы в чужой аккаунт — спрашиваем, если вход отсюда не начинали */
+  const who=data.username?'@'+data.username:[data.first_name,data.last_name].filter(Boolean).join(' ')||'этот аккаунт';
+  if(Date.now()-asked>30*60*1000&&!confirm('Войти на сайт как '+who+' (Telegram)?\n\nЕсли вы не нажимали «Войти через Telegram» — нажмите «Отмена».'))return;
+  if(!kgPdOk())kgPdSet(true); /* вход начат кнопкой, которая доступна только после галочки согласия, или подтверждён выше */
+  try{await kgTgLogin({widget:data});setTimeout(()=>{try{toast('✈️ Вы вошли через Telegram');}catch(_){}},600);
+    try{window.dispatchEvent(new Event('kg-auth'));}catch(_){}}
+  catch(e){cloudSetStatus('Ошибка входа: '+e.message);setTimeout(()=>{try{toast('Не удалось войти через Telegram: '+e.message);}catch(_){}},600);}
+}
 /* имя и id бота: из кэша сразу, но раз за загрузку страницы сверяем с tg-auth (бота могли сменить) */
 var kgTgCfgP=null;
 function kgTgConfig(){
@@ -625,6 +646,7 @@ function kgTgMountUI(){
         /* id бота — только свежий с сервера (запомненный мог остаться от прежнего бота → «Bot domain invalid») */
         const id=(await kgTgConfig()).bot_id;if(!id)throw Error('нет связи с сервером входа, попробуйте ещё раз');
         await kgTgLoadWidgetJs();
+        try{localStorage.setItem('kg-tg-req',String(Date.now()));}catch(_){} /* если окно откроется в этой же вкладке — kgTgFromHash */
         window.Telegram.Login.auth({bot_id:id,request_access:'write',lang:'ru'},data=>{
           if(!data){msg('Вход отменён');return;}
           btn.disabled=true;msg('Входим…');
