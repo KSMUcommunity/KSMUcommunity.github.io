@@ -123,10 +123,14 @@ def parse_entry(text, has_weeks=True):
     # weekly-формат: «Тема – Преподаватель (место)»
     if not weeks_p and " – " in title:
         title, teacher = title.rsplit(" – ", 1)
+    # «Лекция "Экономика" (4,6,8)» — название в кавычках целиком
+    if re.fullmatch(r'\s*["«][^"«»]+["»]\s*', title):
+        title = title.strip(' "«»')
     ev["tf"] = title.strip(" ;,-–")
-    sub = re.search(r"\b(\d)\s*подгр\.?", title)
+    sub = re.search(r"\b(\d)(\s*,\s*\d)*\s*подгр\.?", title)
     if sub:
-        ev["sg"] = int(sub.group(1))
+        if not sub.group(2):  # «1,2 подгр.» — обе подгруппы, не только последняя
+            ev["sg"] = int(sub.group(1))
         title = clean(title[:sub.start()] + title[sub.end():])
     ev["t"] = title.strip(" ;,-–") or clean(text)
     teacher = clean(teacher).strip(" ,;–-")
@@ -140,8 +144,48 @@ def parse_entry(text, has_weeks=True):
     return ev
 
 
+def topic_title(t):
+    """Листы «N неделя» (интегрированная программа 1103/1203/1303): в ячейке тема занятия с описанием
+    («Функции крови. Состав и функции плазмы…»). Короткое название — первое предложение, не длиннее ~60 знаков."""
+    t = clean(t)
+    place = re.search(r"\s\([^()]*(?:НУК|УЛК|ГУК|ауд\.|этаж|корп)[^()]*\)", t)  # адрес посреди названия
+    if place and place.start() >= 4:
+        t = t[:place.start()]
+    s = t
+    for m in re.finditer(r"[^\s.;][.;]\s", t):
+        cand = t[:m.start() + 1]
+        if len(cand) < 4 or cand.count("(") > cand.count(")") or cand.count("[") > cand.count("]"):
+            continue  # «[каф. ЦТ]» — точка внутри скобок не конец предложения
+        s = cand
+        break
+    s = re.split(r"\s+Кафедра\s", s)[0]
+    if len(s) > 20:  # «Биоэнергетика клетки Организация дыхательной цепи…» — тема без точки, дальше описание с заглавной
+        cap = re.search(r"(?<=[а-яё)]{3})\s+(?=[А-ЯЁ][а-яё])", s[8:])
+        if cap:
+            s = s[:8 + cap.start()]
+    s = s.rstrip(" .;,:–-")
+    if len(s) > 62:
+        s = s[:60].rsplit(" ", 1)[0].rstrip(" ,.;:–-") + "…"
+    return s
+
+
 def split_multi(text):
-    parts = re.split(r"\s*/\s*\n\s*|\s+/\s+", str(text).strip())
+    """Несколько занятий в ячейке через « / ». Косая черта внутри скобок («(ГАУЗ … / ГАУЗ …)») — не разделитель."""
+    s, parts, depth, i, cur = str(text).strip(), [], 0, 0, ""
+    while i < len(s):
+        ch = s[i]
+        depth += (ch == "(") - (ch == ")" and depth > 0)
+        m = re.match(r"\s*/\s*\n\s*|\s+/\s+", s[i:]) if ch in " \t\n/" and depth == 0 else None
+        if m and m.group(0).strip() == "/":
+            parts.append(cur)
+            cur = ""
+            i += m.end()
+            continue
+        cur += ch
+        i += 1
+    parts.append(cur)
+    if any(p.count("(") != p.count(")") for p in parts):  # незакрытая скобка в ячейке («…(в т.ч. … челю / …») — делим как раньше
+        parts = re.split(r"\s*/\s*\n\s*|\s+/\s+", s)
     return [p for p in parts if p.strip()]
 
 
@@ -221,7 +265,13 @@ def parse_grid_sheet(ws, week=None):
                 ev = parse_entry(part)
                 ev.update({"d": day, "s": s, "e": e, "row": r})
                 if week is not None:
+                    # лист «N неделя»: пара со своим списком недель («Правоведение (2,4,6)») идёт, только если N в нём
+                    if ev.get("w") and week not in ev["w"]:
+                        continue
                     ev["w"] = [week]
+                    short = topic_title(ev["t"])
+                    if short != clean(ev.get("tf") or ev["t"]):
+                        ev["ts"] = short
                 for g in targets:
                     out[g].append(dict(ev))
     return out

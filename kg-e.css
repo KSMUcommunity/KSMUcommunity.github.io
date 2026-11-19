@@ -216,6 +216,7 @@ html.kg-e .cx-home{max-width:480px;padding:18px 16px calc(112px + env(safe-area-
 .cx-more small{color:inherit;opacity:.75}
 .cx-more a{color:inherit;font-weight:700}
 .cx-more .r{display:flex;gap:8px;flex-wrap:wrap}
+.cx-more .cx-topic{font-size:13px;line-height:1.45;opacity:.85;white-space:pre-line} /* описание темы (1103/1203/1303) */
 #kgApp .cx-btn{min-height:40px;padding:0 14px;border-radius:14px;font-weight:700;font-size:13px;background:var(--e-hero);color:#fff;box-shadow:0 6px 16px rgba(140,43,51,.35);display:inline-flex;align-items:center;gap:6px;justify-content:center;text-decoration:none;flex:none}
 #kgApp .cx-btn .kg-ic{width:16px;height:16px}
 #kgApp .cx-btn.g{background:var(--e-chip);color:var(--a-text);box-shadow:none;border:1px solid var(--e-chipb)}
