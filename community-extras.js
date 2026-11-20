@@ -2,7 +2,17 @@
    Does not modify existing homework/module data or registered Supabase users. */
 'use strict';
 const NEWS_SCOPE_TYPES=['all','faculty','course','stream','group'];
-const NEWS_PROGRAM_LABELS={lechebnoe:'Лечебное дело',pediatriya:'Педиатрия',stomatologiya:'Стоматология'};
+const NEWS_PROGRAMS=(typeof window!=='undefined'&&window.KGMU_PROGRAMS)||{};
+const NEWS_PROGRAM_LABELS=Object.assign({lechebnoe:'Лечебное дело',pediatriya:'Педиатрия',stomatologiya:'Стоматология'},Object.fromEntries(Object.entries(NEWS_PROGRAMS).map(([k,v])=>[k,v.label||k])));
+// Курсы и потоки выбранного направления — из расписания (все 10 направлений, курсы 1–6).
+function newsCourses(p){return Object.keys(NEWS_PROGRAMS[p]?.courses||{}).sort((a,b)=>a-b);}
+function newsStreams(p,c){return Object.keys(NEWS_PROGRAMS[p]?.courses?.[c]||{}).sort((a,b)=>a-b);}
+function newsFill(id,values,label){const el=newsNode(id);if(!el)return;const cur=el.value;el.innerHTML=values.map(v=>'<option value="'+esc(v)+'">'+esc(label(v))+'</option>').join('');if(values.includes(cur))el.value=cur;}
+function newsCascade(){
+ const p=newsNode('kgNewsProgram')?.value;newsFill('kgNewsCourse',newsCourses(p),v=>v+' курс');
+ const c=newsNode('kgNewsCourse')?.value,st=newsStreams(p,c);
+ newsFill('kgNewsStream',st,v=>{const g=NEWS_PROGRAMS[p].courses[c][v]||[];return v+' поток'+(g.length?' ('+g[0]+(g.length>1?'–'+g[g.length-1]:'')+')':'');});
+}
 let newsRows=[],newsStatus='loading',newsRequestSerial=0,newsAllExpanded=false,newsEditorId=null,newsLastFetch=0;
 const newsNode=id=>document.getElementById(id);
 const newsAdmin=()=>Boolean(cloudSession?.access_token && cloudAssignments.some(r=>r.role==='admin'&&r.study_group==='*'));
@@ -12,7 +22,7 @@ function newsLabel(n){
  case 'all': return 'Все группы';
  case 'faculty': return p+' · все курсы';
  case 'course': return p+' · '+n.course+' курс';
- case 'stream': return n.program==='stomatologiya'&&Number(n.course)===3 ? p+' · 3 курс · '+(Number(n.stream)===1?'группы 4301–4306':'группы 4307–4312и') : p+' · '+n.course+' курс · '+n.stream+' поток';
+ case 'stream': return p+' · '+n.course+' курс · '+n.stream+' поток';
  case 'group': return 'Группа '+n.study_group;
  default:return 'Объявление';
  }
@@ -101,12 +111,13 @@ function newsScopeFields(){
 function newsResetForm(){
  const f=newsNode('kgNewsForm');if(!f)return;f.reset();newsEditorId=null;
  newsNode('kgNewsSave').textContent='Опубликовать объявление';
- newsNode('kgNewsCancelEdit').hidden=true;newsScopeFields();
+ newsNode('kgNewsCancelEdit').hidden=true;newsCascade();newsScopeFields();
 }
 function newsPrepareEdit(id){
  const n=newsRows.find(n=>n.id===id);if(!n)return;
  newsEditorId=n.id;
- for(const [field,value] of [['kgNewsTitle',n.title],['kgNewsBody',n.body],['kgNewsCategory',n.category],['kgNewsScope',n.scope_type],['kgNewsProgram',n.program||'lechebnoe'],['kgNewsCourse',String(n.course||1)],['kgNewsStream',String(n.stream||1)],['kgNewsGroup',n.study_group||'1307'],['kgNewsLink',n.link_url||'']])newsNode(field).value=value;
+ for(const [field,value] of [['kgNewsTitle',n.title],['kgNewsBody',n.body],['kgNewsCategory',n.category],['kgNewsScope',n.scope_type],['kgNewsProgram',n.program||'lechebnoe'],['kgNewsGroup',n.study_group||'1307'],['kgNewsLink',n.link_url||'']])newsNode(field).value=value;
+ newsCascade();newsNode('kgNewsCourse').value=String(n.course||1);newsCascade();newsNode('kgNewsStream').value=String(n.stream||1);
  newsNode('kgNewsPinned').checked=!!n.pinned;
  newsNode('kgNewsPriority').value=n.priority||'normal';
  newsNode('kgNewsExpires').value=n.expires_at?new Date(n.expires_at).toISOString().slice(0,10):'';
@@ -262,6 +273,10 @@ async function backupPublishAllLocal(){
 function newsSetup(){
  const groups=GROUP_IDS.map(id=>'<option value="'+esc(id)+'">'+esc(id)+'</option>').join('');
  const g=newsNode('kgNewsGroup');if(g){g.innerHTML=groups;g.value=selectedStudyGroup||'1307';}
+ const pr=newsNode('kgNewsProgram');if(pr&&Object.keys(NEWS_PROGRAMS).length){pr.innerHTML=Object.keys(NEWS_PROGRAMS).map(k=>'<option value="'+esc(k)+'">'+esc(NEWS_PROGRAM_LABELS[k])+'</option>').join('');
+  const mine=GROUP_INFO[selectedStudyGroup];if(mine&&NEWS_PROGRAMS[mine.program])pr.value=mine.program;
+  newsCascade();if(mine){newsNode('kgNewsCourse').value=String(mine.course);newsCascade();newsNode('kgNewsStream').value=String(mine.stream);}}
+ newsCascade();pr?.addEventListener('change',newsCascade);newsNode('kgNewsCourse')?.addEventListener('change',newsCascade);
  for(const name of ['kgBackupExport','kgBackupExportCalendar'])newsNode(name)?.addEventListener('click',backupExportAll);
  for(const name of ['kgBackupImport','kgBackupImportCalendar']){
   newsNode(name)?.addEventListener('click',()=>newsNode(name==='kgBackupImport'?'kgBackupImportFile':'kgBackupImportCalendarFile')?.click());
