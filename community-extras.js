@@ -56,7 +56,7 @@ function newsCard(n){
  const link=n.link_url&&newsSafeLink(n.link_url);
  return '<article class="kg-news-item'+priority+'">'+
  '<div class="kg-news-meta"><span>'+esc(kind)+'</span><span>'+esc(newsLabel(n))+'</span><time>'+esc(newsDate(n.published_at||n.created_at))+'</time></div>'+
- '<h3>'+esc(n.title)+'</h3><p>'+esc(n.body).replace(/\r?\n/g,'<br>')+'</p>'+
+ '<h3 translate="no">'+esc(n.title)+'</h3><p translate="no">'+esc(n.body).replace(/\r?\n/g,'<br>')+'</p>'+
  (link?'<a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Подробнее ↗</a>':'')+
  '</article>';
 }
@@ -86,7 +86,7 @@ function newsAdminUI(){
 }
 function newsManageRender(){
  const list=newsNode('kgNewsManageList');if(!list||!newsAdmin())return;
- list.innerHTML=newsRows.length?newsRows.map(n=>'<div class="kg-news-manage-row"><div><b>'+esc(n.title)+'</b><small>'+esc(newsLabel(n))+' · '+esc(n.category||'general')+(newsCurrent(n)?'':' · неактивно')+'</small></div><div class="kg-news-admin-actions"><button type="button" data-news-edit="'+esc(n.id)+'">Изменить</button><button type="button" data-news-delete="'+esc(n.id)+'">Удалить</button></div></div>').join(''):
+ list.innerHTML=newsRows.length?newsRows.map(n=>'<div class="kg-news-manage-row"><div><b translate="no">'+esc(n.title)+'</b><small>'+esc(newsLabel(n))+' · '+esc(n.category||'general')+(newsCurrent(n)?'':' · неактивно')+'</small></div><div class="kg-news-admin-actions"><button type="button" data-news-edit="'+esc(n.id)+'">Изменить</button><button type="button" data-news-delete="'+esc(n.id)+'">Удалить</button></div></div>').join(''):
  '<p class="kg-news-empty">Новостей пока нет — опубликуйте первое объявление.</p>';
 }
 async function newsLoad(quiet=false){
@@ -152,7 +152,7 @@ async function newsSave(ev){
   pinned:newsNode('kgNewsPinned').checked,priority:newsNode('kgNewsPriority').value,
   link_url:safeLink||null,expires_at:expirationDate?expirationDate.toISOString():null};
  const label=newsLabel(record);
- if(!confirm((newsEditorId?'Сохранить':'Опубликовать')+' объявление для «'+label+'»?\n\nЭто сообщение увидят все подходящие группы.'))return;
+ if(!kgConfirm((newsEditorId?'Сохранить':'Опубликовать')+' объявление для «'+label+'»?\n\nЭто сообщение увидят все подходящие группы.'))return;
  const save=newsNode('kgNewsSave');save.disabled=true;
  const state=newsNode('kgNewsAdminStatus');state.textContent='Сохраняем…';
  try{
@@ -166,7 +166,7 @@ async function newsSave(ev){
 }
 async function newsDelete(id){
  if(!newsAdmin())return;
- const item=newsRows.find(n=>n.id===id);if(!item||!confirm('Удалить объявление «'+item.title+'» для всех адресатов?'))return;
+ const item=newsRows.find(n=>n.id===id);if(!item||!kgConfirm('Удалить объявление «'+item.title+'» для всех адресатов?'))return;
  try{
   const rows=await cloudRequest('/rest/v1/kgmu_news?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{'Prefer':'return=representation'}});
   if(!Array.isArray(rows)||rows.length!==1)throw Error('Не удалось подтвердить удаление');
@@ -212,7 +212,7 @@ async function backupImportAll(file){
    plan.push({id,records:[...nmap.values()],amendments:[...amap.values()]});
   }
   if(!groupsCount)throw Error('Архив не содержит записей');
-  if(!confirm('Архив содержит '+sum+' записей в '+groupsCount+' группах.\n\nБудет добавлено новых: '+changed+'. Существующие записи НЕ будут перезаписаны и ничего НЕ опубликуется в Supabase. Продолжить?'))return;
+  if(!kgConfirm('Архив содержит '+sum+' записей в '+groupsCount+' группах.\n\nБудет добавлено новых: '+changed+'. Существующие записи НЕ будут перезаписаны и ничего НЕ опубликуется в Supabase. Продолжить?'))return;
   // Make a protective export of pre-import local records, if any, before writing anything.
   const before=backupGroupsSnapshot();
   if(Object.keys(before.groups).length){downloadText('kgmu_BEFORE_IMPORT_'+kazanTodayKey()+'.json',JSON.stringify(before,null,2),'application/json;charset=utf-8');}
@@ -251,7 +251,7 @@ async function backupPublishAllLocal(){
  const data=backupGroupsSnapshot(),ids=Object.keys(data.groups).filter(g=>data.groups[g].records.length);
  const amount=ids.reduce((n,id)=>n+data.groups[id].records.length,0);
  if(!amount){toast('Нет локальных ДЗ и модулей для публикации');return;}
- if(!confirm('Массовая публикация '+amount+' локальных ДЗ/модулей из '+ids.length+' групп.\n\nВсе студенты увидят эти записи. Сначала скачайте резервную копию. Старые локальные данные НЕ удаляются. Продолжить?'))return;
+ if(!kgConfirm('Массовая публикация '+amount+' локальных ДЗ/модулей из '+ids.length+' групп.\n\nВсе студенты увидят эти записи. Сначала скачайте резервную копию. Старые локальные данные НЕ удаляются. Продолжить?'))return;
  const button=newsNode('kgPublishAllLocal');button.disabled=true;
  const st=newsNode('kgBackupStatus');st.textContent='Публикуем…';
  let published=0;

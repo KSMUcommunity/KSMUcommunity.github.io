@@ -413,7 +413,28 @@ html.kg-desk .cx-big{font-size:52px}
 #kgApp .cx-mbtn .kg-ic{width:16px;height:16px}
 
 /* сетка недели Пн–Сб */
-.cx-board{display:grid;gap:12px;align-items:start}
+.cx-board{display:grid;grid-template-columns:repeat(var(--board-days),minmax(0,1fr));gap:12px;align-items:start}
+/* The home switch stays mounted while its schedule changes. */
+.cx-home-head,.cx-home-content{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cx-home-view{display:flex;justify-content:flex-start}
+.cx-home-view .cx-schedule-switch{position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));inline-size:min(100%,216px);box-sizing:border-box}
+.cx-home-view .cx-schedule-switch::before{content:"";position:absolute;z-index:-1;inset-block:3px;inset-inline-start:3px;inline-size:calc((100% - 8px)/2);border-radius:999px;background:var(--cx-pressed);box-shadow:0 2px 6px rgba(0,0,0,.12);pointer-events:none}
+.cx-home-view .cx-schedule-switch[data-week="true"]::before{transform:translateX(calc(100% + 2px))}
+#kgApp .cx-home-view .cx-schedule-switch button{min-width:0;text-align:center}
+#kgApp .cx-home-view .cx-schedule-switch button[aria-pressed="true"]{background:transparent;box-shadow:none}
+@media (prefers-reduced-motion:no-preference){
+  .cx-home-view .cx-schedule-switch::before{transition:transform 270ms cubic-bezier(.22,.86,.26,1)}
+  #kgApp .cx-home-view .cx-schedule-switch button{transition:color 170ms ease}
+}
+@media (prefers-reduced-motion:reduce){
+  .cx-home-view .cx-schedule-switch::before,#kgApp .cx-home-view .cx-schedule-switch button{transition:none!important}
+}
+@media (max-width:900px){.cx-board{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){
+  .cx-board{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cx-board .cx-bh b{font-size:14px}
+  .cx-wk-b>button{max-width:48%}
+}
 .cx-bcol{display:flex;flex-direction:column;gap:8px;min-width:0}
 #kgApp .cx-bh{display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;border-radius:14px;text-align:left;color:var(--a-text);width:100%}
 #kgApp .cx-bh:hover{background:var(--a-card2)}
@@ -437,7 +458,7 @@ html.kg-desk .cx-big{font-size:52px}
 .cx-bempty{padding:16px 12px;border-radius:16px;border:1.5px dashed var(--e-sep);font-size:12.5px;color:var(--a-hint);text-align:center}
 .cx-wk-b{justify-content:space-between}
 #kgApp .cx-wk-b>button{width:auto;height:38px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;border-radius:12px;color:var(--a-text);background:var(--a-card2)}
-#kgApp .cx-wk-b>button .kg-ic{width:16px;height:16px}
+#kgApp .cx-wk-b>button .kg-ic{width:16px;height:16px;flex:none}
 .cx-leg-k{flex-wrap:wrap;justify-content:flex-start;gap:8px 18px;margin:4px 4px 0}
 .cx-leg-k i{display:inline-block;width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,var(--k1),var(--k2))}
 
@@ -652,7 +673,7 @@ html.kg-e body.kg-on .panel-tools button#addModule,html.kg-e body.kg-on .panel-t
 
 /* ===== 9.8: мелочи — цели касания ≥40 px, приветствие в одну строку, аватар, отметка обновления ===== */
 #kgApp .cx-sg button{min-width:40px;min-height:36px}
-#kgApp .cx-wk>button{width:40px}
+#kgApp .cx-wk:not(.cx-wk-b)>button{width:40px}
 #kgApp .cx-sh button,#kgApp .cx-sh a{padding:10px 4px;margin:-10px -4px}
 .cx-who small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cx-who>span:last-child{min-width:0}
@@ -830,3 +851,22 @@ html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) 
 #cxCalSlot .entry-sub{margin-top:4px;font-size:12.5px;color:var(--a-hint)}
 #cxCalSlot .entry-controls{flex-direction:row;margin-top:0}
 #cxCalSlot .entry-controls button{flex:1}
+
+/* Language changes use one crossfade on the current screen. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 180ms ease-in both kg-language-out;
+  }
+  ::view-transition-new(root) {
+    animation: 330ms cubic-bezier(.16, 1, .3, 1) both kg-language-in;
+  }
+}
+@keyframes kg-language-out {
+  to { opacity: 0; transform: translateY(-5px); }
+}
+@keyframes kg-language-in {
+  from { opacity: 0; transform: translateY(7px); }
+}
+
+/* Profile language card follows the spacing of the other settings cards. */
+#kgPage [data-language] { margin-block-end: 10px; }

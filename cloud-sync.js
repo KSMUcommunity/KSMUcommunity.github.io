@@ -174,13 +174,20 @@ async function cloudRequest(endpoint,options={},allowRefresh=true){
   if(!response.ok)throw Error((json?.message || json?.error_description || json?.details || json?.hint || json?.error || 'Ошибка '+response.status).slice(0,240));
   return json;
 }
+async function cloudReadGroupRows(table,gr){
+  const rows=[];
+  const filter='?study_group=eq.'+encodeURIComponent(gr)+'&select=*&order=id.asc&limit=1000';
+  while(true){
+    const page=await cloudRequest('/rest/v1/'+table+filter+'&offset='+rows.length);
+    if(!Array.isArray(page))throw Error('Некорректный ответ сервера');
+    if(!page.length)return rows;
+    rows.push(...page);
+  }
+}
 async function cloudReadGroup(gr){
-  const filter='?study_group=eq.'+encodeURIComponent(gr)+'&select=*&limit=1000';
   const [nr,ar]=await Promise.all([
-    cloudRequest('/rest/v1/kgmu_notes'+filter),cloudRequest('/rest/v1/kgmu_amendments'+filter)
+    cloudReadGroupRows('kgmu_notes',gr),cloudReadGroupRows('kgmu_amendments',gr)
   ]);
-  if(!Array.isArray(nr)||!Array.isArray(ar))throw Error('Некорректный ответ сервера');
-  if(nr.length>=1000||ar.length>=1000)throw Error('Слишком много записей: требуется постраничная загрузка');
   const mapN=n=>({...sanitizeNote(n),_remoteOwnerId:n.created_by||n.updated_by||null,_status:n.status||'approved',_remote:true,editOf:n.edit_of||null});
   const ok=nr.filter(validNote);
   return {notes:ok.filter(n=>!n.edit_of).map(mapN),edits:ok.filter(n=>n.edit_of).map(mapN),amendments:ar.map(a=>({...a,eventId:a.event_id,targetDate:a.target_date,newStart:a.new_start,newEnd:a.new_end,newLocation:a.new_location,newTeacher:a.new_teacher})).filter(validAmendment).map(sanitizeAmendment)};
@@ -193,8 +200,11 @@ async function cloudRefreshGroup(quiet=false){
   try{
     const result=await cloudReadGroup(gr);
     if(request!==cloudRequestVersion||selectedStudyGroup!==gr)return;
+    const changed=JSON.stringify([cloudNotes,cloudEdits,cloudAmendments])!==
+      JSON.stringify([result.notes,result.edits,result.amendments]);
     cloudNotes=result.notes;cloudEdits=result.edits;cloudAmendments=result.amendments;
     cloudLastUpdated=new Date();cloudMergeRecords();cloudRedraw();
+    if(changed)document.dispatchEvent(new Event('kg-cloud-records'));
     cloudSetStatus('Подключено · '+gr+' · '+cloudLastUpdated.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){
     if(request!==cloudRequestVersion)return;
@@ -305,7 +315,7 @@ async function cloudSaveNote(n,prev){
 }
 async function cloudDeleteNote(n){
   if(!cloudCanDeleteNote(n)){toast('Удалять общие записи может только староста или администратор');return;}
-  if(!confirm(n.editOf?'Удалить заявку на правку «'+n.title+'»?':'Удалить общую запись для ВСЕЙ группы «'+n.title+'»?'))return;
+  if(!kgConfirm(n.editOf?'Удалить заявку на правку «'+n.title+'»?':'Удалить общую запись для ВСЕЙ группы «'+n.title+'»?'))return;
   try{
     const result=await cloudRequest('/rest/v1/kgmu_notes?id=eq.'+encodeURIComponent(n.id)+'&study_group=eq.'+encodeURIComponent(selectedStudyGroup),{
       method:'DELETE',headers:{'Prefer':'return=representation'}});
@@ -322,7 +332,7 @@ async function cloudSaveAmendment(a,prev){
 }
 async function cloudDeleteAmendment(a){
   if(!cloudCanEdit()){toast('Удалять общее изменение может только редактор группы');return;}
-  if(!confirm('Удалить изменение для ВСЕЙ группы?'))return;
+  if(!kgConfirm('Удалить изменение для ВСЕЙ группы?'))return;
   try{
     const result=await cloudRequest('/rest/v1/kgmu_amendments?id=eq.'+encodeURIComponent(a.id)+'&study_group=eq.'+encodeURIComponent(selectedStudyGroup),{
       method:'DELETE',headers:{'Prefer':'return=representation'}});
@@ -333,7 +343,7 @@ async function cloudDeleteAmendment(a){
 async function cloudPublishLocal(){
   const gr=selectedStudyGroup,localN=cloudLocalNotes(gr);
   if(!localN.length){toast('В этой группе нет локальных ДЗ или модулей для переноса');return;}
-  if(!confirm('Опубликовать '+localN.length+' локальных ДЗ/модулей для группы '+gr+'?\n\nЛокальные копии останутся в браузере. Изменения расписания не публикуются автоматически. Перед переносом сохраните экспорт JSON.'))return;
+  if(!kgConfirm('Опубликовать '+localN.length+' локальных ДЗ/модулей для группы '+gr+'?\n\nЛокальные копии останутся в браузере. Изменения расписания не публикуются автоматически. Перед переносом сохраните экспорт JSON.'))return;
   cloudSetStatus('Публикуем локальные ДЗ и модули…');
   try{
     await cloudEnsureContributor();
@@ -494,7 +504,7 @@ async function kgTgFromHash(){
   if(!data||!data.id||!data.hash){setTimeout(()=>{try{toast('Вход через Telegram отменён');}catch(_){}},600);return;}
   /* чужая ссылка с tgAuthResult впустила бы в чужой аккаунт — спрашиваем, если вход отсюда не начинали */
   const who=data.username?'@'+data.username:[data.first_name,data.last_name].filter(Boolean).join(' ')||'этот аккаунт';
-  if(Date.now()-asked>30*60*1000&&!confirm('Войти на сайт как '+who+' (Telegram)?\n\nЕсли вы не нажимали «Войти через Telegram» — нажмите «Отмена».'))return;
+  if(Date.now()-asked>30*60*1000&&!kgConfirm('Войти на сайт как '+who+' (Telegram)?\n\nЕсли вы не нажимали «Войти через Telegram» — нажмите «Отмена».'))return;
   if(!kgPdOk())kgPdSet(true); /* вход начат кнопкой, которая доступна только после галочки согласия, или подтверждён выше */
   try{await kgTgLogin({widget:data});setTimeout(()=>{try{toast('✈️ Вы вошли через Telegram');}catch(_){}},600);
     try{window.dispatchEvent(new Event('kg-auth'));}catch(_){}}
@@ -570,7 +580,7 @@ async function kgMailFromHash(){
     s.user=await r.json();if(!r.ok||!s.user?.id)throw Error('нет пользователя');
     /* чужая ссылка с #access_token тихо впустила бы в аккаунт злоумышленника — спрашиваем, если вход не запрашивали */
     let asked=0;try{asked=+localStorage.getItem('kg-mail-req')||0;localStorage.removeItem('kg-mail-req');}catch(_){}
-    if(Date.now()-asked>15*60*1000&&!confirm('Войти на сайт как '+(s.user.email||'этот аккаунт')+'?\n\nЕсли вы не запрашивали вход по почте — нажмите «Отмена».')){setTimeout(()=>{try{toast('Вход по ссылке отменён');}catch(_){}},600);return;}
+    if(Date.now()-asked>15*60*1000&&!kgConfirm('Войти на сайт как '+(s.user.email||'этот аккаунт')+'?\n\nЕсли вы не запрашивали вход по почте — нажмите «Отмена».')){setTimeout(()=>{try{toast('Вход по ссылке отменён');}catch(_){}},600);return;}
     await kgMailDone(s);setTimeout(()=>{try{toast('Вход по почте выполнен');}catch(_){}},600);
   }catch(e){console.warn('Вход по ссылке:',e);}
 }

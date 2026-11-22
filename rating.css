@@ -1,0 +1,43 @@
+.kr { max-width: 780px; margin-inline: auto; color: var(--a-text); }
+.kr p { margin: 0; line-height: 1.45; }
+.kr h2 { margin: 0; font-size: 1rem; line-height: 1.3; }
+.kr-intro { padding-block: 4px 16px; color: var(--a-hint); }
+.kr-block { border-radius: var(--a-r); padding: clamp(13px, 3vw, 19px); margin-block-end: 10px; }
+.kr-heading,.kr-inline { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.kr-heading > span { color: var(--a-hint); font-size: .79rem; text-align: end; }
+.kr-inline { align-items: center; margin-block-start: 8px; font-size: .86rem; color: var(--a-hint); }
+.kr-inline strong { color: var(--a-text); }
+.kr-switch,.kr-target { flex-wrap: wrap; align-items: center; margin-block: 10px 9px; }
+.kr-target { display:flex; gap:6px; }
+#kgApp .kr button,.kr input { font: inherit; color: var(--a-text); }
+#kgApp .kr button { cursor: pointer; }
+#kgApp .kr-target button { min-height: 36px; padding: 4px 12px; border: 1px solid transparent; border-radius: 999px; background: transparent; font-size: .88rem; }
+#kgApp .kr-target button { border: 1px solid color-mix(in srgb,var(--a-hint) 46%,transparent); }
+#kgApp .kr-target button[aria-pressed=true] { background: var(--e-hero); color: #fff; border-color: transparent; }
+.kr label { min-width: 0; }
+.kr-field { display: grid; gap: 4px; font-size: .85rem; color: var(--a-hint); }
+.kr-target label { flex: 1 1 85px; }
+#kgApp .kr .cx-in { font-size: 16px; }
+.kr input::placeholder { color: var(--a-hint); }
+.kr-pair,.kr-stats { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.kr-entries { display: grid; gap: 6px; }
+.kr-entry { display: grid; grid-template-columns: minmax(0,1fr) 40px; align-items: center; gap: 4px; }
+#kgApp .kr-entry button { background: transparent; border: 0; font-size: 1.2rem; min-height: 40px; }
+.kr .kr-hint,.kr-source { color: var(--a-hint); font-size: .8rem; margin-block-start: 7px; }
+.kr-result { border-radius: var(--a-r); padding: 17px 14px; text-align: center; font-variant-numeric: tabular-nums; }
+.kr-result h2 { color: var(--a-hint); }
+.kr-result p { margin-block-start: 6px; color: var(--a-hint); }
+.kr-result .kr-impossible { color: var(--a-text); font-size: 1.35rem; }
+.kr-score { color:var(--a-acc); font-size: clamp(2.05rem,6vw,2.8rem); font-weight: 750; }
+.kr-score span { font-size: 1rem; color: var(--a-hint); font-weight: 500; }
+.kr-stats { border-top: 1px solid color-mix(in srgb,var(--a-hint) 28%,transparent); padding-top: 10px; margin: 12px 0 0; }
+.kr-stats dt { color: var(--a-hint); font-size: .75rem; }
+.kr-stats dd { margin: 4px 0 0; font-size: 1.25rem; font-weight: 700; }
+.kr-forecast { margin-block-start: 12px; }
+.kr-forecast label { font-weight: 700; }
+.kr-forecast input { width: 100%; display: block; margin: 8px 0; accent-color: var(--a-text); }
+.kr-source { padding-block: 10px; border-top: 1px solid color-mix(in srgb,var(--a-hint) 28%,transparent); }
+.kr-source a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.kr [hidden] { display: none !important; }
+.kr [aria-invalid=true],.kr :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { #kgApp .kr button { transition: background-color .18s ease, color .18s ease; } }

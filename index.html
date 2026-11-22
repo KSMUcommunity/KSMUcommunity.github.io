@@ -671,7 +671,8 @@ window.addEventListener('load',function(){setTimeout(function(){try{if(!window.c
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=91">
 <link rel="stylesheet" href="./kg-app.css?v=91">
-<link rel="stylesheet" href="./kg-e.css?v=39">
+<link rel="stylesheet" href="./kg-e.css?v=152">
+<link rel="stylesheet" href="./rating.css?v=148">
 <style>html.kg-boot body{visibility:hidden}</style>
 <script>/* без вспышки старого интерфейса: страница скрыта, пока kg-app.js не соберёт новый (снимает kg-boot); запасной таймер 4 с */
 (function(){var d=document.documentElement,bg='#EEF2F8';d.classList.add('kg-boot');
@@ -1009,11 +1010,12 @@ function slots(w,di){
  const out=new Map();for(const e of list){const k=[e.start,e.end,e.row,e.changeFlag||'normal',e.amendment?.id||''].join('|');if(!out.has(k))out.set(k,[]);out.get(k).push(e);}
  return [...out.values()].sort((a,b)=>a[0].start.localeCompare(b[0].start)||a[0].row-b[0].row);
 }
+function kgConfirm(text){return window.confirm(window.kgTranslateLabel ? window.kgTranslateLabel(text) : text);}
 function esc(t){return String(t||'').replace(/[&<>\"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[k]));}
 function subjTitle(s){return s.replace(/ [12] подгр\.$/,'').replace(/ \{гр\.[^}]+\}/,'');}
 function renderResources(raw){
  if(!raw||!String(raw).trim())return '';
- let html='<div class="resource-intro">Материалы и ссылки для подготовки</div><ul class="resource-list">';
+ let html='<div class="resource-intro">Материалы и ссылки для подготовки</div><ul class="resource-list" translate="no">';
  for(const item of String(raw).split(/\r?\n/).map(s=>s.trim()).filter(Boolean).slice(0,20)){
   const parts=item.split(/\s+\|\s+/),possible=parts.length>1?parts.slice(1).join(' | ').trim():item;
   let validURL='';try{const url=new URL(possible);if(['https:','http:'].includes(url.protocol))validURL=url.href;}catch(e){}
@@ -1158,8 +1160,8 @@ function renderDayDetail(){
  const sorted=daynotes.sort((a,b)=>(a.type==='module'?-1:1)-(b.type==='module'?-1:1)||a.subject.localeCompare(b.subject));
  let cards='';for(const n of sorted){
   const isModule=n.type==='module';
-  cards+='<div class="entry '+n.type+'"><div class="entry-top"><div><div class="entry-title">'+(isModule?'🚩 МОДУЛЬ / ЗАЧЁТ: ':'📘 ДЗ: ')+esc(n.title)+'</div><div class="entry-sub">'+esc(n.subject)+(n.subgroup!=='all'?' · '+n.subgroup+'-я подгруппа':' · вся группа')+(typeof cloudShowRecordSource==='function'?cloudShowRecordSource(n):'')+'</div></div>'+noteControls(n)+'</div>';
-  if(n.details)cards+='<div class="entry-desc">'+esc(n.details)+'</div>';
+  cards+='<div class="entry '+n.type+'"><div class="entry-top"><div><div class="entry-title">'+(isModule?'🚩 МОДУЛЬ / ЗАЧЁТ: ':'📘 ДЗ: ')+'<span translate="no">'+esc(n.title)+'</span></div><div class="entry-sub"><span translate="no">'+esc(n.subject)+'</span>'+(n.subgroup!=='all'?' · '+n.subgroup+'-я подгруппа':' · вся группа')+(typeof cloudShowRecordSource==='function'?cloudShowRecordSource(n):'')+'</div></div>'+noteControls(n)+'</div>';
+  if(n.details)cards+='<div class="entry-desc" translate="no">'+esc(n.details)+'</div>';
   if(isModule&&n.resources)cards+=renderResources(n.resources);
   if(isModule)cards+='<button type="button" class="ics-button" data-ics="'+esc(n.id)+'">＋ В календарь телефона (.ics)</button>';
   cards+='</div>';
@@ -1219,7 +1221,7 @@ function saveEditor(event){
  persistNotes();$('recordEditor').hidden=true;editId=null;
  renderDayDetail();renderCalendar();render();toast('Запись сохранена');
 }
-function deleteEntry(id){const n=notes.find(x=>x.id===id);if(!n)return;if(n._remote && typeof cloudDeleteNote==='function')return cloudDeleteNote(n);if(!confirm('Удалить запись «'+n.title+'»?'))return;notes=notes.filter(x=>x.id!==id);persistNotes();renderDayDetail();renderCalendar();render();toast('Запись удалена');}
+function deleteEntry(id){const n=notes.find(x=>x.id===id);if(!n)return;if(n._remote && typeof cloudDeleteNote==='function')return cloudDeleteNote(n);if(!kgConfirm('Удалить запись «'+n.title+'»?'))return;notes=notes.filter(x=>x.id!==id);persistNotes();renderDayDetail();renderCalendar();render();toast('Запись удалена');}
 function exportRecords(){const payload={format:'kgmu-v8-group-records',version:2,group:selectedStudyGroup,exportedAt:new Date().toISOString(),records:notes,amendments};
  downloadText('kgmu_'+selectedStudyGroup+'_zapisi_'+kazanTodayKey()+'.json',JSON.stringify(payload,null,2),'application/json;charset=utf-8');toast('Файл группы '+selectedStudyGroup+' создан');}
 async function importRecords(file){if(!file)return;try{
@@ -1230,7 +1232,7 @@ async function importRecords(file){if(!file)return;try{
  if(!Array.isArray(data.records)||data.records.length>4000||!data.records.every(validNote))throw Error('Ошибка формата записей');
  const incomingChanges=modern&&Array.isArray(data.amendments)?data.amendments:[];
  if(incomingChanges.length>2000||!incomingChanges.every(validAmendment))throw Error('Ошибка формата изменений');
- if(!confirm('Загрузить '+data.records.length+' записей для '+selectedStudyGroup+'? Совпадающие записи обновятся.'))return;
+ if(!kgConfirm('Загрузить '+data.records.length+' записей для '+selectedStudyGroup+'? Совпадающие записи обновятся.'))return;
  const merged=new Map(notes.map(n=>[n.id,n]));for(const n of data.records.map(sanitizeNote))merged.set(n.id,n);
  notes=[...merged.values()];const mergedAm=new Map(amendments.map(x=>[x.id,x]));for(const a of incomingChanges.map(sanitizeAmendment))mergedAm.set(a.id,a);amendments=[...mergedAm.values()];
  persistNotes();persistAmendments();renderCalendar();renderDayDetail();render();toast('Записи для группы '+selectedStudyGroup+' загружены');
@@ -1384,7 +1386,7 @@ function renderDayChanges(){
   return '<div class="change-entry"><div class="change-entry-head"><span class="change-badge '+esc(a.kind)+'">'+esc(type)+'</span><b>'+esc(caption)+'</b><button type="button" class="small-btn" data-delete-change="'+esc(a.id)+'" aria-label="Удалить изменение">×</button></div>'+
    '<div class="change-copy">'+(a.targetDate&&a.targetDate!==a.date?'С '+esc(prettyDate(a.date))+' → '+esc(prettyDate(a.targetDate))+' · ':'')+
    (a.newStart?esc(a.newStart)+(a.newEnd?'–'+esc(a.newEnd):'')+' · ':'')+
-   (a.newLocation?'Место: '+esc(a.newLocation)+' · ':'')+esc(a.comment||'')+'</div>'+
+   (a.newLocation?'Место: '+esc(a.newLocation)+' · ':'')+'<span translate="no">'+esc(a.comment||'')+'</span></div>'+
    '<div class="change-source">Источник: '+esc(a.source)+(typeof cloudShowAmendmentSource==='function'?cloudShowAmendmentSource(a):'')+' · '+(a.verified?'Подтверждено (по данным редактора)':'Предварительно')+'</div></div>';
  }).join(''):'<div class="inline-empty">Изменений занятий на эту дату пока нет.</div>';
 }
@@ -1416,7 +1418,7 @@ function saveChangeEditor(e){
  if(prev)amendments=amendments.map(a=>a.id===prev.id?entry:a);else amendments.push(entry);
  persistAmendments();$('changeEditor').hidden=true;renderCalendar();renderDayDetail();render();toast('Изменение занятия сохранено');
 }
-function deleteChange(id){const a=amendments.find(a=>a.id===id);if(!a)return;if(a._remote && typeof cloudDeleteAmendment==='function')return cloudDeleteAmendment(a);if(!confirm('Удалить это изменение занятия?'))return;amendments=amendments.filter(x=>x.id!==id);persistAmendments();renderCalendar();renderDayDetail();render();toast('Изменение удалено');}
+function deleteChange(id){const a=amendments.find(a=>a.id===id);if(!a)return;if(a._remote && typeof cloudDeleteAmendment==='function')return cloudDeleteAmendment(a);if(!kgConfirm('Удалить это изменение занятия?'))return;amendments=amendments.filter(x=>x.id!==id);persistAmendments();renderCalendar();renderDayDetail();render();toast('Изменение удалено');}
 function icsSafe(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/[\u0000-\u001f\u007f]/g,'').replace(/,/g,'\\,').replace(/;/g,'\\;');}
 function exportICS(id){
  const n=notes.find(n=>n.id===id&&n.type==='module');if(!n)return;
@@ -1428,7 +1430,10 @@ function exportICS(id){
  /* В Telegram скачать файл нельзя (WebView показывает текст .ics и выгружает сайт) — открываем страницу-помощник во внешнем браузере */
  if(document.documentElement.classList.contains('kg-in-tg')){
   const ev={t:'Модуль: '+n.subject+' — '+n.title,s:start,e:end,d:desc,u:uid};
-  const url=new URL('ics.html',location.href.split('#')[0].split('?')[0]).href+'#'+encodeURIComponent(JSON.stringify(ev));
+  const link=new URL('ics.html',location.href);
+  link.searchParams.set('lang',document.documentElement.lang);
+  link.hash=encodeURIComponent(JSON.stringify(ev));
+  const url=link.href;
   try{if(window.TelegramWebviewProxy)window.TelegramWebviewProxy.postEvent('web_app_open_link',JSON.stringify({url}));else if(window.parent!==window)window.parent.postMessage(JSON.stringify({eventType:'web_app_open_link',eventData:{url}}),'*');else window.open(url,'_blank');}catch(_){window.open(url,'_blank');}
   toast('Открываю браузер, чтобы добавить в календарь');return;
  }
@@ -1522,16 +1527,20 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&selectedS
 /* С 9.8 расписание приходит по группам (data/g/<группа>.js, версия в KGMU_GROUP_V) — полный schedule.json (8 МБ)
    сайт больше не скачивает; его читают бот и экспорт. */
 
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('./sw.js').catch(function (err) { console.warn('Офлайн-кэш не активирован:', err); });
   });
 }
 </script>
-<script src="./cloud-sync.js?v=114"></script>
-<script src="./community-extras.js?v=115"></script>
+<script src="./cloud-sync.js?v=149"></script>
+<script src="./community-extras.js?v=149"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-app.js?v=146"></script>
+<script src="./kg-schedule-en.js?v=149"></script>
+<script src="./kg-language.js?v=149"></script>
+<script src="./rating.js"></script>
+<script src="./rating-ui.js?v=148"></script>
+<script src="./kg-app.js?v=152"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
