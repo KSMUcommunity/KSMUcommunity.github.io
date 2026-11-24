@@ -459,7 +459,7 @@
     var h = list.length ? list.map(function (n) {
       var d = n.published_at ? new Date(n.published_at) : null;
       return '<article class="kg-news"><small>' + (d ? d.getDate() + ' ' + MON[d.getMonth()] : '') + (n.priority === 'urgent' ? ' · срочно' : n.priority === 'important' ? ' · важно' : '') + '</small><b translate="no">' + esc(n.title) + '</b>' +
-        (n.body ? '<p translate="no">' + esc(n.body) + '</p>' : '') + (httpUrl(n.link_url) ? '<a class="kg-link" target="_blank" rel="noopener" href="' + esc(httpUrl(n.link_url)) + '">' + (n.link_label ? '<span translate="no">' + esc(n.link_label) + '</span>' : 'Подробнее') + '</a>' : '') + '</article>';
+        (n.body ? '<p translate="no">' + esc(n.body) + '</p>' : '') + (httpUrl(n.link_url) ? '<a class="kg-link" target="_blank" rel="noopener" href="' + esc(httpUrl(n.link_url)) + '">' + (n.link_label ? '<span translate="no">' + esc(n.link_label) + '</span>' : 'Подробнее') + '</a>' : '') + '<div class="kg-nsh">' + shBtn('data-shn="' + esc(n.id) + '"', 'Поделиться', 'Поделиться объявлением картинкой') + '</div></article>';
     }).join('') : '<div class="kg-empty">' + ic('news') + '<b>Объявлений нет</b><span>Здесь появятся новости для вашей группы и курса</span></div>';
     if (role() === 'admin') h += '<button type="button" class="kg-btn kg-wide" data-go="tools">' + ic('tool') + 'Управление объявлениями</button>';
     showPage('news', 'Объявления', h);
@@ -688,7 +688,8 @@
         h += (x.topic ? '<div class="cx-topic">' + esc(x.topic) + '</div>' : '') + '<div>' + (x.subgroup && s.length > 1 ? '<b>' + esc(x.subgroup) + '-я подгруппа · ' + esc(fullName(x)) + '</b><br>' : '') + (p.text ? esc(p.text) + (p.addr ? '<br><small>' + esc(p.addr) + '</small>' : '') : '') + (x.teacher && s.length > 1 ? '<br><small>' + esc(x.teacher) + '</small>' : '') + (p.url ? '<br><a href="' + esc(p.url) + '" target="_blank" rel="noopener">Открыть на карте</a>' : '') + (x.amendment && x.amendment.comment ? '<br><small>' + '<span translate="no">' + esc(x.amendment.comment) + '</span>' + '</small>' : '') + '</div>';
       });
       nts.forEach(function (n) { h += '<div><b>' + (n.type === 'module' ? 'Модуль: ' : 'ДЗ: ') + '<span translate="no">' + esc(n.title) + '</span></b>' + (n.details ? '<br><small translate="no">' + esc(n.details) + '</small>' : '') + (n._status === 'pending' ? '<br><small>ждёт подтверждения старосты</small>' : '') + '</div>'; });
-      h += '<div class="r"><button type="button" class="cx-btn g" data-cx="add" data-t="homework" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'ДЗ</button><button type="button" class="cx-btn g" data-cx="add" data-t="module" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'Модуль</button></div></div>';
+      h += '<div class="r"><button type="button" class="cx-btn g" data-cx="add" data-t="homework" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'ДЗ</button><button type="button" class="cx-btn g" data-cx="add" data-t="module" data-subj="' + esc(subjects[0]) + '">' + ic('plus') + 'Модуль</button></div>' +
+        (live && progOf(s, key) ? '<button type="button" class="cx-btn g cx-shp" data-cx="sprog" data-d="' + key + '" data-i="' + idx + '">' + ic('share') + 'Поделиться прогрессом</button>' : '') + '</div>';
     }
     return h + '</article>';
   }
@@ -729,7 +730,7 @@
     var d = parseISO(key);
     var vw = '<div class="cx-vtools">' + (homeWeek ? '' : scheduleSwitch(board, 'board')) +
       '<button type="button" class="cx-mbtn" data-cx="calendar">' + ic('cal') + 'Месяц</button>' +
-      (!board && liveOf(key).length ? '<button type="button" class="cx-mbtn" data-cx="share" aria-label="Поделиться расписанием дня картинкой">' + ic('share') + '<span>Поделиться</span></button>' : '') + '</div>';
+      ((board ? weekCount(key) : liveOf(key).length) ? '<button type="button" class="cx-mbtn" data-cx="share" data-d="' + key + '"' + (board ? ' data-w="1"' : '') + ' aria-label="Поделиться расписанием ' + (board ? 'недели' : 'дня') + ' картинкой">' + ic('share') + '<span>Поделиться</span></button>' : '') + '</div>';
     if (board) {
       var wl = [], wn = 0; days.forEach(function (k) { var s = liveOf(k); wn += s.length; });
       var thisWeek = addDays(t, -dow(t)) === days[0];
@@ -758,75 +759,246 @@
     });
     return h + '<div class="cx-list">' + L + '</div>' + cxLegend(true) + cxFoot();
   }
-  /* «Поделиться днём»: картинка 1080×1350 с парами дня — удобно скинуть в чат группы */
-  function shareDay(key) {
-    var l = window.kgTranslateLabel || function (text) { return text; };
-    var sl = liveOf(key); if (!sl.length) return;
-    var W = 1080, P = 72, TW = W - P * 2 - 230;
+  /* ---------- картинки «Поделиться» (1080 px в ширину) — удобно скинуть в чат группы ----------
+     shareCard(spec): spec = { file, alt, kicker, title, sub, items }
+     items: {t:'h', text} — заголовок раздела; {t:'row', a, b, title, meta, c, small} — карточка пары;
+     {t:'text', label, text, c, max} — карточка с текстом; {t:'big', value, unit, caption, c, pct} — крупное число;
+     {t:'note', text} — серая строка */
+  var SHK = { lec: '#6E7C9A', pr: '#8C2B33', cyc: '#9A7A3E' };
+  function L(s) { try { return window.kgTranslateLabel ? window.kgTranslateLabel(s) : s; } catch (e) { return s; } }
+  function shGroup() { return L('Группа ' + selectedStudyGroup + (typeof group !== 'undefined' && group !== 'all' ? ' · ' + group + '-я подгруппа' : '')); }
+  function shareCard(spec) {
+    var W = 1080, P = 72, IW = W - P * 2, F = 'Inter, system-ui, sans-serif';
     var cv = document.createElement('canvas'); cv.width = W;
-    var x = cv.getContext('2d'), F = 'Inter, system-ui, sans-serif';
-    var KC = { lec: '#6E7C9A', pr: '#8C2B33', cyc: '#9A7A3E' };
+    var x = cv.getContext('2d');
+    var font = function (w, s) { x.font = w + ' ' + s + 'px ' + F; };
     var fit = function (s, max) { s = String(s); if (x.measureText(s).width <= max) return s; while (s.length > 1 && x.measureText(s + '…').width > max) s = s.slice(0, -1); return s.trim() + '…'; };
-    /* название пары — до двух строк */
-    var wrap2 = function (s, max) {
-      var w = String(s).split(/\s+/), a = '';
-      while (w.length && x.measureText((a ? a + ' ' : '') + w[0]).width <= max) a = (a ? a + ' ' : '') + w.shift();
-      if (!a) a = w.shift() || '';
-      return w.length ? [a, fit(w.join(' '), max)] : [a];
+    /* перенос по словам с учётом \n; не больше n строк, последняя — с многоточием */
+    var wrap = function (s, max, n) {
+      var out = [], paras = String(s || '').replace(/\r/g, '').split('\n'), cut = false;
+      for (var p = 0; p < paras.length && !cut; p++) {
+        var w = paras[p].split(/\s+/).filter(Boolean), a = '';
+        while (w.length) {
+          var t = (a ? a + ' ' : '') + w[0];
+          if (x.measureText(t).width <= max) { a = t; w.shift(); continue; }
+          if (!a) a = fit(w.shift(), max);
+          out.push(a); a = '';
+          if (out.length >= n) { cut = true; break; }
+        }
+        if (cut) break;
+        if (a) out.push(a);
+        if (out.length >= n && p < paras.length - 1) cut = true;
+      }
+      if (cut && out.length) { var z = out[out.length - 1]; out[out.length - 1] = /…$/.test(z) ? z : fit(z + ' …', max).replace(/\s…$/, '…'); }
+      return out.length ? out : [''];
     };
-    x.font = '700 38px ' + F;
-    var lines = sl.map(function (s) { return wrap2(l(namesOf(s).join(' / ')), TW); });
-    var rows = lines.map(function (l) { return l.length > 1 ? 196 : 152; });
-    var H = 390 + rows.reduce(function (a, b) { return a + b + 22; }, 0) + 110;
-    cv.height = H;
+    /* шапка */
+    font('800', 68); var tl = wrap(spec.title, IW - 110, spec.titleMax || 2);
+    font('500', 34); var sl = spec.sub ? wrap(spec.sub, IW - 110, 2) : [];
+    var subY = 196 + (tl.length - 1) * 78 + 66, heroH = (sl.length ? subY + (sl.length - 1) * 44 : subY - 44) + 68;
+    /* разметка элементов */
+    var y = heroH + 60, lay = [];
+    (spec.items || []).forEach(function (it, i) {
+      var o = { it: it, y: y };
+      if (it.t === 'h') { if (i) { y += 18; o.y = y; } o.h = 60; }
+      else if (it.t === 'row') {
+        var s = it.small ? 0.86 : 1; o.s = s; o.tx = it.a ? Math.round(210 * s) : 44; o.tw = IW - o.tx - 36;
+        font('700', Math.round(38 * s)); o.lines = wrap(it.title, o.tw, 2);
+        o.h = Math.round((152 + (o.lines.length - 1) * 44) * s);
+      } else if (it.t === 'text') {
+        font('500', 34); o.lines = wrap(it.text, IW - 88, it.max || 10);
+        o.h = 40 + (it.label ? 46 : 0) + o.lines.length * 48 + 28;
+      } else if (it.t === 'big') {
+        font('500', 34); o.lines = it.caption ? wrap(it.caption, IW - 88, 3) : [];
+        o.h = 196 + (it.pct != null ? 44 : 0) + o.lines.length * 46 + 30;
+      } else { font('500', 30); o.lines = wrap(it.text, IW, it.max || 4); o.h = o.lines.length * 42 + 4; }
+      lay.push(o); y += o.h + (it.t === 'h' ? 6 : 22);
+    });
+    var H = Math.min(y + 110, 15000); cv.height = H;
+    var rr = function (X, Y, w, h, r) { x.beginPath(); if (x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); x.fill(); };
     var draw = function (logo) {
       x.fillStyle = '#F4F6FA'; x.fillRect(0, 0, W, H);
-      var g = x.createLinearGradient(0, 0, W, 330); g.addColorStop(0, '#8C2B33'); g.addColorStop(1, '#5E1820');
-      x.fillStyle = g; x.fillRect(0, 0, W, 330);
+      var g = x.createLinearGradient(0, 0, W, heroH); g.addColorStop(0, '#8C2B33'); g.addColorStop(1, '#5E1820');
+      x.fillStyle = g; x.fillRect(0, 0, W, heroH);
       if (logo) x.drawImage(logo, W - P - 92, 56, 92, 100);
-      x.fillStyle = 'rgba(255,255,255,.75)'; x.font = '600 34px ' + F; x.fillText(l('Группа ' + selectedStudyGroup + (typeof group !== 'undefined' && group !== 'all' ? ' · ' + group + '-я подгруппа' : '')), P, 104);
-      /* в чате «сегодня» быстро устаревает — пишем день недели */
-      x.fillStyle = '#fff'; x.font = '800 72px ' + F; x.fillText(fit(l(niceDate(key)), W - P * 2 - 110), P, 196);
-      x.fillStyle = 'rgba(255,255,255,.8)'; x.font = '500 34px ' + F; x.fillText(l(countLabel(sl)) + ' · ' + sl[0][0].start + ' – ' + sl[sl.length - 1][0].end, P, 262);
-      var y = 390;
-      sl.forEach(function (s, i) {
-        var e = s[0], c = KC[kindOf(e)] || '#8C2B33', rh = rows[i], ln = lines[i];
-        x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(P, y, W - P * 2, rh, 28) : x.rect(P, y, W - P * 2, rh); x.fill();
-        x.fillStyle = c; x.beginPath(); x.roundRect ? x.roundRect(P, y, 12, rh, [28, 0, 0, 28]) : x.rect(P, y, 12, rh); x.fill();
-        x.fillStyle = '#14161C'; x.font = '800 40px ' + F; x.fillText(e.start, P + 44, y + 62);
-        x.fillStyle = '#7A8194'; x.font = '500 30px ' + F; x.fillText(e.end, P + 44, y + 106);
-        x.fillStyle = '#14161C'; x.font = '700 38px ' + F;
-        ln.forEach(function (t, j) { x.fillText(t, P + 210, y + 62 + j * 46); });
-        x.fillStyle = c; x.font = '600 30px ' + F;
-        x.fillText(fit(l([kindName(e), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · ')), TW), P + 210, y + rh - 42);
-        y += rh + 22;
+      x.fillStyle = 'rgba(255,255,255,.75)'; font('600', 34); x.fillText(fit(spec.kicker || shGroup(), IW - 110), P, 104);
+      x.fillStyle = '#fff'; font('800', 68); tl.forEach(function (t, j) { x.fillText(t, P, 196 + j * 78); });
+      x.fillStyle = 'rgba(255,255,255,.82)'; font('500', 34); sl.forEach(function (t, j) { x.fillText(t, P, subY + j * 44); });
+      lay.forEach(function (o) {
+        var it = o.it, Y = o.y, c = it.c || '#8C2B33';
+        if (it.t === 'h') { x.fillStyle = '#8C2B33'; font('800', 36); x.fillText(fit(it.text, IW), P, Y + 44); return; }
+        if (it.t === 'note') { x.fillStyle = '#5C6475'; font('500', 30); o.lines.forEach(function (t, j) { x.fillText(t, P, Y + 32 + j * 42); }); return; }
+        x.fillStyle = '#fff'; rr(P, Y, IW, o.h, 28);
+        x.fillStyle = c; x.beginPath(); if (x.roundRect) x.roundRect(P, Y, 12, o.h, [28, 0, 0, 28]); else x.rect(P, Y, 12, o.h); x.fill();
+        if (it.t === 'row') {
+          var s = o.s, R = function (v) { return Math.round(v * s); };
+          if (it.a) {
+            x.fillStyle = '#14161C'; font('800', R(40)); x.fillText(it.a, P + 44, Y + R(62));
+            if (it.b) { x.fillStyle = '#7A8194'; font('500', R(30)); x.fillText(it.b, P + 44, Y + R(106)); }
+          }
+          x.fillStyle = it.dim ? '#7A8194' : '#14161C'; font('700', R(38));
+          o.lines.forEach(function (t, j) { x.fillText(t, P + o.tx, Y + R(62) + j * R(46)); });
+          if (it.meta) { x.fillStyle = c; font('600', R(30)); x.fillText(fit(it.meta, o.tw), P + o.tx, Y + o.h - R(42)); }
+        } else if (it.t === 'text') {
+          var ty = Y + 40;
+          if (it.label) { x.fillStyle = c; font('700', 28); x.fillText(fit(it.label, IW - 88), P + 44, ty + 26); ty += 46; }
+          x.fillStyle = '#14161C'; font('500', 34); o.lines.forEach(function (t, j) { x.fillText(t, P + 44, ty + 34 + j * 48); });
+        } else if (it.t === 'big') {
+          x.fillStyle = c; font('800', 132); var v = String(it.value); x.fillText(v, P + 44, Y + 160);
+          if (it.unit) { var vw = x.measureText(v).width; x.fillStyle = '#7A8194'; font('700', 52); x.fillText(it.unit, P + 44 + vw + 18, Y + 160); }
+          var cy = Y + 196;
+          if (it.pct != null) {
+            x.fillStyle = '#E7EAF1'; rr(P + 44, cy, IW - 88, 20, 10);
+            x.fillStyle = c; rr(P + 44, cy, Math.max(20, (IW - 88) * Math.max(0, Math.min(1, it.pct))), 20, 10); cy += 44;
+          }
+          x.fillStyle = '#3A4050'; font('500', 34); o.lines.forEach(function (t, j) { x.fillText(t, P + 44, cy + 34 + j * 46); });
+        }
       });
-      x.fillStyle = '#7A8194'; x.font = '600 30px ' + F; x.fillText('KSMU Community · ksmucommunity.github.io', P, H - 56);
-      cv.toBlob(function (b) { if (b) shareShow(b, key); }, 'image/png');
+      x.fillStyle = '#7A8194'; font('600', 30); x.fillText('KSMU Community · ksmucommunity.github.io', P, H - 56);
+      cv.toBlob(function (b) { if (b) shareShow(b, spec); }, 'image/png');
     };
     /* эмблема — белая маска; на бордовой шапке рисуем как есть */
     var im = new Image(); im.onload = function () { draw(im); }; im.onerror = function () { draw(null); }; im.src = 'img/ksmu-mark.webp';
   }
-  function shareShow(blob, key) {
-    var url = URL.createObjectURL(blob), name = 'raspisanie-' + selectedStudyGroup + '-' + key + '.png';
+  window.kgShareCard = shareCard;
+  function shRow(s, key, small) {
+    var e = s[0], pg = key ? progOf(s, key) : '';
+    return { t: 'row', small: small, a: e.start, b: e.end, title: L(namesOf(s).join(' / ')), c: SHK[kindOf(e)] || '#8C2B33',
+      meta: L([kindName(e) + (pg ? ' ' + pg : ''), e.subgroup && s.length === 1 ? e.subgroup + '-я подгр.' : '', roomChip(e.shortLocation || e.location)].filter(Boolean).join(' · ')) };
+  }
+  function weekDays(key) {
+    var mon = addDays(key, -dow(key)), days = [];
+    for (var i = 0; i < 7; i++) days.push(addDays(mon, i));
+    if (!lessonsFor(days[6]).length) days = days.slice(0, 6);
+    return days;
+  }
+  function weekTitle(key) { var w = dateWeek(key); return w >= 1 && w <= LAST_WEEK ? w + '-я неделя' : 'Неделя'; }
+  /* день: в чате «сегодня» быстро устаревает — пишем день недели */
+  function shareDay(key) {
+    var sl = liveOf(key); if (!sl.length) return;
+    shareCard({ file: 'raspisanie-' + selectedStudyGroup + '-' + key, alt: 'Расписание группы ' + selectedStudyGroup + ' на ' + ddmm(key),
+      title: L(niceDate(key)), sub: L(countLabel(sl)) + ' · ' + sl[0][0].start + ' – ' + sl[sl.length - 1][0].end,
+      items: sl.map(function (s) { return shRow(s, key); }) });
+  }
+  function weekCount(key) { return weekDays(key).reduce(function (a, k) { return a + liveOf(k).length; }, 0); }
+  function shareWeek(key) {
+    var days = weekDays(key), items = [], n = 0;
+    days.forEach(function (k) {
+      var sl = liveOf(k);
+      if (!sl.length && dow(k) === 6) return;
+      items.push({ t: 'h', text: L(niceDate(k)) });
+      if (!sl.length) items.push({ t: 'note', text: L('Пар нет') });
+      sl.forEach(function (s) { items.push(shRow(s, k, true)); n++; });
+    });
+    if (!n) return;
+    shareCard({ file: 'nedelya-' + selectedStudyGroup + '-' + days[0], alt: 'Расписание группы ' + selectedStudyGroup + ' на неделю ' + rangeLabel(days[0], days[days.length - 1]),
+      title: L(weekTitle(key)), sub: rangeLabel(days[0], days[days.length - 1]) + ' · ' + L(plural(n, 'занятие', 'занятия', 'занятий')), items: items });
+  }
+  /* «Название | https://…» в материалах — в картинке оставляем подпись и адрес */
+  function resText(r) { return String(r || '').split(/\n+/).map(function (s) { var p = s.split(/\s+\|\s+/); return p.length > 1 ? p[0].trim() + ': ' + p.slice(1).join(' | ').trim() : s.trim(); }).filter(Boolean).join('\n'); }
+  function noteSubj(n, s) { return namesOf(s).concat(s.map(function (x) { return subjTitle(x.subject); })).indexOf(n.subject) >= 0; }
+  function shareModule(id) {
+    var n = null; try { n = notes.find(function (z) { return String(z.id) === String(id); }); } catch (e) {}
+    if (!n) return;
+    var items = [], d = daysTo(n.date);
+    liveOf(n.date).filter(function (s) { return noteSubj(n, s); }).forEach(function (s) { items.push(shRow(s, n.date)); });
+    if (n.title) items.push({ t: 'text', label: 'Тема', text: n.title, max: 4 });
+    if (n.details) items.push({ t: 'text', label: 'Что подготовить', text: n.details, max: 14 });
+    if (n.resources) items.push({ t: 'text', label: 'Материалы', text: resText(n.resources), max: 8, c: '#6E7C9A' });
+    shareCard({ file: 'modul-' + selectedStudyGroup + '-' + n.date, alt: 'Модуль: ' + n.subject + ', ' + ddmm(n.date),
+      kicker: L('Модуль · группа ' + selectedStudyGroup) + (n.subgroup && n.subgroup !== 'all' ? ' · ' + n.subgroup + L('-я подгруппа') : ''),
+      titleMax: 3, title: n.subject, sub: L(niceDate(n.date)) + (d >= 0 ? ' · ' + L(inDays(d)) : ''), items: items });
+  }
+  /* ДЗ и модули на неделю выбранной даты (только подтверждённые) */
+  function weekNotes(key) {
+    var days = weekDays(key), list = [];
+    try { list = notes.filter(function (n) { return (n.type === 'homework' || n.type === 'module') && n.date >= days[0] && n.date <= addDays(days[0], 6) && noteRelevant(n) && n._status !== 'pending'; }); } catch (e) {}
+    return list.sort(function (a, b) { return a.date.localeCompare(b.date) || (a.type === b.type ? 0 : a.type === 'module' ? -1 : 1); });
+  }
+  function shareHomework(key) {
+    var list = weekNotes(key), days = weekDays(key), items = [], last = '';
+    if (!list.length) return;
+    list.forEach(function (n) {
+      if (n.date !== last) { items.push({ t: 'h', text: L(niceDate(n.date)) }); last = n.date; }
+      var mod = n.type === 'module';
+      items.push({ t: 'text', label: (mod ? 'Модуль · ' : 'ДЗ · ') + n.subject + (n.subgroup && n.subgroup !== 'all' ? ' · ' + n.subgroup + '-я подгр.' : ''), c: mod ? '#8C2B33' : '#6E7C9A',
+        text: [n.title, n.details, n.resources ? resText(n.resources) : ''].filter(Boolean).join('\n') || '—', max: 7 });
+    });
+    var hw = list.filter(function (n) { return n.type === 'homework'; }).length, md = list.length - hw;
+    shareCard({ file: 'dz-' + selectedStudyGroup + '-' + days[0], alt: 'ДЗ и модули группы ' + selectedStudyGroup + ' на неделю ' + rangeLabel(days[0], days[days.length - 1]),
+      title: md && !hw ? L('Модули недели') : L('ДЗ на неделю'), sub: rangeLabel(days[0], days[days.length - 1]) + ' · ' + [hw ? plural(hw, 'задание', 'задания', 'заданий') : '', md ? plural(md, 'модуль', 'модуля', 'модулей') : ''].filter(Boolean).join(' · '), items: items });
+  }
+  /* изменения в расписании за неделю: отмены, переносы, новое время и аудитория */
+  function weekChanges(key) {
+    var out = [];
+    weekDays(key).forEach(function (k) { lessonsFor(k).forEach(function (s) { var f = s[0].changeFlag; if (f) out.push({ k: k, s: s, f: f, a: s[0].amendment || {} }); }); });
+    return out;
+  }
+  function changeText(c) {
+    var a = c.a, e = c.s[0];
+    if (c.f === 'cancel') return 'Отменено';
+    if (c.f === 'moved-away') return 'Перенесено на ' + (a.targetDate ? dShort(a.targetDate) : 'другой день') + (a.newStart ? ', ' + a.newStart : '');
+    var t = c.f === 'moved-in' ? 'Перенесено с ' + (a.date ? dShort(a.date) : 'другого дня') : c.f === 'move' ? 'Новое время' : 'Изменено';
+    return [t, a.newLocation ? roomChip(e.shortLocation || e.location) : '', a.newTeacher ? e.teacher : ''].filter(Boolean).join(' · ');
+  }
+  function shareChanges(key) {
+    var list = weekChanges(key), days = weekDays(key), items = [], last = '';
+    if (!list.length) return;
+    list.forEach(function (c) {
+      if (c.k !== last) { items.push({ t: 'h', text: L(niceDate(c.k)) }); last = c.k; }
+      var e = c.s[0];
+      items.push({ t: 'row', a: e.start, b: e.end, title: L(namesOf(c.s).join(' / ')), meta: L(changeText(c)), c: c.f === 'cancel' ? '#B42318' : c.f === 'moved-away' ? '#9A7A3E' : '#2E7D4F', dim: c.f === 'cancel' || c.f === 'moved-away' });
+      if (c.a.comment) items.push({ t: 'note', text: c.a.comment, max: 3 });
+    });
+    shareCard({ file: 'izmeneniya-' + selectedStudyGroup + '-' + days[0], alt: 'Изменения в расписании группы ' + selectedStudyGroup,
+      title: L('Изменения в расписании'), sub: rangeLabel(days[0], days[days.length - 1]) + ' · ' + L(plural(list.length, 'изменение', 'изменения', 'изменений')), items: items });
+  }
+  function shareNews(id) {
+    var n = newsList().find(function (z) { return String(z.id) === String(id); }); if (!n) return;
+    var d = n.published_at ? new Date(n.published_at) : null, items = [];
+    if (n.body) items.push({ t: 'text', text: n.body, max: 24 });
+    var u = httpUrl(n.link_url);
+    if (u) items.push({ t: 'note', text: (n.link_label ? n.link_label + ': ' : 'Подробнее: ') + u, max: 3 });
+    shareCard({ file: 'obyavlenie-' + (d ? dateISO(d) : 'ksmu'), alt: 'Объявление: ' + n.title,
+      kicker: L('Объявление') + (n.priority === 'urgent' ? ' · ' + L('срочно') : n.priority === 'important' ? ' · ' + L('важно') : ''),
+      titleMax: 3, title: n.title, sub: d ? d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear() : '', items: items });
+  }
+  /* сколько пар по предмету прошло и сколько осталось — из раскрытой карточки пары */
+  function shareProgress(key, idx) {
+    var s = lessonsFor(key)[idx]; if (!s) return;
+    var id = pkey(s[0]), t = today(), occ = occAll().filter(function (o) { return pkey(o.s[0]) === id; });
+    if (!occ.length) return;
+    var done = occ.filter(function (o) { return o.k < t; }).length, rest = occ.filter(function (o) { return o.k >= t; }), nx = rest[0];
+    var nxRoom = nx ? roomChip(nx.s[0].shortLocation || nx.s[0].location) : '';
+    var items = [{ t: 'big', value: done, unit: '/ ' + occ.length, pct: done / occ.length, c: SHK[kindOf(s[0])],
+      caption: L(nx ? 'Следующая — ' + (nx.k === t ? 'сегодня' : dShort(nx.k)) + ', ' + nx.s[0].start + (nxRoom ? ' · ' + nxRoom : '') : 'Все занятия прошли') }];
+    if (rest.length) items.push({ t: 'text', label: 'Осталось · ' + rest.length, c: SHK[kindOf(s[0])], max: 6, text: rest.map(function (o) { return ddmm(o.k); }).join(', ') });
+    shareCard({ file: 'progress-' + selectedStudyGroup + '-' + key, alt: subjTitle(s[0].subject) + ': прошло ' + done + ' из ' + occ.length,
+      title: L(subjTitle(s[0].subject)), sub: L(kindName(s[0])) + ' · ' + L('прошло ' + done + ' из ' + occ.length), items: items });
+  }
+  function shareShow(blob, spec) {
+    var url = URL.createObjectURL(blob), name = (spec.file || 'ksmu') + '.png';
     var file = null; try { file = new File([blob], name, { type: 'image/png' }); } catch (e) {}
     var canShare = !!(file && navigator.canShare && navigator.canShare({ files: [file] }));
-    var ov = document.createElement('div'); ov.className = 'cx-shov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Картинка с расписанием дня');
-    ov.innerHTML = '<div class="cx-shbox"><img src="' + url + '" alt="Расписание группы ' + esc(selectedStudyGroup) + ' на ' + esc(ddmm(key)) + '"><p>' + (inTG ? 'Нажмите на картинку и удерживайте, чтобы сохранить или переслать' : 'Отправьте картинку в чат группы') + '</p><div class="r">' +
+    var ov = document.createElement('div'); ov.className = 'cx-shov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Картинка для отправки');
+    ov.innerHTML = '<div class="cx-shbox"><img src="' + url + '" alt="' + esc(spec.alt || 'Картинка KSMU Community') + '"><p>' + (inTG ? 'Нажмите на картинку и удерживайте, чтобы сохранить или переслать' : 'Отправьте картинку в чат группы') + '</p><div class="r">' +
       (canShare ? '<button type="button" class="cx-btn" data-sh="share">' + ic('send') + 'Отправить</button>' : '') +
       '<a class="cx-btn g" href="' + url + '" download="' + esc(name) + '">Сохранить</a><button type="button" class="cx-btn g" data-sh="close">Закрыть</button></div></div>';
-    var close = function () { ov.remove(); URL.revokeObjectURL(url); document.removeEventListener('keydown', onKey); };
+    var opener = document.activeElement;
+    var close = function () { ov.remove(); URL.revokeObjectURL(url); document.removeEventListener('keydown', onKey); try { if (opener && opener.isConnected) opener.focus(); } catch (e) {} };
     var onKey = function (e) { if (e.key === 'Escape') close(); };
     ov.addEventListener('click', function (e) {
       var b = e.target.closest('[data-sh]');
       if (e.target === ov || (b && b.dataset.sh === 'close')) return close();
-      if (b && b.dataset.sh === 'share') navigator.share({ files: [file], title: 'Расписание ' + selectedStudyGroup }).catch(function () {});
+      if (b && b.dataset.sh === 'share') navigator.share({ files: [file], title: spec.alt || 'KSMU Community' }).catch(function () {});
     });
     document.addEventListener('keydown', onKey);
     ($('kgApp') || document.body).appendChild(ov);
     var f = ov.querySelector('[data-sh]'); if (f) f.focus();
     haptic('ok');
   }
+  /* кнопка «Поделиться» для любого экрана */
+  function shBtn(attrs, label, aria) { return '<button type="button" class="cx-mbtn cx-shb" ' + attrs + (aria ? ' aria-label="' + esc(aria) + '"' : '') + '>' + ic('share') + '<span>' + (label || 'Поделиться') + '</span></button>'; }
   function cxLegend(short) {
     return '<div class="cx-leg cx-leg-k' + (short ? ' cx-leg-s' : '') + '"><span><i style="' + kv('lec') + '"></i>Лекция</span><span><i style="' + kv('pr') + '"></i>Практика</span><span><i style="' + kv('cyc') + '"></i>Цикл</span>' + (short ? '' : '<span>Нажмите на занятие — откроются аудитория, преподаватель и ДЗ</span>') + '</div>';
   }
@@ -881,7 +1053,8 @@
     var k = a.dataset.cx;
     var homeWeek = state.tab === 'home' && state.homeWeek;
     haptic(/^(date|wk|sg|board|homeview|homeweektoday)$/.test(k) ? 'sel' : 'tap');
-    if (k === 'share') { shareDay(state.date); return; }
+    if (k === 'share') { if (a.dataset.w) shareWeek(a.dataset.d || state.date); else shareDay(a.dataset.d || state.date); return; }
+    if (k === 'sprog') { shareProgress(a.dataset.d, +a.dataset.i); return; }
     if (k === 'menu') openSide();
     else if (k === 'dback') { var from = state.dayFrom; state.dayFrom = null; state.open = null;
       if (from === 'calendar') { state.tab = 'home'; state.viaMenu = true; try { showCal(state.date); } finally { state.viaMenu = false; } }
@@ -974,7 +1147,7 @@
         : botName() ? '<div class="kg-lbox">' + row('Подать заявку на старосту', esc(g), 'starreq', 'kg-accent') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия 9.13</div>';
+      '<div class="kg-ver">Версия 9.14</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     $('kgPage').querySelector('[data-language]').addEventListener('click', window.kgSwitchLanguage);
@@ -1333,7 +1506,7 @@
         (n.details ? '<p class="cx-md" translate="no">' + esc(n.details) + '</p>' : '') + resLinks(n.resources) +
         '<div class="cx-mact">' + (d >= 0 ? '<button type="button" class="cx-btn g" data-ics="' + esc(n.id) + '">' + ic('cal') + 'Календарь</button>' : '') +
         '<button type="button" class="cx-btn g" data-mod="day" data-d="' + n.date + '">' + ic('week') + 'День</button>' +
-        '<button type="button" class="cx-btn g" data-share-module="' + esc(n.id) + '">' + ic('send') + 'Поделиться</button></div></div></article>';
+        '<button type="button" class="cx-btn g" data-mod="share" data-id="' + esc(n.id) + '">' + ic('share') + 'Поделиться</button></div></div></article>';
     }).join('') + '</div>'
       : state.modTab === 'past' ? '<div class="cx-empty gl"><b>Прошедших модулей нет</b>Здесь будут модули, которые уже прошли</div>' : '';
     if (refresh) $('kgPage').innerHTML = h + cxFoot();
@@ -1545,7 +1718,10 @@
   function renderCalDay() {
     var box = $('cxCalDay'); if (!box) return;
     var k = state.calSel, sl = lessonsFor(k);
+    var nw = weekNotes(k).length, nc = weekChanges(k).length;
     box.innerHTML = '<div class="cx-sh"><h2>' + esc(niceDate(k)) + '</h2><button type="button" data-cal="open" data-d="' + k + '">Открыть день ›</button></div>' +
+      (nw || nc ? '<div class="cx-shrow">' + (nw ? shBtn('data-shc="hw" data-d="' + k + '"', 'ДЗ недели · ' + nw, 'Поделиться ДЗ и модулями недели картинкой') : '') +
+        (nc ? shBtn('data-shc="ch" data-d="' + k + '"', 'Изменения недели · ' + nc, 'Поделиться изменениями в расписании недели картинкой') : '') + '</div>' : '') +
       (sl.length ? cxRowsBrk(sl, k) : '<div class="cx-empty gl"><b>' + (dow(k) === 6 ? 'Воскресенье' : 'Пар нет') + '</b>' + (dateWeek(k) >= 1 && dateWeek(k) <= LAST_WEEK ? 'В этот день занятий нет' : 'Дата вне опубликованного расписания') + '</div>');
   }
   function calSelect(key) {
@@ -1562,6 +1738,10 @@
     }
     var r = ev.target.closest('#cxCalDay [data-cx="day"]');
     if (r) { state.dayFrom = 'calendar'; state.tab = 'day'; state.board = false; state.date = r.dataset.d; state.open = null; goHome(); return; }
+    var shn = ev.target.closest('[data-shn]');
+    if (shn) { haptic('tap'); shareNews(shn.dataset.shn); return; }
+    var shc = ev.target.closest('[data-shc]');
+    if (shc) { haptic('tap'); if (shc.dataset.shc === 'hw') shareHomework(shc.dataset.d); else shareChanges(shc.dataset.d); return; }
     var sb = ev.target.closest('[data-sb]');
     if (sb) { haptic('sel'); statPick(+sb.dataset.sb); return; }
     var st = ev.target.closest('[data-st]');
@@ -1570,6 +1750,7 @@
     if (m) {
       var mv = m.dataset.mod || m.dataset.sr;
       if (mv === 'tab') { state.modTab = m.dataset.v; state.noPush = true; try { showModules(); } finally { state.noPush = false; } return; }
+      if (mv === 'share') { shareModule(m.dataset.id); return; }
       if (mv === 'add') { var nd = nextStudy(addDays(today(), -1)); openEditorFor('module', null, nd ? nd.key : today()); return; }
       if (mv === 'f') { state.sf = m.dataset.v; m.parentNode.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === m)); }); renderSearchCx(); return; }
       if (mv === 'day') { state.dayFrom = state.page; state.tab = 'day'; state.board = false; state.date = m.dataset.d; state.open = null; goHome(); return; }

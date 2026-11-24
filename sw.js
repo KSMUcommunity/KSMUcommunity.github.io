@@ -1,4 +1,4 @@
-const CACHE='kgmu-v172';
+const CACHE='kgmu-v173';
 /* расписание групп (data/g/*.js) — отдельный кэш: при выходе новой версии сайта не стирается, иначе офлайн пропадали бы пары */
 const DATA='kgmu-data';
 const ASSETS=['./','./index.html','./schedule-data.js','./img/kgmu-logo.webp','./img/ksmu-mark.webp','./img/ksmu-logo.webp','./cloud-sync.js','./community-extras.js','./kg-theme.css','./kg-ui.js','./kg-app.css','./kg-e.css','./fonts/inter-latin.woff2','./fonts/inter-cyrillic.woff2','./kg-app.js','./kg-language.js','./kg-schedule-en.js','./rating.js','./rating-ui.js','./rating.css','./manifest.webmanifest','./img/favicon-32.png','./img/favicon-64.png','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
