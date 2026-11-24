@@ -17,16 +17,9 @@ html[data-theme="dark"] body.kg-on{background:
 
 /* режимы */
 #kgApp{display:block}
-body:has(#groupChooser:not([hidden])) #kgApp{display:none!important}
 body.kg-on:not(.kg-ready) #kgHome{display:none}
-body.kg-mode-home #appRoot,body.kg-mode-page #appRoot{display:none!important}
-body.kg-mode-home .kg-subbar,body.kg-mode-home #kgPage,body.kg-mode-old #kgHome,body.kg-mode-old #kgPage,body.kg-mode-page #kgHome{display:none!important}
-body.kg-mode-old .herohead,body.kg-mode-old .app-tabs,body.kg-mode-old #sourceStamp,body.kg-mode-old .developer-footer,body.kg-mode-old .network-banner:empty{display:none!important}
-body.kg-mode-old main.wrap{padding-bottom:calc(28px + env(safe-area-inset-bottom))!important;padding-top:8px!important}
-body.kg-mode-old #kgApp{position:sticky;top:0;z-index:80}
-body.kg-mode-old:not(.kg-tools) #settingsView{display:none!important}
-body.kg-tools #settingsView .settings-section:not(.kg-admin-only):not(#cloudPanel):not(.kg-news-admin){display:none!important}
-body.kg-tools #settingsView .utility-header{display:none!important}
+#appRoot{display:none!important} /* служебный контейнер index.html: его блоки kg-app.js переносит на свои экраны */
+body.kg-mode-home .kg-subbar,body.kg-mode-home #kgPage,body.kg-mode-page #kgHome{display:none!important}
 
 .kg-home,.kg-page{max-width:640px;margin:0 auto;padding:12px 14px calc(28px + env(safe-area-inset-bottom))}
 #kgApp .kg-ic{width:20px;height:20px;flex:none}

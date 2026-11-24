@@ -38,7 +38,6 @@ html.kg-e .kg-card,html.kg-e .kg-wday,html.kg-e .kg-lbox,html.kg-e .kg-news,html
   background:linear-gradient(135deg,var(--gl1),var(--gl2));-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);border:1px solid var(--a-line);box-shadow:var(--a-shadow)}
 html.kg-e .kg-subbar{border-width:0 0 1px}
 html.kg-e .kg-home,html.kg-e .kg-page{max-width:480px;padding:14px 16px calc(112px + env(safe-area-inset-bottom))}
-html.kg-e body.kg-mode-old main.wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
 
 
 
@@ -331,7 +330,6 @@ html.kg-e body.kg-on :is(.editor input:not([type=checkbox]),.editor select,.edit
 #kgApp .cx-gs.on mark,#kgApp .cx-gs.on span,#kgApp .cx-gs.on .kg-ic{color:#fff}
 
 /* правки по проверке компактного вида */
-html.kg-e body.kg-mode-old .utility-back{display:none!important}
 #kgApp .cx-dt .cx-today{display:inline-flex;align-items:center;gap:2px;margin-top:6px;padding:3px 10px 3px 6px}
 #kgApp .cx-dt .cx-today .kg-ic{width:14px;height:14px}
 #kgApp .cx-hero > .cx-route[data-cx="group"]{position:relative;display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:11px 16px;border-radius:16px;background:#fff;color:#8C2B33;font-size:14px;font-weight:700;box-shadow:0 8px 20px rgba(20,16,80,.25)}
@@ -381,7 +379,6 @@ html.kg-desk body.kg-cx-first .cx-side,html.kg-desk .kg-tabbar{display:none!impo
 html.kg-desk .cx-home{max-width:1200px;padding:28px 40px 28px}
 html.kg-desk .kg-page{max-width:920px;padding:24px 40px 28px}
 html.kg-desk .kg-page:has(.cx-calwrap){max-width:1240px}
-html.kg-desk body.kg-mode-old main.wrap{max-width:1000px;margin:0 auto!important;padding:16px 40px 32px!important}
 html.kg-desk .kg-subbar{grid-template-columns:auto 1fr auto;gap:18px;padding:12px 40px}
 html.kg-desk .kg-subbar b{font-size:20px;justify-self:start}
 html.kg-desk #kgApp .cx-hd .cx-ib{display:none}
@@ -635,7 +632,6 @@ body.cx-dr-open{overflow:hidden}
 /* ===== 9.6: без нижнего меню (дизайн E) ===== */
 html.kg-notab .kg-tabbar{display:none!important}
 html.kg-e.kg-notab .kg-home,html.kg-e.kg-notab .kg-page,html.kg-e.kg-notab .cx-home{padding-bottom:calc(32px + env(safe-area-inset-bottom))}
-html.kg-e.kg-notab body.kg-mode-old main.wrap{padding-bottom:calc(32px + env(safe-area-inset-bottom))!important}
 #kgApp .cx-mb{position:relative}
 .cx-dot{position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#FF6B6B,#F0437A);box-shadow:0 0 0 2px var(--e-bg)}
 .cx-tbar{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;margin:0 0 12px}
@@ -877,3 +873,27 @@ html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) 
 #kgApp .cx-more .cx-shp{width:100%;justify-content:center;margin-top:8px}
 #kgApp .kr-share{margin-top:14px}
 #kgApp .cx-shb .kg-ic{width:16px;height:16px}
+
+/* 9.15 · «Инструменты» старосты/админа — свой экран (блоки из #kgToolsSrc в index.html), без старых настроек V8.8 */
+#kgToolsSlot{display:flex;flex-direction:column;gap:12px}
+html body #kgToolsSlot .settings-section,html body #kgToolsSlot #cloudPanel{margin:0!important;padding:16px!important;background:var(--a-card)!important;border:1px solid var(--a-line)!important;border-radius:var(--a-r,18px)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+#kgToolsSlot h3{margin:0 0 6px;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--a-text)}
+#kgToolsSlot p{margin:0 0 10px;font-size:14px;line-height:1.5;color:var(--a-hint)}
+#kgToolsSlot p b{color:var(--a-text)}
+#kgToolsSlot .cloud-warning,#kgToolsSlot .kg-backup-note{font-size:12.5px}
+#kgToolsSlot .kg-tg-login{display:none!important} /* вход — в профиле */
+#kgApp #kgToolsSlot :is(.cloud-actions,.kg-backup-actions,.kg-news-actionrow){display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
+#kgApp #kgToolsSlot :is(.cloud-actions,.kg-backup-actions,.kg-news-actionrow) button{flex:1 1 200px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;border-radius:14px;background:var(--e-chip);border:1px solid var(--e-chipb);color:var(--a-text);font-weight:600;font-size:14.5px;text-align:center;line-height:1.3}
+#kgApp #kgToolsSlot :is(.cloud-actions,.kg-backup-actions,.kg-news-actionrow) button[hidden]{display:none}
+#kgApp #kgToolsSlot button.primary{background:var(--e-hero)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 6px 16px rgba(140,43,51,.3)}
+#kgApp #kgToolsSlot button:disabled{opacity:.5;cursor:default}
+#kgApp #kgToolsSlot button:not(:disabled):active{transform:scale(.98)}
+#kgToolsSlot .kg-news-form{margin-top:10px}
+#kgToolsSlot .kg-news-form label{color:var(--a-hint)}
+#kgToolsSlot .kg-news-form :is(input:not([type=checkbox]),select,textarea){background:var(--e-chip)!important;color:var(--a-text)!important;border:1px solid var(--e-chipb)!important;border-radius:12px!important;padding:10px 12px;font-size:16px;font-weight:500}
+#kgToolsSlot .kg-news-form input[type=checkbox]{accent-color:#8C2B33}
+#kgToolsSlot .kg-news-manage-row{border-top-color:var(--e-sep)}
+#kgToolsSlot .kg-news-manage-row b{color:var(--a-text)}
+#kgToolsSlot .kg-news-manage-row small{color:var(--a-hint)}
+#kgApp #kgToolsSlot .kg-news-manage-row button{min-height:36px;padding:6px 12px;border-radius:10px;background:var(--e-chip);border:1px solid var(--e-chipb);font-weight:600;font-size:13px}
+@media (max-width:479px){#kgToolsSlot .kg-news-form{grid-template-columns:1fr}}

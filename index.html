@@ -17,643 +17,6 @@
 <link href="./apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="./img/favicon-32.png" rel="icon" sizes="32x32" type="image/png"/>
 <link href="./img/favicon-64.png" rel="icon" sizes="64x64" type="image/png"/>
-<style>
-:root{
-  --bg:#edf3f9;
-  --panel:#ffffff;
-  --panel-2:#f7faff;
-  --ink:#182a45;
-  --sub:#6c7d94;
-  --line:#dbe5f0;
-  --accent:#2f66c5;
-  --accent-2:#5d8ee3;
-  --deep:#0f2340;
-  --deep-2:#15345f;
-  --mint:#e8f6f3;
-  --mint-ink:#0c7667;
-  --shadow:0 12px 32px rgba(17,41,74,.08);
-  --shadow-soft:0 6px 18px rgba(17,41,74,.06);
-  --radius:20px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  background:
-    radial-gradient(circle at top left, rgba(93,142,227,.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(47,102,197,.11), transparent 25%),
-    var(--bg);
-  color:var(--ink);
-  font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
-}
-.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 48px}
-
-.brand{display:flex;align-items:center;gap:18px;min-width:0}
-
-.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#bfd4ea;font-weight:800;margin-bottom:6px}
-h1{font-size:clamp(32px,5.2vw,50px);line-height:1.03;margin:0;font-weight:850;letter-spacing:-.03em}
-
-.badge{
-  display:inline-flex;align-items:center;gap:8px;
-  border-radius:999px;padding:9px 14px;
-  background:rgba(255,255,255,.14);
-  border:1px solid rgba(255,255,255,.16);
-  color:#fff;font-size:13px;font-weight:700;
-  backdrop-filter:blur(4px);
-}
-
-.stat{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow-soft);border-radius:18px;padding:14px 16px}
-.stat .cap{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6f8198;font-weight:800}
-.stat .val{font-size:18px;font-weight:850;margin-top:5px;line-height:1.2}
-.stat .sub{font-size:12px;color:#708198;line-height:1.4;margin-top:4px}
-
-.control{display:flex;flex-direction:column;gap:7px;min-width:170px;flex:1}
-
-.control label{font-size:11px;color:#5e6f87;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
-select,button{
-  font:inherit;color:#1f314c;
-  border:1px solid #ced9e6;background:#fff;
-  border-radius:16px;padding:13px 15px;min-height:48px;
-}
-select{width:100%;appearance:auto}
-button{cursor:pointer;transition:.18s ease background,.18s ease transform,.18s ease box-shadow}
-button:hover{background:#f2f7ff;box-shadow:0 5px 16px rgba(47,102,197,.10)}
-button:active{transform:translateY(1px)}
-button:focus-visible,select:focus-visible{outline:3px solid #9ec0ff;outline-offset:2px}
-
-.groupbuttons{display:flex;gap:5px;background:#eef3fa;padding:4px;border-radius:18px;align-self:flex-start}
-.groupbuttons button{border:0;background:transparent;font-size:14px;font-weight:800;padding:10px 14px;min-height:40px;border-radius:14px}
-.groupbuttons button.active{background:#fff;box-shadow:0 6px 14px rgba(22,46,83,.11)}
-.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent;font-weight:800}
-.primary:hover{background:linear-gradient(135deg,var(--accent),var(--accent-2));filter:brightness(1.03)}
-.summary{display:block;margin:16px 0 14px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px 18px;box-shadow:var(--shadow-soft)}
-
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.day{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-soft);min-width:0}
-
-.sessions{padding:8px 12px 12px}
-.empty{font-size:13px;color:#8090a4;padding:18px 8px}
-.session{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:13px 4px;border-bottom:1px solid #edf2f8}
-.session:last-child{border-bottom:0}
-.time{font-size:12px;color:#3b5070;font-weight:900;white-space:nowrap;padding-top:3px;letter-spacing:-.02em}
-.course{font-size:14px;font-weight:850;line-height:1.38}
-.type{display:inline-block;border-radius:8px;font-size:10px;line-height:1;padding:5px 7px;margin-right:7px;background:#e6f0ff;color:#3b63a5;font-weight:900;vertical-align:1px;letter-spacing:.04em}
-
-.extra{font-size:12px;color:#617188;margin-top:5px;line-height:1.48}
-.split{font-size:12px;color:#2e425f;margin-top:7px;line-height:1.45;padding:8px 10px;background:#f7fbfb;border:1px solid #e6f0ef;border-radius:12px}
-.split strong{font-size:11px;display:inline-block;border-radius:7px;background:#eaf7f4;color:#00796e;padding:3px 6px;margin-right:5px}
-
-.notes{font-size:12px;line-height:1.7;color:#758398;margin-top:18px;padding:0 4px}
-.notes b{color:#506279}
-
-.dev-placeholder{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow);display:grid;gap:16px;text-align:center}
-.dev-kicker{display:inline-flex;justify-self:center;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(220,53,69,.12);color:var(--danger);font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-.dev-placeholder h2{margin:0;font-size:34px;line-height:1.1}
-.dev-placeholder p{margin:0;color:var(--muted)}
-.dev-placeholder img{display:block;width:min(100%,420px);margin:0 auto;border-radius:22px;border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.16)}
-.dev-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-.dev-button{appearance:none;border:1px solid var(--line);background:var(--brand);color:#fff;border-radius:14px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(26,61,107,.22)}
-
-.dev-contact{font-size:13px;color:var(--muted)}
-.dev-contact a{color:var(--brand);font-weight:700;text-decoration:none}
-body[data-dev-group="1"] .source-warning{display:none!important}
-@media(max-width:700px){.dev-placeholder{padding:18px}.dev-placeholder h2{font-size:28px}}
-
-@media(max-width:700px){
-  .wrap{padding:14px 12px 36px}
-  
-  .brand{align-items:flex-start;gap:14px}
-
-  .kicker{font-size:11px;line-height:1.45}
-  h1{font-size:clamp(28px,8vw,38px)}
-
-  .control{min-width:140px}
-
-  .groupbuttons{width:100%}
-  .groupbuttons button{flex:1}
-  .primary{width:100%}
-  .grid{grid-template-columns:1fr;gap:10px}
-  
-  .sessions{padding:4px 8px 8px}
-  .session{grid-template-columns:88px minmax(0,1fr);gap:7px;padding:12px 4px}
-  .course{font-size:14px}
-  .time{font-size:11px}
-  
-}
-@media print{
-  body{background:white}
-  
-  .herohead::before,.herohead::after,.toolbar-card,.summary,.recap,.notes,.topstats,.badge,.hero-panel,.subtitle,.navgroup,.groupbuttons,.primary{display:none!important}
-  .wrap{max-width:100%;padding:0}
-  
-  .brand{display:block}
-  
-  .kicker{color:#52637b}
-  h1{font-size:21px;color:var(--ink)}
-  
-  .grid{grid-template-columns:repeat(2,1fr);gap:5mm}
-  .day{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
-  
-  .sessions{padding:0 6px}
-  .session{padding:6px 2px;grid-template-columns:80px 1fr;gap:4px}
-  .course{font-size:10px}
-  .extra,.split{font-size:9px}
-  .time{font-size:9px}
-}
-
-.app-tab{border:0;border-radius:14px;min-height:48px;font-size:15px;font-weight:850;background:transparent;color:#4a607e;padding:12px 6px}
-.app-tab.active{background:white;color:var(--ink);box-shadow:0 4px 14px rgba(13,40,78,.12)}
-.app-tab:focus-visible{outline:3px solid #8fb6ed}
-.view[hidden]{display:none!important}
-
-.calendar-board{background:white;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px 18px;margin-bottom:16px}
-.calendar-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:15px}
-.calendar-top h2{margin:0;font-size:22px;line-height:1.25;letter-spacing:-.02em}
-.calendar-sub{font-size:13px;color:var(--sub);margin-top:4px;line-height:1.5}
-.cal-actions{display:flex;align-items:center;gap:8px}
-.cal-actions button{min-width:42px;min-height:42px;padding:8px 12px;font-weight:900}
-.calendar-legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:#53667f;margin:0 0 16px}
-.legend-item{display:inline-flex;align-items:center;gap:6px}
-.legend-dot{display:inline-block;width:9px;height:9px;border-radius:99px;background:#4a82d6}
-.legend-dot.red{background:#d53640}
-.weekday-line,.calendar-matrix{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.weekday-line{margin-bottom:6px}
-.weekday-line div{text-align:center;font-size:12px;font-weight:800;color:#8190a2;padding:6px 0}
-.cal-day{position:relative;min-width:0;aspect-ratio:1/1.02;min-height:56px;padding:7px 6px 4px;border:1px solid #e4eaf3;border-radius:12px;background:#f9fbfe;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-align:left}
-.cal-day:hover{background:#eef5ff}
-.cal-day.outside{opacity:.35}
-.cal-day.today{border:2px solid #5187df}
-.cal-day.selected{background:#e9f2ff;border:2px solid #2f66c5;box-shadow:0 2px 8px rgba(47,102,197,.14)}
-.cal-day.module-date{border-color:#e89ba0;background:#fff0f0}
-.cal-day.module-date.selected{border:2px solid #d33a43;background:#ffebec}
-.cal-num{font-size:15px;font-weight:850;line-height:1.2}
-.cal-indicators{display:flex;gap:3px;align-items:center;flex-wrap:wrap;max-width:100%}
-
-.cal-lessons{font-size:9px;color:#8797ac;font-weight:700;line-height:1.1}
-.cal-group-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 13px}
-.cal-group-row .groupbuttons{align-self:center}
-.calendar-day-panel{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
-.panel-date{font-size:20px;font-weight:900;line-height:1.3;margin:0}
-.panel-sub{font-size:13px;color:var(--sub);line-height:1.5;margin:6px 0 14px}
-.panel-section-title{font-size:14px;font-weight:900;margin:17px 0 9px}
-.day-lesson{border:1px solid #e6edf5;border-radius:14px;padding:11px 12px;margin:8px 0;background:#fcfdff;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.lesson-title{font-weight:850;font-size:13px;line-height:1.45}
-.lesson-meta{font-size:11px;color:#697c93;line-height:1.55;margin-top:4px}
-.lesson-notes{font-size:12px;margin-top:6px;color:#9b2733;font-weight:850}
-.inline-empty{font-size:13px;color:#718198;padding:14px;border:1px dashed #cfdaea;background:#f8fbff;border-radius:12px;line-height:1.5}
-.entries{display:grid;gap:9px}
-.entry{padding:13px;border:1px solid #e4eaf3;border-radius:14px;background:#fbfcff}
-.entry.module{border-color:#f2b7b9;background:#fff5f5;border-left:4px solid #d33a43}
-.entry.homework{border-left:4px solid #3f83d7}
-.entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.entry-title{font-size:14px;font-weight:900;line-height:1.4}
-.entry-sub{font-size:12px;color:#63748d;margin-top:3px;line-height:1.4}
-.entry-desc{font-size:13px;color:#43536b;line-height:1.55;white-space:pre-wrap;margin-top:8px;overflow-wrap:anywhere}
-.entry-controls{display:flex;gap:6px;flex:0 0 auto}
-.small-btn{min-height:34px;padding:5px 10px;border-radius:9px;font-size:12px;font-weight:800}
-.panel-tools{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
-.panel-tools button{font-weight:800;font-size:13px}
-.action-red{background:#b82935;color:white;border-color:#b82935}
-.action-red:hover{background:#9e202d;color:white}
-.editor[hidden]{display:none!important}
-.editor{margin-top:15px;background:#f5f9ff;border:1px solid #d9e6f4;padding:16px;border-radius:17px}
-.editor h3{font-size:16px;margin:0 0 12px}
-.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-field{display:flex;flex-direction:column;gap:6px;min-width:0}
-.form-field.full{grid-column:1/-1}
-.form-field label{font-size:11px;font-weight:900;color:#576b84;text-transform:uppercase;letter-spacing:.05em}
-.form-field input,.form-field textarea,.form-field select{width:100%;border:1px solid #cbd9e8;background:white;border-radius:12px;padding:11px 12px;font:inherit;color:var(--ink);min-height:44px}
-.form-field textarea{resize:vertical;min-height:86px}
-.form-field .field-help{font-size:11px;color:#7a899b;line-height:1.45}
-.form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.form-actions button{font-weight:850}
-.data-tools{background:white;border:1px solid var(--line);border-radius:20px;padding:16px 18px;box-shadow:var(--shadow-soft);margin-bottom:16px}
-.data-tools h3{font-size:15px;margin:0 0 7px}
-.data-tools p{font-size:12px;color:#67788f;line-height:1.6;margin:0 0 12px}
-.data-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.data-btns button{font-size:13px;font-weight:800;min-height:42px;padding:10px 14px}
-.import-file{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0}
-.data-note{font-size:12px;color:#606e82;line-height:1.6;margin-top:12px}
-.toast{position:fixed;z-index:99;bottom:18px;left:50%;transform:translateX(-50%);background:#173456;color:#fff;border-radius:13px;padding:12px 16px;font-size:13px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,.2);max-width:calc(100vw - 32px)}
-.toast[hidden]{display:none}
-@media(max-width:700px){
- 
- .app-tab{font-size:14px}
- .calendar-board{padding:15px 10px}
- .calendar-top{padding:1px 3px}
- .calendar-top h2{font-size:20px}
- .cal-actions button{min-width:40px}
- .weekday-line,.calendar-matrix{gap:3px}
- .cal-day{min-height:52px;aspect-ratio:unset;height:64px;border-radius:9px;padding:6px 3px}
- .cal-num{font-size:13px}
- 
- .cal-lessons{font-size:8px}
- .calendar-legend{gap:8px;font-size:11px}
- .calendar-day-panel{padding:15px 12px}
- .editor{padding:12px}
- .editor-grid{grid-template-columns:1fr}
- .panel-date{font-size:19px}
- .day-lesson{padding:10px}
- .entry-controls{flex-direction:column}
- .small-btn{font-size:11px}
-}
-@media(max-width:365px){.cal-day{height:59px}.cal-num{font-size:12px}}
-
-@media(max-width:700px){
- 
- .app-tab{font-size:12px;min-height:45px;border-radius:12px;padding:9px 2px;white-space:nowrap}
-
-}
-@media(max-width:365px){.app-tab{font-size:11px}}
-
-/* КГМУ · обновлённый компактный интерфейс */
-:root{--bg:#f0f4f9;--ink:#172b48;--sub:#687b93;--line:#dde6f1;--shadow:0 7px 26px rgba(20,43,79,.065);--shadow-soft:0 4px 13px rgba(20,43,79,.045)}
-html,body{min-width:0}body{background:linear-gradient(180deg,#edf4fc 0,#f5f8fc 350px,#eff4fa 100%)}
-.wrap{max-width:1200px;padding:15px 20px 50px}
-
-.app-tab{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;font-size:13px;letter-spacing:-.012em;border-radius:12px}
-.tab-icon{font-size:20px;line-height:1}
-
-.today-panel,.calendar-board,.calendar-day-panel,.day,.toolbar-card{border-radius:19px}
-
-.lesson-place{border:1px solid #e1eaf4;background:#fff;border-radius:13px;padding:10px 11px;margin:7px 0}
-
-.course{font-size:14px;line-height:1.5}
-.type{font-size:10px}
-.calendar-board{padding:18px}
-.calendar-legend{gap:9px}
-.cal-day{min-height:62px;aspect-ratio:auto;min-height:72px;padding:7px 6px;border-radius:12px;gap:3px}
-.cal-indicators{flex-direction:column;align-items:flex-start;gap:3px}
-.cal-count{font-size:10px;font-weight:900;border-radius:6px;padding:3px 5px;line-height:1.15;white-space:nowrap}
-.cal-count.red{color:#a82332;background:#ffe2e7}
-.cal-count.blue{color:#2b5fa9;background:#dceaff}
-.cal-lessons{font-size:10px}
-.day-lesson-place{color:#5f7792;margin-top:5px;font-size:12px;line-height:1.5}
-.day-lesson-person{color:#334c68;margin-top:4px;font-size:12px;line-height:1.5}
-@media(max-width:700px){
- .wrap{padding:13px 12px 22px}
- main.wrap{padding-bottom:calc(106px + env(safe-area-inset-bottom,0px))}
-
- .app-tab{flex-direction:column;gap:2px;padding:5px 2px;min-height:52px;font-size:11px;line-height:1.2;font-weight:800;color:#6e7e93}
- .app-tab.active{background:#eaf2ff;color:#2459a0;box-shadow:none}
- .tab-icon{font-size:23px}
-
- .calendar-board,.calendar-day-panel{padding:14px 10px}
- .calendar-matrix{gap:4px}
- .cal-day{padding:6px 3px 4px;min-height:69px;border-radius:9px}
- .cal-num{font-size:13px}
- .cal-count{font-size:9px;padding:2px 3px}
- .cal-lessons{font-size:8px}
- .calendar-top{gap:8px}
- .calendar-top h2{font-size:21px}
- .day-lesson{gap:7px}
- .day-lesson>*{min-width:0}
-}
-@media(max-width:360px){.cal-count{font-size:8px}.cal-day{min-height:63px}.groupbuttons button{padding-inline:7px}}
-
-/* V7: utilities, day navigation, theme and accessible resource links */
-.form-field[hidden]{display:none!important}
-
-.utility-panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow);max-width:850px;margin:0 auto 28px}
-.utility-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-.utility-kicker{text-transform:uppercase;color:#5277a8;font-size:11px;letter-spacing:.1em;font-weight:850;margin-bottom:4px}
-.utility-header h2{font-size:25px;line-height:1.2;margin:0;font-weight:900}
-.utility-header p,.settings-section p{font-size:13px;line-height:1.55;color:var(--sub);margin:6px 0 0}
-.utility-back{font-size:12px;white-space:nowrap;padding:8px 12px;border-radius:11px;min-height:38px;font-weight:750}
-
-.settings-section{padding:18px 0;border-top:1px solid var(--line)}
-.settings-section h3{margin:0;font-size:17px}
-.settings-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:14px}
-.settings-option{padding:12px 8px;min-height:48px;border-radius:12px;background:var(--panel-2);font-weight:800;font-size:13px;color:var(--ink)}
-.settings-option.active{background:#e5f0ff;color:#215caa;border-color:#4a80cc;box-shadow:inset 0 0 0 1px #4a80cc}
-.resource-list{display:grid;gap:7px;margin:10px 0 5px;padding:0;list-style:none}
-.resource-list li{padding:0;margin:0;overflow-wrap:anywhere}
-.resource-list a{display:inline-block;border-radius:9px;background:#e6f0ff;padding:7px 10px;color:#255fa9;font-size:12px;font-weight:750;text-decoration:none;max-width:100%;overflow-wrap:anywhere}
-.resource-list a:hover{text-decoration:underline}
-.resource-list .resource-text{font-size:12px;color:var(--sub);line-height:1.55}
-.resource-intro{font-size:11px;color:var(--sub);margin:10px 0 3px;font-weight:850}
-@media(max-width:700px){.utility-panel{padding:15px 12px}.utility-header{align-items:flex-start;flex-wrap:wrap}.settings-option{font-size:12px}}
-/* Dark theme: explicit surfaces layered after V6 color definitions */
-html[data-theme="dark"]{
- --bg:#0d1625;--panel:#172438;--panel-2:#1d2d43;--ink:#eaf2ff;--sub:#b4c3d8;--line:#354861;
- --mint:#153b38;--mint-ink:#a5f4df;--shadow:0 10px 28px rgba(0,0,0,.19);--shadow-soft:0 4px 13px rgba(0,0,0,.14);
- color-scheme:dark;
-}
-html[data-theme="dark"] body{background:linear-gradient(180deg,#0c1829,#101b2a 400px,#0e1725);color:var(--ink)}
-
-html[data-theme="dark"] select,html[data-theme="dark"] button,html[data-theme="dark"] input,html[data-theme="dark"] textarea{color:var(--ink);background:var(--panel);border-color:var(--line)}
-
-html[data-theme="dark"] .today-metric,html[data-theme="dark"] .today-panel,html[data-theme="dark"] .day,html[data-theme="dark"] .summary,html[data-theme="dark"] .toolbar-card,html[data-theme="dark"] .calendar-board,html[data-theme="dark"] .calendar-day-panel,html[data-theme="dark"] .data-tools,html[data-theme="dark"] .install-steps{background:var(--panel);color:var(--ink)}
-html[data-theme="dark"] .today-metric span,html[data-theme="dark"] .today-event-date,html[data-theme="dark"] .today-event-group,html[data-theme="dark"] .today-event-course,html[data-theme="dark"] .today-event-detail,html[data-theme="dark"] .daydate,html[data-theme="dark"] .extra,html[data-theme="dark"] .time,html[data-theme="dark"] .control label,html[data-theme="dark"] .form-field label,html[data-theme="dark"] .lesson-place-line,html[data-theme="dark"] .reveal-heading,html[data-theme="dark"] .reveal-empty,html[data-theme="dark"] .lesson-meta,html[data-theme="dark"] .entry-sub,html[data-theme="dark"] .entry-desc{color:var(--sub)}
-html[data-theme="dark"] .today-metric strong,html[data-theme="dark"] .today-panel h2,html[data-theme="dark"] .today-upcoming-block h3,html[data-theme="dark"] .today-event-title,html[data-theme="dark"] .lesson-place-title,html[data-theme="dark"] .lesson-place-line b,html[data-theme="dark"] .day-lesson-person,html[data-theme="dark"] .calendar-top h2,html[data-theme="dark"] .course{color:var(--ink)}
-
-html[data-theme="dark"] .app-tab{background:transparent;color:#bdcee3}
-html[data-theme="dark"] .app-tab.active{background:#284b76;color:#fff}
-
-html[data-theme="dark"] .daydate,html[data-theme="dark"] .groupbuttons,html[data-theme="dark"] .split,html[data-theme="dark"] .meta-chip.secondary{background:#24354b;color:#dbe7f9;border-color:var(--line)}
-html[data-theme="dark"] .groupbuttons button{background:transparent;color:#d5e2f5}
-html[data-theme="dark"] .groupbuttons button.active{background:#3b587c;color:#fff}
-html[data-theme="dark"] .type{background:#284b78;color:#c9e1ff}
-
-html[data-theme="dark"] .module-label,html[data-theme="dark"] .cal-count.red{background:#592b36;color:#ffd1da;border-color:#a45565}
-html[data-theme="dark"] .homework-label,html[data-theme="dark"] .cal-count.blue{background:#203f67;color:#c5deff}
-html[data-theme="dark"] .module-alert,html[data-theme="dark"] .entry.module,html[data-theme="dark"] .reveal-entry.module,html[data-theme="dark"] .today-module-warning{background:#422330;color:#ffd2da;border-color:#975765;border-left-color:#f16b7a}
-
-html[data-theme="dark"] .today-event,html[data-theme="dark"] .entry,html[data-theme="dark"] .day-lesson,html[data-theme="dark"] .lesson-place,html[data-theme="dark"] .reveal-entry{background:#213249;color:var(--ink);border-color:var(--line)}
-
-html[data-theme="dark"] .lesson-reveal,html[data-theme="dark"] .editor,html[data-theme="dark"] .inline-empty,html[data-theme="dark"] .today-empty{background:#1d2e45;color:var(--sub);border-color:var(--line)}
-html[data-theme="dark"] .map-link,html[data-theme="dark"] .resource-list a{background:#254569;color:#c8e2ff}
-html[data-theme="dark"] .reveal-entry-title,html[data-theme="dark"] .entry-title{color:var(--ink)}
-html[data-theme="dark"] .cal-day{background:#1e2d43;color:var(--ink);border-color:#36516f}
-html[data-theme="dark"] .cal-day:hover{background:#2b435e}
-html[data-theme="dark"] .cal-day.selected{background:#24476c;border-color:#7baefa}
-html[data-theme="dark"] .cal-day.module-date{background:#442a37;border-color:#b96b78}
-html[data-theme="dark"] .cal-day.module-date.selected{background:#59303d;border-color:#fa8894}
-html[data-theme="dark"] .cal-day.outside{opacity:.5}
-html[data-theme="dark"] .cal-lessons,html[data-theme="dark"] .weekday-line div,html[data-theme="dark"] .install-steps p,html[data-theme="dark"] .data-tools p{color:var(--sub)}
-
-html[data-theme="dark"] .primary,html[data-theme="dark"] .day-switch-btn.active,html[data-theme="dark"] .search-filter.active{background:#356cc3;color:#fff;border-color:#356cc3}
-html[data-theme="dark"] .action-red{background:#ae3143;color:#fff;border-color:#ae3143}
-html[data-theme="dark"] .settings-option.active{background:#274a70;color:#d7eaff;border-color:#7dacf3}
-
-html[data-theme="dark"] .entry-desc,html[data-theme="dark"] .reveal-entry-desc{color:#d5e2f2}
-
-/* Multigroup V8 */
-[hidden]{display:none!important}
-#appRoot[hidden],#groupChooser[hidden]{display:none!important}
-#appRoot{min-height:100vh}
-.chooser-view{min-height:100vh;padding:24px 14px 40px;background:radial-gradient(circle at 0% 0%,rgba(68,130,218,.18),transparent 32%),var(--bg)}
-.chooser-wrap{max-width:880px;margin:auto}
-.chooser-hero{background:linear-gradient(125deg,#0c213e,#173f73);border-radius:27px;padding:28px;box-shadow:0 15px 35px rgba(12,33,61,.21);color:#fff;position:relative;overflow:hidden}
-.chooser-hero:after{content:"";position:absolute;right:-60px;top:-80px;border:60px solid rgba(255,255,255,.05);border-radius:50%;width:120px;height:120px;pointer-events:none}
-.chooser-brand{display:flex;gap:18px;align-items:center;position:relative;z-index:1}
-.chooser-logo{background:rgba(255,255,255,.95);width:132px;height:132px;flex:0 0 132px;border-radius:27px;display:grid;place-items:center;box-shadow:0 12px 30px rgba(0,0,0,.18)}
-.chooser-logo img{width:128px;height:128px;object-fit:contain;border-radius:18px}
-.chooser-kicker{text-transform:uppercase;font-weight:800;letter-spacing:.09em;color:#c7d9ed;line-height:1.5;font-size:11px}
-.chooser-hero h1{font-size:clamp(26px,5vw,42px);line-height:1.16;letter-spacing:-.025em;margin:6px 0 7px}
-.chooser-hero p{font-size:15px;color:#d6e6f7;margin:0;line-height:1.5}
-.chooser-hero-note{margin-top:23px;padding-top:14px;border-top:1px solid rgba(255,255,255,.19);font-size:13px;color:#c8dcef;line-height:1.45}
-.chooser-panel{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:23px;box-shadow:var(--shadow)}
-.chooser-topline{display:flex;align-items:center;gap:12px;justify-content:space-between}
-.chooser-topline h2{font-size:22px;margin:0 0 7px;font-weight:850}
-.chooser-topline p{font-size:13px;color:var(--sub);line-height:1.55;margin:0}
-.stream-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:21px 0 17px;background:var(--panel-2);border-radius:17px;padding:5px;border:1px solid var(--line)}
-.stream-tabs button{border:0;background:transparent;font-size:14px;font-weight:800;border-radius:13px}
-.stream-tabs button.active{background:var(--panel);box-shadow:var(--shadow-soft);color:var(--accent)}
-.chooser-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-.group-pick{min-height:92px;padding:15px 10px;border-radius:15px;background:var(--panel-2);border:1px solid var(--line);display:flex;align-items:flex-start;justify-content:center;flex-direction:column;gap:4px;text-align:left;color:var(--ink)}
-.group-pick:hover{transform:translateY(-2px);background:var(--panel);border-color:var(--accent)}
-.group-pick.selected{border:2px solid var(--accent);background:rgba(47,102,197,.06)}
-.group-pick span{font-size:23px;font-weight:850;letter-spacing:-.03em}
-.group-pick small{font-size:10px;color:var(--sub);line-height:1.4}
-.chooser-tip{margin-top:18px;color:var(--sub);font-size:12px;line-height:1.65}
-
-.developer-footer{margin:24px auto 12px;padding:18px 12px;text-align:center;color:var(--sub);font-weight:700;font-size:12px;line-height:1.7;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:5px}
-.developer-footer a{color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor}
-.developer-footer span{color:var(--sub);font-weight:450;margin-left:9px}
-.chooser-footer{margin-bottom:0}
-.source-warning{border:1px solid #f0c37e;border-left:5px solid #cf901a;background:#fff8ea;color:#774a0b;border-radius:16px;padding:12px 16px;margin:0 0 15px}
-.source-warning strong{font-size:13px}.source-warning p{font-size:12px;line-height:1.5;margin:7px 0 0}
-
-.change-badge{display:inline-flex;background:#fff0e2;color:#9f5818;border:1px solid #edc196;font-size:10px;font-weight:900;letter-spacing:.035em;border-radius:7px;padding:5px 7px;margin:0 7px 5px 0;vertical-align:middle}
-.change-badge.cancel,.change-badge.moved-away{background:#ffe6e8;color:#a21c2d;border-color:#f2b0b8}
-.change-badge.moved-in,.change-badge.move{background:#fff1df;color:#9b5b13}
-
-.cal-count.orange{background:#fff2dd;color:#98601b}
-.legend-dot.orange{background:#d79021}
-.lesson-notes.changed{color:#a8661e}
-.change-action{background:#fff2e0;border:1px solid #ecc898;color:#9b601e;font-weight:750}
-.change-editor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.change-editor-fields[hidden]{display:none}
-.change-editor-fields .form-field{min-width:0}
-.change-entry{border:1px solid #f0d6aa;border-radius:15px;background:#fffaf2;padding:13px;margin-bottom:10px}
-.change-entry-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.change-entry-head b{font-size:13px;flex:1;min-width:130px}
-.change-copy{font-size:13px;line-height:1.5;color:#70542b;margin-top:7px;white-space:pre-wrap}
-.change-source{font-size:11px;color:#947548;margin-top:5px}
-.checkbox-label{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);line-height:1.4}
-.checkbox-label input{width:18px;height:18px;accent-color:var(--accent)}
-.ics-button{border:1px solid #b9d4bc;background:#eef8ef;color:#256e35;font-size:12px;font-weight:850;min-height:38px;border-radius:11px;padding:8px 12px;margin-top:10px}
-.ics-button:hover{background:#dcf1e0}
-
-.change-group-btn{background:var(--panel-2);font-weight:800;color:var(--accent)}
-/* Dark mode for V8 surfaces */
-[data-theme="dark"] .chooser-view{background:var(--bg)}
-[data-theme="dark"] .chooser-panel,[data-theme="dark"] .stream-tabs button.active{background:var(--panel)}
-[data-theme="dark"] .group-pick,[data-theme="dark"] .stream-tabs{background:var(--panel-2)}
-[data-theme="dark"] .group-pick.selected{background:#233f63}
-[data-theme="dark"] .source-warning{background:#443a28;color:#ffe1a3;border-color:#b8893d}
-[data-theme="dark"] .change-badge{background:#503725;color:#f5cb8e;border-color:#785434}
-[data-theme="dark"] .change-badge.cancel,[data-theme="dark"] .change-badge.moved-away{background:#542a33;color:#ffafbb;border-color:#7e4452}
-[data-theme="dark"] .change-explainer,[data-theme="dark"] .change-entry{background:#302c2a;color:#e8cba2;border-color:#6e5538}
-[data-theme="dark"] .change-explainer small,[data-theme="dark"] .change-copy,[data-theme="dark"] .change-source{color:#dab787}
-[data-theme="dark"] .ics-button{background:#243d30;color:#b2ebbf;border-color:#40674c}
-
-[data-theme="dark"] .change-action{background:#4a3525;color:#edc286;border-color:#765838}
-
-[data-theme="dark"] .cal-count.orange{background:#4d3a28;color:#ffd29b}
-@media(max-width:700px){
- .chooser-view{padding:12px 11px 30px}
- .chooser-hero{border-radius:21px;padding:19px 16px}
- .chooser-brand{gap:11px;align-items:flex-start}
- .chooser-logo{width:86px;height:86px;flex-basis:86px;border-radius:19px}
- .chooser-logo img{width:84px;height:84px}
- .chooser-kicker{font-size:10px;letter-spacing:.045em}
- .chooser-hero h1{font-size:26px}
- .chooser-hero p{font-size:12px}
- .chooser-hero-note{margin-top:15px;font-size:12px}
- .chooser-panel{padding:16px;border-radius:19px}
- .chooser-topline h2{font-size:20px}
- .chooser-grid{gap:8px}
- .group-pick{min-height:82px;padding:11px 9px}
- .group-pick span{font-size:20px}
- .group-pick small{font-size:9px}
- #appRoot main.wrap{padding-bottom:110px}
- 
- .app-tab{min-height:52px;padding:7px 2px;font-size:11px;display:flex;flex-direction:column;gap:1px;align-items:center;justify-content:center;border-radius:12px}
- .app-tab .tab-icon{font-size:20px;line-height:1.1}
- 
- .developer-footer{padding-bottom:25px}
- .change-editor-fields{grid-template-columns:1fr}
-
-}
-@media(max-width:360px){.chooser-brand{gap:8px}.chooser-logo{width:88px;height:88px;flex-basis:88px}.chooser-logo img{width:86px;height:86px}.chooser-hero h1{font-size:23px}.group-pick span{font-size:18px}.group-pick small{font-size:9px}}
-
-/* V8.1 — компактный интерфейс, плавная навигация и доступные элементы */
-:root{--v81-blue:#2c65bd;--v81-soft:#edf4ff}
-html[data-theme="dark"]{--v81-blue:#8eb9ff;--v81-soft:#253d5b}
-.view:not([hidden]){animation:v81-enter .2s ease-out both}
-@keyframes v81-enter{from{opacity:.1;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-@keyframes v81-reveal{from{opacity:.1;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.group-pick,.app-tab,.day-switch-btn,.cal-day,.session-expand>summary,.today-event,.ribbon-day{transition:background-color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
-.group-pick:active,.today-event:active,.ribbon-day:active{transform:scale(.985)}
-
-.share-lesson,.share-module{display:inline-flex;align-items:center;gap:6px;min-height:38px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:8px 11px;font-weight:750;font-size:12px;cursor:pointer}
-.share-lesson:hover,.share-module:hover{background:var(--v81-soft)}
-
-.network-banner{margin:10px 0 0;padding:9px 13px;background:var(--panel);color:var(--sub);font-weight:700;border:1px solid var(--line);border-left:4px solid #ce8d2a;border-radius:11px;font-size:12px}
-.network-banner[hidden]{display:none!important}
-.report-btn{min-height:36px;padding:7px 11px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--ink);font-weight:750;font-size:12px;cursor:pointer}
-.report-btn:hover{background:var(--v81-soft)}
-.report-dialog{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:20px;padding:21px;width:min(92vw,510px);box-shadow:0 22px 60px rgba(0,0,0,.22)}
-.report-dialog::backdrop{background:rgba(8,17,32,.63);backdrop-filter:blur(3px)}
-.report-dialog h2{font-size:21px;margin:0 0 8px}
-.report-dialog p{font-size:13px;line-height:1.55;color:var(--sub)}
-.report-dialog textarea{display:block;box-sizing:border-box;resize:vertical;width:100%;min-height:125px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);color:var(--ink);padding:12px;font:inherit;font-size:13px}
-.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.report-actions button{flex:1;min-width:105px;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:800}
-.report-primary{background:#2c65bd!important;color:white!important;border-color:#2c65bd!important}
-
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.view:not([hidden]),.session-expand[open] .lesson-reveal{animation:none!important}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
-
-html[data-theme="dark"] .report-dialog textarea{color:#f2f7ff;background:#1c2e45}
-html[data-theme="dark"] .share-lesson,html[data-theme="dark"] .share-module{color:#eef5ff}
-
-/* V8.2 — course chooser. The rest of V8.1 remains untouched. */
-.program-choice{margin:16px 0 17px;display:flex;flex-direction:column;gap:6px}
-.program-label,.chooser-course-title{font-size:12px;font-weight:800;color:var(--sub)}
-
-.chooser-course-title{margin:14px 0 8px}
-.course-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.course-tabs button{font:inherit;font-size:14px;font-weight:850;min-height:66px;padding:10px 4px;border:1px solid var(--line);color:var(--ink);border-radius:13px;background:var(--panel-2);cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}
-.course-tabs button small{display:block;margin-top:3px;font-size:10px;font-weight:600;color:var(--sub)}
-.course-tabs button.active{border-color:var(--accent);background:var(--v81-soft);color:var(--v81-blue);box-shadow:0 2px 10px rgba(47,102,197,.07)}
-.course-tabs button:active{transform:scale(.98)}
-.course-tabs button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.stream-tabs{margin:0 0 15px}
-@media(max-width:450px){.course-tabs button{min-height:61px;font-size:13px}}
-
-/* V8.3 · три направления и датированные циклы */
-.program-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
-.program-tabs button{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 7px;min-height:54px;font-size:12px;font-weight:780;line-height:1.25;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
-.program-tabs button.active{background:var(--panel);border:2px solid var(--accent);color:var(--accent);box-shadow:var(--shadow-soft)}
-.program-tabs button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.source-stamp{font-size:12px;line-height:1.45;margin:10px 0 12px;padding:10px 13px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--sub)}
-.cycle-disclaimer{padding:14px 16px;border-radius:14px;margin:0 0 14px;background:#fff8eb;color:#6f4f1b;border:1px solid #e7c991;line-height:1.6;font-size:12px}
-.cycle-disclaimer strong{font-size:13px}
-.type.cycle{background:#faf0ff;color:#75348a;border:1px solid #cfa5e0}
-
-[data-theme="dark"] .cycle-disclaimer{background:#423523;color:#f3d6a7;border-color:#876334}
-
-[data-theme="dark"] .type.cycle{background:#41304c;color:#edc9fd;border-color:#85549a}
-@media(max-width:550px){.program-tabs{grid-template-columns:1fr 1fr}.program-tabs button:last-child{grid-column:span 2}.program-tabs button{min-height:44px;font-size:12px}}
-
-/* V8.5 · polished motion, same layout and visual hierarchy */
-:root{--motion-soft:cubic-bezier(.22,1,.36,1)}
-.view:not([hidden]){animation:v84-view-in .32s var(--motion-soft) both}
-@keyframes v84-view-in{from{opacity:.28;transform:translate3d(0,8px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
-
-@keyframes v84-expand-in{from{opacity:.18;transform:translate3d(0,-7px,0) scale(.994)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
-.group-pick,.app-tab,.course-tabs button,.program-tabs button,.stream-tabs button,.ribbon-day,.cal-day,.day-switch-btn,.header-icon-btn,.module-open{
- transition:transform .26s var(--motion-soft),background-color .2s ease,border-color .2s ease,box-shadow .26s var(--motion-soft),color .2s ease;
-}
-
-.group-pick:active,.ribbon-day:active,.cal-day:active,.app-tab:active,.course-tabs button:active,.program-tabs button:active{transform:scale(.97)}
-@media(hover:hover){.group-pick:hover,.cal-day:hover{transform:translate3d(0,-2px,0)}}
-.cycle-calendar-note{font-size:12px;line-height:1.5;color:var(--sub);margin:6px 0;padding:5px 8px;border-left:3px solid #9b70b7;background:rgba(157,108,184,.07);border-radius:4px}
-@media(prefers-reduced-motion:reduce){
- .view:not([hidden]),.session-expand[open] .lesson-reveal{animation:none!important}
- .group-pick,.app-tab,.course-tabs button,.program-tabs button,.stream-tabs button,.ribbon-day,.cal-day,.day-switch-btn,.header-icon-btn,.module-open,.session-expand>summary,.lesson-chevron{transition:none!important}
-}
-
-/* V8.5 · subtle interaction polish, no structural/layout changes */
-:root{--v85-ease:cubic-bezier(.2,.72,.22,1)}
-@keyframes v85-touch-feedback{0%{transform:scale(.96)}65%{transform:scale(1.035)}100%{transform:scale(1)}}
-@keyframes v85-toast-rise{from{opacity:.25;transform:translate3d(-50%,11px,0) scale(.96)}to{opacity:1;transform:translate3d(-50%,0,0) scale(1)}}
-/* Keep button geometry untouched; animate only interaction feedback. */
-.app-tab.active .tab-icon{animation:v85-touch-feedback .32s var(--v85-ease) both}
-.group-pick.selected,.ribbon-day.is-selected,.cal-day.selected{transition:background-color .3s ease,border-color .3s ease,box-shadow .3s var(--v85-ease),transform .24s var(--v85-ease)}
-button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.share-lesson,.share-module){transition:transform .2s var(--v85-ease),background-color .24s ease,border-color .24s ease,box-shadow .24s ease}
-@media(hover:hover){
- button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.share-lesson,.share-module):not(:disabled):hover{transform:translate3d(0,-1px,0)}
-}
-#toast:not([hidden]){animation:v85-toast-rise .34s var(--v85-ease) both}
-/* Smooth height interpolation in browsers that support modern details animation. */
-@supports (interpolate-size: allow-keywords){
- :root{interpolate-size:allow-keywords}
-
-}
-@media(prefers-reduced-motion:reduce){
- .app-tab.active .tab-icon,#toast:not([hidden]){animation:none!important}
- .group-pick.selected,.ribbon-day.is-selected,.cal-day.selected,
- button:where(.header-icon-btn,.day-switch-btn,.module-open,.change-group-btn,.share-lesson,.share-module),
- .session-expand::details-content{transition:none!important}
-}
-
-/* V8.6: sync settings, no navigation or layout rearrangements. */
-.cloud-panel{border-left:4px solid var(--accent)}
-.cloud-login{display:grid;gap:10px;max-width:420px;margin:14px 0}
-.cloud-login label{font-weight:750;font-size:13px;color:var(--ink)}
-.cloud-login input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:inherit}
-.cloud-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
-.cloud-actions button{font:inherit;font-size:12px;font-weight:750;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--ink);cursor:pointer}
-.cloud-actions button:disabled{opacity:.5;cursor:not-allowed}
-.cloud-warning{font-size:12px;line-height:1.55;color:var(--sub)}
-.cloud-save-choice{padding:10px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--panel-2)}
-@media (prefers-reduced-motion:reduce){.cloud-panel *{transition:none!important;animation:none!important}}
-/* V8.7: restrained announcements & group-wide backup; existing navigation unchanged. */
-.kg-news-board{margin:4px 0 18px;padding:16px 17px 12px;border:1px solid var(--line);background:var(--panel);border-radius:17px;box-shadow:var(--shadow-soft)}
-.kg-news-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
-.kg-news-heading h2{font-size:17px;line-height:1.4;margin:0;letter-spacing:-.015em}
-.kg-news-heading h2 span{font-size:14px;margin-right:5px}
-.kg-news-meta{display:flex;gap:7px 11px;flex-wrap:wrap;color:var(--sub);font-size:11px;font-weight:750;margin-bottom:6px}
-.kg-news-meta time{font-weight:500}
-.kg-news-count{color:var(--sub);font-size:12px}
-.kg-news-item{border-left:3px solid #7294c6;padding:11px 10px 12px 14px;margin:10px 0;background:var(--panel-2);border-radius:4px 12px 12px 4px;animation:kgNewsEnter .28s ease both}
-.kg-news-item.important{border-left-color:#e6a449}
-.kg-news-item.urgent{border-left-color:#e05e65}
-.kg-news-item h3{font-size:15px;line-height:1.4;margin:2px 0 6px;font-weight:850;color:var(--ink)}
-.kg-news-item p{font-size:13px;line-height:1.55;margin:0;color:var(--ink);overflow-wrap:anywhere}
-.kg-news-item a{display:inline-block;margin-top:8px;font-size:12px;font-weight:800;color:var(--accent)}
-.kg-news-empty{margin:8px 0;color:var(--sub);font-size:13px}
-.kg-news-more{font-size:12px;font-weight:780;color:var(--accent);background:transparent;border:0;padding:7px 6px;cursor:pointer}
-.kg-news-board button:focus-visible,.kg-news-admin button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.kg-news-landing{margin:18px 0;padding:15px}
-.kg-news-admin{margin-top:22px;border-top:1px solid var(--line);padding-top:17px}
-.kg-news-admin p{font-size:13px;color:var(--sub);line-height:1.5}
-.kg-news-form{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}
-.kg-news-form label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:790;color:var(--sub)}
-.kg-news-form input,.kg-news-form textarea,.kg-news-form select{width:100%;min-height:42px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--ink);font:inherit;font-size:14px;padding:8px 11px}
-.kg-news-form textarea{min-height:93px;resize:vertical;line-height:1.5}
-.kg-news-form .kg-wide{grid-column:1/-1}
-.kg-news-form .kg-inline{display:flex;gap:9px;align-items:center;flex-direction:row}
-.kg-news-form .kg-inline input{width:17px;min-height:17px;height:17px}
-.kg-news-actionrow{display:flex;gap:9px;flex-wrap:wrap;grid-column:1/-1}
-.kg-news-actionrow button,.kg-news-admin-actions button,.kg-backup-actions button{font:inherit;font-size:12px;font-weight:780;border:1px solid var(--line);color:var(--ink);background:var(--panel);padding:9px 12px;border-radius:11px;cursor:pointer;min-height:40px}
-.kg-news-actionrow .primary{background:var(--accent);color:white}
-.kg-news-manage-row{display:flex;justify-content:space-between;gap:9px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
-.kg-news-manage-row b{font-size:13px;color:var(--ink)}
-.kg-news-manage-row small{display:block;color:var(--sub);font-size:11px;margin-top:3px}
-.kg-news-admin-actions{display:flex;gap:6px}
-.kg-backup-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 8px}
-.kg-backup-note{font-size:12px;color:var(--sub);line-height:1.5}
-@keyframes kgNewsEnter{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:600px){.kg-news-board{padding:12px 12px 10px;border-radius:14px;margin-bottom:12px}.kg-news-form{grid-template-columns:1fr}.kg-news-form .kg-wide{grid-column:auto}.kg-news-manage-row{flex-wrap:wrap}.kg-news-item{padding:9px 7px 10px 11px}.kg-news-meta{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.kg-news-item{animation:none!important}}
-/* V8.7.1: restrained, GPU-friendly motion; respects reduced motion */
-:root {--kg-motion-ease:cubic-bezier(.22,1,.36,1)}
-
-@keyframes kgv87-surface{from{opacity:.25;transform:translate3d(0,11px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
-@keyframes kgv87-item{from{opacity:.15;transform:translate3d(0,12px,0) scale(.992)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
-@keyframes kgv87-toast{from{opacity:0;transform:translate3d(-50%,9px,0) scale(.98)}to{opacity:1;transform:translate3d(-50%,0,0) scale(1)}}
-.kg-news-board:not([hidden]){animation:kgv87-surface .36s var(--kg-motion-ease) both}
-.kg-news-item{animation:kgv87-item .44s var(--kg-motion-ease) both;transition:transform .3s var(--kg-motion-ease),background-color .25s ease,box-shadow .25s ease,border-color .25s ease}
-.kg-news-item:nth-child(2){animation-delay:36ms}
-.kg-news-item:nth-child(3){animation-delay:72ms}
-.kg-news-item:nth-child(4){animation-delay:108ms}
-@media (hover:hover) and (pointer:fine){.kg-news-item:hover{transform:translate3d(0,-2px,0);box-shadow:0 7px 19px rgba(30,67,108,.08)}
- .app-tab:not(.active):hover,.group-pick:hover,.ribbon-day:not(.is-selected):hover{transform:translateY(-1px)}
- .kg-news-more:hover{transform:translateY(-1px)} }
-.group-pick,.app-tab,.ribbon-day,.day-switch-btn,.cal-day,.kg-news-more,.kg-news-admin-actions button,.kg-news-form button{transition:transform .24s var(--kg-motion-ease),box-shadow .28s var(--kg-motion-ease),background-color .23s ease,border-color .23s ease,color .2s ease}
-.app-tab.active{transition:transform .28s var(--kg-motion-ease),color .25s ease,background-color .25s ease,box-shadow .28s ease}
-.session-expand>summary:active,.kg-news-more:active{transform:scale(.99)}
-
-.toast:not([hidden]){animation:kgv87-toast .3s var(--kg-motion-ease) both}
-.kg-news-manage-row{transition:background-color .22s ease,transform .26s var(--kg-motion-ease)}
-@media(prefers-reduced-motion:reduce){.kg-news-board:not([hidden]),.kg-news-item,.session-expand[open] .lesson-reveal,.toast:not([hidden]){animation:none!important}.kg-news-item,.kg-news-more,.app-tab,.group-pick,.ribbon-day,.day-switch-btn,.cal-day,.kg-news-manage-row{transition:none!important;transform:none!important}}
-
-</style>
 <script src="./schedule-data.js"></script>
 <script>/* расписание только своей группы (data/g/<группа>.js, ~15 КБ) — другие группы догружаются при смене */
 (function(){var G=window.KGMU_EMBEDDED_GROUPS||{},L=window.KGMU_LOADED=window.KGMU_LOADED||{},g=null;
@@ -669,9 +32,9 @@ if(g&&Object.prototype.hasOwnProperty.call(G,g)){document.write('<script src="'+
 window.addEventListener('load',function(){setTimeout(function(){try{if(!window.caches||Object.keys(G).length<50)return;var keep={};
  Object.keys(G).forEach(function(id){keep[new URL(kgGroupSrc(id),location.href).pathname]=1});
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
-<link rel="stylesheet" href="./kg-theme.css?v=91">
-<link rel="stylesheet" href="./kg-app.css?v=91">
-<link rel="stylesheet" href="./kg-e.css?v=153">
+<link rel="stylesheet" href="./kg-base.css?v=1">
+<link rel="stylesheet" href="./kg-app.css?v=92">
+<link rel="stylesheet" href="./kg-e.css?v=155">
 <link rel="stylesheet" href="./rating.css?v=148">
 <style>html.kg-boot body{visibility:hidden}
 html.kg-boot::after{content:"";position:fixed;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid rgba(140,43,51,.18);border-top-color:#8C2B33;opacity:0;animation:kgBootIn .3s ease 1s forwards,kgBootSpin .8s linear infinite}
@@ -691,71 +54,9 @@ window.KG_DESIGN='e';try{localStorage.removeItem('kgDesign');sessionStorage.remo
 <script>/* группа, выбранная вручную, важнее группы из ссылки бота */try{var u=new URL(location.href),g=u.searchParams.get("studyGroup"),o=JSON.parse(localStorage.getItem("kg-group-override")||"null");window.KG_URL_GROUP=g;if(g&&o&&o.from===g&&o.to&&o.to!==g){u.searchParams.set("studyGroup",o.to);history.replaceState(null,"",u);}else if(g&&o&&o.from!==g){localStorage.removeItem("kg-group-override");}}catch(e){}</script>
 <style>.data-tools{display:none}body.kg-admin .data-tools{display:block}</style>
 </head>
-<body><section aria-label="Выбор учебной группы" class="chooser-view" id="groupChooser">
-<div class="chooser-wrap">
-<div class="chooser-hero"><div class="chooser-brand"><span class="chooser-logo"><img alt="Герб КГМУ" src="./img/kgmu-logo.webp"/></span><div><div class="chooser-kicker">Казанский государственный медицинский университет</div><h1>Расписание занятий</h1><p>Все направления · 1–6 курсы</p></div></div><div class="chooser-hero-note">Всё важное в одном месте: пары, аудитории, домашние задания и зачёты</div></div>
-<div class="chooser-panel"><div class="chooser-topline"><div><h2>Выберите свою группу</h2><p>Группу можно будет сменить в настройках. Выбор запоминается на устройстве.</p></div><button class="utility-back" hidden="" id="chooserBack" type="button">Вернуться</button></div>
-<div class="program-choice"><span class="program-label">Направление подготовки</span>
-<div class="program-tabs" role="group" aria-label="Выбор направления подготовки">
-<button type="button" class="active" data-choose-program="lechebnoe">Лечебное дело</button>
-<button type="button" data-choose-program="pediatriya">Педиатрия</button>
-<button type="button" data-choose-program="stomatologiya">Стоматология</button></div></div>
-<div class="chooser-course-title">Выберите курс</div>
-<div class="course-tabs" role="group" aria-label="Учебный курс"><button type="button" data-choose-course="1">1 курс<small>—</small></button><button type="button" data-choose-course="2">2 курс<small>—</small></button><button type="button" data-choose-course="3" class="active">3 курс<small>—</small></button></div><script>(function(){var P=window.KGMU_PROGRAMS;if(!P)return;var pt=document.querySelector(".program-tabs"),ct=document.querySelector(".course-tabs");if(pt){pt.innerHTML=Object.keys(P).map(function(k,i){return '<button type="button"'+(i===0?' class="active"':"")+' data-choose-program="'+k+'">'+P[k].label+"</button>"}).join("")}var max=0;Object.keys(P).forEach(function(k){Object.keys(P[k].courses).forEach(function(c){max=Math.max(max,+c)})});if(ct){var x="";for(var c=1;c<=max;c++)x+='<button type="button" data-choose-course="'+c+'">'+c+" курс<small>—</small></button>";ct.innerHTML=x}})();</script>
-<div class="chooser-course-title" id="flowSectionLabel">Выберите поток</div>
-<div class="stream-tabs"><button id="changeChooserFlow1" type="button">1-й поток</button><button class="active" id="changeChooserFlow2" type="button">2-й поток</button></div>
-<div class="chooser-grid" id="chooserGroups"></div><section class="kg-news-board kg-news-landing" id="kgNewsLanding" hidden aria-label="Общие объявления"><div class="kg-news-heading"><h2>📣 Объявления для всех</h2></div><div id="kgNewsLandingList"></div></section>
-<div class="chooser-tip">Источник: утверждённые расписания КГМУ от <strong>20.08.2026</strong>, осень 2026/27. После подписания могли появиться изменения: сайт пока не обновляет их автоматически. Циклы стоматологии показываются как периоды и требуют сверки дней занятий.</div>
-</div>
-<footer class="developer-footer chooser-footer">Разработчики · <a href="https://t.me/brainfucker01" rel="noopener noreferrer" target="_blank">@brainfucker01</a> · <a href="https://t.me/dkkk111111" rel="noopener noreferrer" target="_blank">@dkkk111111</a><span>Неофициальный студенческий проект</span><button class="report-btn" type="button" data-report>Сообщить о проблеме</button></footer>
-</div>
-</section><div hidden="" id="appRoot"><main class="wrap"><div class="network-banner" id="networkBanner" hidden role="status">◌ Офлайн · отображается сохранённое расписание. Новые изменения могут быть недоступны.</div>
-<div class="source-stamp" id="sourceStamp">📄 Утверждено 20.08.2026 · изменения автоматически не обновляются</div>
-<div class="cycle-disclaimer" id="cycleDisclaimer" hidden><strong>🦷 Цикловые занятия:</strong> показаны периоды дисциплин и часы из официальной таблицы. Количество занятий не во всех блоках соответствует числу будних дней. <b>Присутствие цикла в конкретном дне означает период его проведения, а не подтверждённый день занятия.</b> Точный график уточняйте у преподавателя или старосты.</div>
-<div class="view" hidden="" id="constructionView">
-<section class="dev-placeholder">
-<div class="dev-kicker" id="constructionKicker">🚧 Группа 1303</div>
-<h2>В разработке</h2>
-<p id="constructionText">Для группы 1303 расписание временно скрыто. Сейчас дорабатываем данные и позже вернём её в общий список.</p>
-<img alt="Кот с гаечным ключом — временная заставка для группы 1303" src="./img/maintenance-cat.webp" loading="lazy" decoding="async"/>
-<div class="dev-actions"><button class="dev-button" id="devChooseAnother" type="button">Выбрать другую группу</button></div>
-<div class="dev-contact">Разработчик: <a href="https://t.me/brainfucker01" target="_blank" rel="noopener noreferrer">tg:@brainfucker01</a></div>
-</section>
-</div>
-<div class="source-warning" hidden="" id="groupQualityWarning"><strong>⚠ Расписание требует сверки</strong><p>В исходном Excel для этой группы много ячеек с техническим значением «38» вместо текста занятий. Мы показываем только подтверждённые исходным файлом пары; отсутствие пары в приложении ещё не означает, что занятий нет.</p></div>
-<div class="view" id="todayView">
-<section class="kg-news-board" id="kgNewsHome" aria-label="Новости и объявления КГМУ" aria-live="polite">
-<div class="kg-news-heading"><h2><span aria-hidden="true">📣</span> Новости и объявления</h2><span id="kgNewsCount" class="kg-news-count"></span></div>
-<div id="kgNewsList"><p class="kg-news-empty">Загружаем новости…</p></div>
-<button id="kgNewsMore" class="kg-news-more" type="button" hidden>Все объявления</button>
-</section>
-
-</div>
-<div class="view" hidden="" id="scheduleView"></div>
-<div class="view" hidden="" id="calendarView">
-<section class="calendar-board">
-<div class="calendar-top">
-<div>
-<h2 id="monthTitle">Ноябрь 2026</h2>
-<div class="calendar-sub">Выберите дату: красный флажок — зачёт, синяя отметка — ДЗ</div>
-</div>
-<div class="cal-actions">
-<button aria-label="Предыдущий месяц" id="monthPrev" type="button">‹</button>
-<button id="monthNow" type="button">Сегодня</button>
-<button aria-label="Следующий месяц" id="monthNext" type="button">›</button>
-</div>
-</div>
-<div class="cal-group-row">
-<div class="calendar-legend"><span class="legend-item"><span class="legend-dot red"></span> Зачёт / модуль</span><span class="legend-item"><span class="legend-dot"></span> Домашнее задание</span><span class="legend-item"><span class="legend-dot orange"></span> Изменение занятия</span></div>
-<div aria-label="Подгруппа календаря" class="groupbuttons">
-<button class="active" data-group="all" type="button">Обе</button>
-<button data-group="1" type="button">1-я</button>
-<button data-group="2" type="button">2-я</button>
-</div>
-</div>
-<div aria-hidden="true" class="weekday-line"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
-<div aria-label="Сетка календаря" class="calendar-matrix" id="calendarMatrix"></div>
-</section>
+<body>
+<!-- служебный контейнер: блоки календаря и «Инструментов» kg-app.js переносит на свои экраны; сам он не показывается -->
+<div hidden="" id="appRoot">
 <section class="calendar-day-panel" id="calendarDayPanel">
 <h2 class="panel-date" id="detailDate">Выбранный день</h2>
 <p class="panel-sub" id="detailSubtitle"></p>
@@ -766,7 +67,7 @@ window.KG_DESIGN='e';try{localStorage.removeItem('kgDesign');sessionStorage.remo
 <div class="panel-tools">
 <button class="action-red" id="addModule" type="button">＋ Модуль</button>
 <button id="addHomework" type="button">＋ ДЗ</button>
-</div><div class="panel-section-title">Отмены, переносы и замены</div><div class="entries" id="detailOverrides"></div><div class="panel-tools"><button class="change-action" id="addChange" type="button">＋ Добавить изменение занятия</button></div><form class="editor" hidden="" id="changeEditor">
+</div><div class="panel-section-title">Отмены, переносы и замены</div><div class="entries" id="detailOverrides"></div><div class="panel-tools"><button class="change-action kg-editor-only" id="addChange" type="button">＋ Добавить изменение занятия</button></div><form class="editor" hidden="" id="changeEditor">
 <h3>Отмена, перенос или изменение пары</h3>
 <p class="field-help">Изменение относится только к выбранной дате и не меняет расписание других недель.</p>
 <div class="editor-grid">
@@ -834,68 +135,21 @@ window.KG_DESIGN='e';try{localStorage.removeItem('kgDesign');sessionStorage.remo
 </div>
 </form>
 </section>
-<section class="data-tools">
-<div class="kg-backup-compact"><h3>Резервная копия всех групп — одним файлом</h3>
-<p class="kg-backup-note">Экспортируются все локальные ДЗ, модули и изменения занятий, сохранённые <b>в этом браузере</b>, независимо от выбранной группы. Общие записи Supabase в этот файл не входят.</p>
-<div class="kg-backup-actions"><button id="kgBackupExportCalendar" type="button">↓ Скачать все группы (JSON)</button><button id="kgBackupImportCalendar" type="button">↑ Импортировать общий архив</button>
-<input type="file" accept="application/json,.json" class="import-file" id="kgBackupImportCalendarFile"></div></div>
-
-<h3>Поделиться домашними заданиями и информацией о модулях</h3>
-<p>Скачайте файл с домашними заданиями и модулями, отправьте его в чат группы, а одногруппники смогут загрузить записи в своё расписание.</p>
-<div class="data-btns">
-<button id="exportData" type="button">↓ Скачать записи (JSON)</button>
-<button id="importData" type="button">↑ Загрузить записи</button>
-<input accept="application/json,.json" class="import-file" id="importFile" type="file"/>
-</div>
-<div class="data-note" id="syncNote">При загрузке файла существующие записи обновляются, новые добавляются.</div>
-</section>
-</div><section class="view" hidden="" id="modulesView"></section>
-<section class="view" hidden="" id="searchView"></section>
-<section class="view" hidden="" id="settingsView">
-<div class="utility-panel">
-<div class="settings-section"><h3>Учебная группа</h3><p>Выбранная группа: <b id="activeGroupSettings">1307</b>. Для остальных групп доступны собственные занятия и записи.</p><button class="change-group-btn" id="settingsChangeGroup" type="button">Сменить учебную группу →</button></div><div class="utility-header"><div><div class="utility-kicker">Персонализация</div><h2>Настройки</h2><p>Выберите оформление и свою подгруппу. Параметры запоминаются на устройстве.</p></div><button class="utility-back" id="closeSettings" type="button">К расписанию</button></div>
-<div class="settings-section"><h3>Оформление</h3><p>Автоматический режим использует настройки светлой или тёмной темы телефона.</p>
-<div aria-label="Тема приложения" class="settings-options" role="group">
-<button class="settings-option" data-theme-choice="system" type="button">◐ <b>Авто</b></button>
-<button class="settings-option" data-theme-choice="light" type="button">☀ <b>Светлая</b></button>
-<button class="settings-option" data-theme-choice="dark" type="button">☾ <b>Тёмная</b></button>
-</div>
-</div>
-<div class="settings-section"><h3>Подгруппа</h3><p>Изменение действует сразу во всех разделах расписания.</p>
-<div aria-label="Выбор подгруппы" class="settings-options" role="group">
-<button class="settings-option" data-settings-group="all" type="button">Обе</button>
-<button class="settings-option" data-settings-group="1" type="button">1-я</button>
-<button class="settings-option" data-settings-group="2" type="button">2-я</button>
-</div>
-</div>
-
-<div class="settings-section">
-<h3>📦 Архив всех учебных групп</h3><p>Сохранить локальные ДЗ, модули и изменения занятий <b>всех групп этого устройства</b> одним файлом. Экспорт не включает серверные записи Supabase. Импорт добавляет новые записи, не удаляя и не перезаписывая уже сохранённые.</p>
-<div class="kg-backup-actions"><button type="button" id="kgBackupExport">↓ Скачать все группы</button><button type="button" id="kgBackupImport">↑ Импортировать архив</button><input type="file" class="import-file" accept=".json,application/json" id="kgBackupImportFile"></div>
-<p class="kg-backup-note">При импорте перед изменениями будет скачана копия прежних локальных записей.</p>
-</div>
+<section id="kgToolsSrc">
 <div class="settings-section cloud-panel" id="cloudPanel">
- <h3>☁ Общая синхронизация · тестовый режим</h3>
+ <h3>Аккаунт и синхронизация</h3>
  <p id="cloudStatus" role="status">Подключение…</p>
  <p id="cloudSourceHint">☁ Общие записи доступны всем · 📱 локальные — только на этом устройстве</p>
  <p id="cloudAccount">Чтение общих записей без регистрации</p>
  <p><b id="cloudRoles">Каждый может добавлять ДЗ и модули</b>. Отмены и переносы пар доступны только редакторам.</p>
- <form id="cloudLoginForm" class="cloud-login">
-  <label for="cloudEmail">Почта редактора</label>
-  <input type="email" id="cloudEmail" required autocomplete="username" placeholder="email@example.com" />
-  <label for="cloudPassword">Пароль редактора</label>
-  <input type="password" id="cloudPassword" required autocomplete="current-password" placeholder="Пароль" />
-  <button type="submit" class="primary">Войти редактором</button>
- </form>
  <div class="cloud-actions">
   <button type="button" id="cloudRefresh">↻ Обновить общие данные</button>
   <button type="button" id="cloudPublishLocal" disabled>Опубликовать локальные записи группы</button>
   <button type="button" id="cloudLogout" hidden>Выйти</button>
  </div>
- <p class="cloud-warning">ДЗ и модули может публиковать любой студент без регистрации. При первом добавлении Supabase создаёт анонимный ID; он сохраняется только в этом браузере. Автор может править своё, редактор — записи группы. Не публикуйте личные данные. Общий архив всех групп доступен в настройках и календаре; перенос выполняется только по нажатию. Изменения расписания не являются официальными сообщениями КГМУ.</p>
-</div>
+ <p class="cloud-warning">ДЗ и модули может публиковать любой студент без регистрации. При первом добавлении Supabase создаёт анонимный ID; он сохраняется только в этом браузере. Автор может править своё, редактор — записи группы. Не публикуйте личные данные. Архив всех групп — в блоке «Архив и файлы записей» ниже. Изменения расписания не являются официальными сообщениями КГМУ.</p>
 <div class="settings-section kg-news-admin" id="kgNewsAdmin" hidden>
-<h3>📣 Управление объявлениями · администратор</h3>
+<h3>Управление объявлениями</h3>
 <p>Новость видна на стартовом экране подходящих групп. Можно выбрать отдельную группу, поток, курс, направление или всех пользователей. Только учётная запись глобального администратора может публиковать, редактировать и удалять объявления. Это сообщения студенческого проекта, не официальный канал КГМУ.</p>
 <form id="kgNewsForm" class="kg-news-form">
 <label class="kg-wide">Заголовок<input id="kgNewsTitle" maxlength="160" placeholder="Например: собрание 3-го курса" required></label>
@@ -916,11 +170,17 @@ window.KG_DESIGN='e';try{localStorage.removeItem('kgDesign');sessionStorage.remo
 <div id="kgNewsManageList"></div>
 <div class="kg-backup-actions"><button id="kgCloudBackupAll" type="button">↓ Архив всех общих записей Supabase</button><button id="kgPublishAllLocal" type="button">☁ Опубликовать локальные ДЗ всех групп</button></div>
 <p class="kg-backup-note" id="kgBackupStatus">Серверный архив включает ДЗ, модули, изменения занятий и объявления; не включает SQL-схему и учётные записи Auth. Публикуйте локальные записи только после резервной копии.</p>
-</div>
-<div class="settings-section"><h3>Версия приложения</h3><p>КГМУ · V8.7 Community · новости и общий архив · синхронизация Supabase · 84 учебные группы · три направления, 1–3 курсы. Интерактивное расписание, календарь, ДЗ, модули, материалы, адреса корпусов, временные изменения и персональные настройки.</p></div>
+<div class="settings-section kg-admin-only" id="kgToolsData">
+<h3>Архив и файлы записей</h3>
+<p>Локальные ДЗ, модули и изменения занятий <b>всех групп этого устройства</b> — одним файлом. Серверные записи Supabase в архив не входят; импорт добавляет новые записи и ничего не стирает.</p>
+<div class="kg-backup-actions"><button type="button" id="kgBackupExport">↓ Скачать архив всех групп</button><button type="button" id="kgBackupImport">↑ Импортировать архив</button><input type="file" class="import-file" accept=".json,application/json" id="kgBackupImportFile"></div>
+<p class="kg-backup-note">При импорте перед изменениями будет скачана копия прежних локальных записей.</p>
+<p>Записи текущей группы можно скачать файлом и отправить в чат — одногруппники загрузят их к себе.</p>
+<div class="kg-backup-actions"><button id="exportData" type="button">↓ Скачать записи группы</button><button id="importData" type="button">↑ Загрузить записи</button><input accept="application/json,.json" class="import-file" id="importFile" type="file"/></div>
+<p class="kg-backup-note" id="syncNote">При загрузке файла существующие записи обновляются, новые добавляются.</p>
 </div>
 </section>
-<footer class="developer-footer">Разработчики · <a href="https://t.me/brainfucker01" rel="noopener noreferrer" target="_blank">@brainfucker01</a> · <a href="https://t.me/dkkk111111" rel="noopener noreferrer" target="_blank">@dkkk111111</a><span>Неофициальный студенческий проект · V8.8</span><button class="report-btn" type="button" data-report>Сообщить о проблеме</button></footer></main></div>
+</div>
 
 <dialog class="report-dialog" id="reportDialog" aria-labelledby="reportDialogTitle">
 <h2 id="reportDialogTitle">Сообщить о проблеме</h2>
@@ -1072,30 +332,9 @@ function sanitizeNote(n){return {id:String(n.id).slice(0,100),date:String(n.date
 function persistNotes(){try{localStorage.setItem(STORE_KEY,JSON.stringify(notes.filter(n=>!n._remote)));return true;}catch(err){toast('Не удалось сохранить в памяти браузера. Экспортируйте данные.',true);return false;}}
 function toast(message){const el=$('toast');el.textContent=message;el.hidden=false;if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.hidden=true,3500);}
 function setView(view){
- const previousView=activeView;
- activeView=['today','schedule','calendar','modules','search','settings'].includes(view)?view:'today';
- const construction=applyConstructionMode();
- for(const tab of ['today','schedule','calendar','modules','search','settings']){
-  const label=tab.charAt(0).toUpperCase()+tab.slice(1);
-  $(tab+'View').hidden=construction||activeView!==tab;
-  if($('tab'+label)){$('tab'+label).classList.toggle('active',!construction&&activeView===tab);
-  $('tab'+label).setAttribute('aria-selected',String(!construction&&activeView===tab));}
- }
- if(construction){
-  if(previousView!==activeView)window.scrollTo({top:0,behavior:'instant'});
-  try{const u=new URL(location.href);u.searchParams.set('view','today');history.replaceState(null,'',u);}catch(err){}
-  return;
- }
+ activeView=view==='calendar'?'calendar':'today';
+ if(applyConstructionMode())activeView='today';
  if(activeView==='calendar'){renderCalendar();renderDayDetail();}
- if(activeView==='today')renderToday();
- if(activeView==='search')renderSearch();
- if(activeView==='settings')renderSettings();
- if(activeView==='modules')renderModules();
- if(previousView!==activeView)window.scrollTo({top:0,behavior:'instant'});
- if(previousView!==activeView){
-  const surface={today:'todayLessons',schedule:'grid',calendar:'calendarMatrix',modules:'moduleViewList',search:'searchResults'}[activeView];
-  if(surface)animateSurface($(surface),0,activeView==='modules');
- }
  try{const u=new URL(location.href);u.searchParams.set('view',activeView);history.replaceState(null,'',u);}catch(err){}
 }
 
@@ -1119,28 +358,8 @@ function animateSurface(node, direction=0, stagger=false){
  }catch(e){}
 }
 
-function moveMonth(d){visibleMonth=new Date(visibleMonth.getFullYear(),visibleMonth.getMonth()+d,1,12);renderCalendar();animateSurface($('calendarMatrix'),d);}
 function selectDate(key,scroll=true){selectedDate=key;const d=parseISO(key);visibleMonth=new Date(d.getFullYear(),d.getMonth(),1,12);$('recordEditor').hidden=true;editId=null;renderCalendar();renderDayDetail();if(scroll){const target=$('calendarDayPanel');animateSurface(target,0);target.scrollIntoView({behavior:motionEnabled()?'smooth':'auto',block:'start'});}else{animateSurface($('detailLessons'));}}
-function renderCalendar(){
- const y=visibleMonth.getFullYear(),m=visibleMonth.getMonth();
- $('monthTitle').textContent=LONG_MONTHS[m]+' '+y;
- const offset=(new Date(y,m,1,12).getDay()+6)%7;
- const count=new Date(y,m+1,0,12).getDate();const total=Math.ceil((offset+count)/7)*7;
- let html='';
- for(let i=0;i<total;i++){
-  const d=new Date(y,m,1-offset+i,12),key=dateISO(d),isOther=d.getMonth()!==m;
-  const dayNotes=visibleNotes(key),moduleCount=dayNotes.filter(n=>n.type==='module').length,homeworkCount=dayNotes.filter(n=>n.type==='homework').length,hasModules=moduleCount>0,hasHw=homeworkCount>0,isCurrent=key===kazanTodayKey();
-  const w=dateWeek(key),dow=(d.getDay()+6)%7;
-  const visibleSlots=(w>=1&&w<=SEM.weeks&&dow<7)?slots(w,dow).filter(s=>!['cancel','moved-away'].includes(s[0].changeFlag)):[];
-  const lessons=visibleSlots.filter(s=>s.every(e=>e.lessonType!=='cycle')).length;
-  const periods=visibleSlots.filter(s=>s.some(e=>e.lessonType==='cycle')).length;
-  const dayChanges=amendments.filter(a=>a.date===key||a.targetDate===key).length;
-  html+='<button type="button" class="cal-day'+(isOther?' outside':'')+(isCurrent?' today':'')+(key===selectedDate?' selected':'')+(hasModules?' module-date':'')+'" data-date="'+key+'" aria-label="'+esc(prettyDate(key))+(hasModules?', зачёт':'')+(hasHw?', домашнее задание':'')+'">';
-  html+='<span class="cal-num">'+d.getDate()+'</span><span class="cal-indicators">'+(hasModules?'<span class="cal-count red">🚩 '+moduleCount+'</span>':'')+(hasHw?'<span class="cal-count blue">ДЗ '+homeworkCount+'</span>':'')+(dayChanges?'<span class="cal-count orange">↻ '+dayChanges+'</span>':'')+'</span>';
-  html+='<span class="cal-lessons">'+(lessons?lessons+' зан.':'')+(periods?((lessons?' · ':'')+(periods>1?periods+' цик.':'Цикл')):(!lessons?'&nbsp;':''))+'</span></button>';
- }
- $('calendarMatrix').innerHTML=html;
-}
+function renderCalendar(){} /* месячную сетку рисует kg-app.js (renderCal) */
 function dayLessons(key){const d=parseISO(key),w=dateWeek(key),dow=(d.getDay()+6)%7;return w>=1&&w<=SEM.weeks&&dow<6?slots(w,dow):[];}
 function renderDayDetail(){
  const dt=parseISO(selectedDate),w=dateWeek(selectedDate),dayName=['Воскресенье',...DAYS][dt.getDay()===0?0:dt.getDay()];
@@ -1254,34 +473,16 @@ function setGroup(nextGroup){
  group=nextGroup;userPreferences.group=nextGroup;userPreferences.subgroups[selectedStudyGroup]=nextGroup;savePreferences();render();renderSettings();
  if(activeView==='search')renderSearch();
 }
-function renderSettings(){
- if($('activeGroupSettings'))$('activeGroupSettings').textContent=selectedStudyGroup||'—';
- for(const b of document.querySelectorAll('[data-settings-group]')){const active=b.dataset.settingsGroup===group;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}
- applyTheme();
-}
+function renderSettings(){applyTheme();}
+window.kgSetTheme=function(t){if(!['system','light','dark'].includes(t))return;userPreferences.theme=t;savePreferences();applyTheme();};
 function renderSearch(){}
 function initializeCalendar(){
- $('closeSettings').addEventListener('click',()=>setView('today'));
- for(const b of document.querySelectorAll('[data-theme-choice]'))b.addEventListener('click',()=>{userPreferences.theme=b.dataset.themeChoice;savePreferences();applyTheme();});
- for(const b of document.querySelectorAll('[data-settings-group]'))b.addEventListener('click',()=>setGroup(b.dataset.settingsGroup));
- $('settingsChangeGroup').addEventListener('click',()=>showGroupChooser());
- $('devChooseAnother').addEventListener('click',()=>showGroupChooser());
- document.querySelectorAll('[data-choose-program]').forEach(b=>b.addEventListener('click',()=>setChooserProgram(b.dataset.chooseProgram)));
- document.querySelectorAll('[data-choose-course]').forEach(b=>b.addEventListener('click',()=>setChooserCourse(b.dataset.chooseCourse)));
- $('changeChooserFlow1').addEventListener('click',()=>renderGroupChooser('1'));
- $('changeChooserFlow2').addEventListener('click',()=>renderGroupChooser('2'));
- $('chooserGroups').addEventListener('click',e=>{const b=e.target.closest('[data-choose-study-group]');if(b)selectStudyGroup(b.dataset.chooseStudyGroup);});
- $('chooserBack').addEventListener('click',()=>hideGroupChooser());
  $('addChange').addEventListener('click',()=>openChangeEditor());
  $('cancelChange').addEventListener('click',()=>{$('changeEditor').hidden=true;});
  $('changeEditor').addEventListener('submit',saveChangeEditor);
  $('changeKind').addEventListener('change',toggleChangeFields);
  $('detailOverrides').addEventListener('click',e=>{const b=e.target.closest('[data-delete-change]');if(b)deleteChange(b.dataset.deleteChange);});
  document.addEventListener('click',e=>{const b=e.target.closest('[data-ics]');if(b){e.preventDefault();e.stopPropagation();exportICS(b.dataset.ics);}});
- $('monthPrev').addEventListener('click',()=>moveMonth(-1));
- $('monthNext').addEventListener('click',()=>moveMonth(1));
- $('monthNow').addEventListener('click',()=>selectDate(kazanTodayKey(),false));
- $('calendarMatrix').addEventListener('click',e=>{const btn=e.target.closest('[data-date]');if(btn)selectDate(btn.dataset.date);});
  $('detailLessons').addEventListener('click',e=>{const b=e.target.closest('[data-add-subject]');if(b)openEditor('homework',b.dataset.addSubject);});
  $('addModule').addEventListener('click',()=>openEditor('module'));
  $('addHomework').addEventListener('click',()=>openEditor('homework'));
@@ -1294,75 +495,26 @@ function initializeCalendar(){
  $('importData').addEventListener('click',()=>$('importFile').click());
  $('importFile').addEventListener('change',e=>importRecords(e.target.files[0]));
  // Open calendar if explicitly requested via URL, while preserving week navigation.
- if(['today','schedule','calendar','modules','search','settings'].includes(params.get('view')))setView(params.get('view'));
+ if(params.get('view')==='calendar')setView('calendar');
  renderSettings();
 }
 
 /* V8: multi-group shell, calendar exports, per-day corrections. */
 const PROGRAM_CONFIG=window.KGMU_PROGRAMS||{"lechebnoe":{"label":"Лечебное дело","courses":{"1":{"1":["1101","1102","1103","1104","1105","1106"],"2":["1107","1108","1109","1110и"]},"2":{"1":["1201","1202","1203","1204","1205","1206"],"2":["1207","1208","1209","1210","1211и","1212и"]},"3":{"1":["1301","1302","1303","1304","1305","1306"],"2":["1307","1308","1309","1310и","1311и"]}}},"pediatriya":{"label":"Педиатрия","courses":{"1":{"1":["2101","2102","2103","2104"],"2":["2105","2106","2107"]},"2":{"1":["2201","2202","2203","2204","2205"],"2":["2206","2207","2208и","2209и"]},"3":{"1":["2301","2302","2303","2304"],"2":["2305","2306","2307","2308и"]}}},"stomatologiya":{"label":"Стоматология","courses":{"1":{"1":["4101","4102","4103","4104"],"2":["4105","4106","4107и"]},"2":{"1":["4201","4202","4203","4204"],"2":["4205","4206","4207и","4208и"]},"3":{"1":["4301","4302","4303","4304","4305","4306"],"2":["4307","4308","4309","4310","4311","4312и"]}}}};
 const GROUP_INFO=Object.assign({"1101":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1102":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1104":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1105":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1106":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1107":{"program":"lechebnoe","course":"1","stream":"2","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1108":{"program":"lechebnoe","course":"1","stream":"2","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1109":{"program":"lechebnoe","course":"1","stream":"2","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1110и":{"program":"lechebnoe","course":"1","stream":"2","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false},"1201":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1202":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1204":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1205":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1206":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1207":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1208":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1209":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1210":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1211и":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1212и":{"program":"lechebnoe","course":"2","stream":"2","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false},"1301":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1302":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1303":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false,"development":true},"1304":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1305":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1306":{"program":"lechebnoe","course":"3","stream":"1","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1307":{"program":"lechebnoe","course":"3","stream":"2","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1308":{"program":"lechebnoe","course":"3","stream":"2","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1309":{"program":"lechebnoe","course":"3","stream":"2","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1310и":{"program":"lechebnoe","course":"3","stream":"2","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"1311и":{"program":"lechebnoe","course":"3","stream":"2","source":"o_26-27_lech_3.xlsx","signed":"2026-08-20","hasCycles":false},"2101":{"program":"pediatriya","course":"1","stream":"1","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2102":{"program":"pediatriya","course":"1","stream":"1","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2103":{"program":"pediatriya","course":"1","stream":"1","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2104":{"program":"pediatriya","course":"1","stream":"1","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2105":{"program":"pediatriya","course":"1","stream":"2","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2106":{"program":"pediatriya","course":"1","stream":"2","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2107":{"program":"pediatriya","course":"1","stream":"2","source":"o_26-27_ped_1.xlsx","signed":"2026-08-20","hasCycles":false},"2201":{"program":"pediatriya","course":"2","stream":"1","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2202":{"program":"pediatriya","course":"2","stream":"1","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2203":{"program":"pediatriya","course":"2","stream":"1","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2204":{"program":"pediatriya","course":"2","stream":"1","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2205":{"program":"pediatriya","course":"2","stream":"1","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2206":{"program":"pediatriya","course":"2","stream":"2","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2207":{"program":"pediatriya","course":"2","stream":"2","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2208и":{"program":"pediatriya","course":"2","stream":"2","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2209и":{"program":"pediatriya","course":"2","stream":"2","source":"o_26-27_ped_2.xlsx","signed":"2026-08-20","hasCycles":false},"2301":{"program":"pediatriya","course":"3","stream":"1","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2302":{"program":"pediatriya","course":"3","stream":"1","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2303":{"program":"pediatriya","course":"3","stream":"1","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2304":{"program":"pediatriya","course":"3","stream":"1","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2305":{"program":"pediatriya","course":"3","stream":"2","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2306":{"program":"pediatriya","course":"3","stream":"2","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2307":{"program":"pediatriya","course":"3","stream":"2","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"2308и":{"program":"pediatriya","course":"3","stream":"2","source":"o_26-27_ped_3.xlsx","signed":"2026-08-20","hasCycles":false},"4101":{"program":"stomatologiya","course":"1","stream":"1","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4102":{"program":"stomatologiya","course":"1","stream":"1","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4103":{"program":"stomatologiya","course":"1","stream":"1","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4104":{"program":"stomatologiya","course":"1","stream":"1","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4105":{"program":"stomatologiya","course":"1","stream":"2","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4106":{"program":"stomatologiya","course":"1","stream":"2","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4107и":{"program":"stomatologiya","course":"1","stream":"2","source":"o_26-27_stom_1.xlsx","signed":"2026-08-20","hasCycles":false},"4201":{"program":"stomatologiya","course":"2","stream":"1","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4202":{"program":"stomatologiya","course":"2","stream":"1","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4203":{"program":"stomatologiya","course":"2","stream":"1","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4204":{"program":"stomatologiya","course":"2","stream":"1","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4205":{"program":"stomatologiya","course":"2","stream":"2","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4206":{"program":"stomatologiya","course":"2","stream":"2","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4207и":{"program":"stomatologiya","course":"2","stream":"2","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4208и":{"program":"stomatologiya","course":"2","stream":"2","source":"o_26-27_stom_2.xlsx","signed":"2026-08-20","hasCycles":false},"4301":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4302":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4303":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4304":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4305":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4306":{"program":"stomatologiya","course":"3","stream":"1","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4307":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4308":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4309":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4310":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4311":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"4312и":{"program":"stomatologiya","course":"3","stream":"2","source":"o_26-27_stom_3-5_lekc.xlsx","signed":"2026-08-20","hasCycles":true},"1103":{"program":"lechebnoe","course":"1","stream":"1","source":"o_26-27_lech_1.xlsx","signed":"2026-08-20","hasCycles":false,"development":true},"1203":{"program":"lechebnoe","course":"2","stream":"1","source":"o_26-27_lech_2.xlsx","signed":"2026-08-20","hasCycles":false,"development":true}},window.KGMU_GROUP_INFO||{});
-let chooserProgram="lechebnoe";
 const DEV_GROUPS=new Set(window.KGMU_DEV_GROUPS||[]); /* группы без занятий — из schedule-data.js (раньше список был вписан вручную) */
 function isDevGroup(id){return DEV_GROUPS.has(String(id||''));}
-let chooserCourse='3',chooserStream='2';
 function studyProgram(g){return GROUP_INFO[String(g)]?.program||'lechebnoe';}
 function studyCourse(g){return GROUP_INFO[String(g)]?.course||'3';}
 function studyStream(g){return GROUP_INFO[String(g)]?.stream||'1';}
-function setChooserProgram(program){
- if(!PROGRAM_CONFIG[program])return;
- chooserProgram=program;
- if(!PROGRAM_CONFIG[program].courses[chooserCourse])chooserCourse=Object.keys(PROGRAM_CONFIG[program].courses)[0]; chooserStream='1';renderGroupChooser('1');
-}
-function renderGroupChooser(flow=chooserStream){
- const courses=PROGRAM_CONFIG[chooserProgram].courses; if(!courses[chooserCourse])chooserCourse=Object.keys(courses)[0]; const flows=Object.keys(courses[chooserCourse]||{}); if(!flows.includes(flow))flow=flows[0]||'1'; chooserStream=flow; const oneFlow=flows.length<2; if($('flowSectionLabel'))$('flowSectionLabel').style.display=oneFlow?'none':''; const kgSt=document.querySelector('.stream-tabs'); if(kgSt)kgSt.style.display=oneFlow?'none':'';
- for(const b of document.querySelectorAll('[data-choose-program]')){
-  const active=b.dataset.chooseProgram===chooserProgram;
-  b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));
- }
- for(const b of document.querySelectorAll('[data-choose-course]')){
-  const active=b.dataset.chooseCourse===chooserCourse;
-  const count=Object.values(courses[b.dataset.chooseCourse]||{'1':[],'2':[]}).flat().length; b.style.display=courses[b.dataset.chooseCourse]?'':'none';
-  b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));
-  const small=b.querySelector('small');if(small)small.textContent=count+' групп';
- }
- const custom=chooserProgram==='stomatologiya'&&chooserCourse==='3';
- $('changeChooserFlow1').textContent=custom?'Группы 4301–4306':'1-й поток';
- $('changeChooserFlow2').textContent=custom?'Группы 4307–4312и':'2-й поток';
- if($('flowSectionLabel'))$('flowSectionLabel').textContent=custom?'Выберите группы':'Выберите поток';
- for(const i of ['1','2']){
-  $('changeChooserFlow'+i).classList.toggle('active',flow===i);
-  $('changeChooserFlow'+i).setAttribute('aria-pressed',String(flow===i));
- }
- const ids=courses[chooserCourse][flow]||[];
- $('chooserGroups').innerHTML=ids.map(id=>'<button type="button" class="group-pick'+(id===selectedStudyGroup?' selected':'')+'" data-choose-study-group="'+id+'"><span>'+id+'</span><small>'+(isDevGroup(id)?'🚧 В разработке':'Открыть расписание')+'</small></button>').join('');
- $('chooserBack').hidden=!selectedStudyGroup;
- animateSurface($('chooserGroups'),0,true);
-}
-function setChooserCourse(course){if(!PROGRAM_CONFIG[chooserProgram].courses[course])return;chooserCourse=course;chooserStream='1';renderGroupChooser('1');}
-
 function applyConstructionMode(){
  const dev=isDevGroup(selectedStudyGroup);
  document.body.dataset.devGroup=dev?'1':'0';
- if($('constructionView'))$('constructionView').hidden=!dev;
- if($('constructionKicker'))$('constructionKicker').textContent='🚧 Группа '+selectedStudyGroup;
- if($('constructionText'))$('constructionText').textContent='Для группы '+selectedStudyGroup+' расписание временно скрыто. Сейчас дорабатываем данные и позже вернём её в общий список.';
- if($('appTabs'))$('appTabs').hidden=dev;
- if($('groupQualityWarning'))$('groupQualityWarning').hidden=true;
  return dev;
 }
-
-function showGroupChooser(first=false){
- if(selectedStudyGroup){chooserProgram=studyProgram(selectedStudyGroup);chooserCourse=studyCourse(selectedStudyGroup);}
- renderGroupChooser(selectedStudyGroup?studyStream(selectedStudyGroup):chooserStream);
- $('groupChooser').hidden=false;$('appRoot').hidden=true;
- document.title='КГМУ — Выбор группы';
- if(!first)window.scrollTo(0,0);
-}
-function hideGroupChooser(){
- if(!selectedStudyGroup)return;
- $('groupChooser').hidden=true;$('appRoot').hidden=false;
- document.title='Расписание '+selectedStudyGroup+' — КГМУ';
-}
+/* экран выбора группы — в kg-app.js (showGroupPage подменяет эту функцию) */
+function showGroupChooser(){document.title='KSMU Community — выбор группы';}
+function hideGroupChooser(){if(selectedStudyGroup)document.title='Расписание '+selectedStudyGroup+' — КГМУ';}
 function activateStudyGroup(id){
  if(!GROUP_IDS.includes(id))return;
  /* расписание группы ещё не загружено — загрузить и повторить */
@@ -1371,8 +523,6 @@ function activateStudyGroup(id){
  try{localStorage.setItem(GROUP_STORAGE_KEY,id);}catch(e){}
  loadGroupData(id);
  group=userPreferences.subgroups[id]||'all';userPreferences.group=group;savePreferences();
- if($('sourceStamp'))$('sourceStamp').textContent='📄 Утверждено 20.08.2026 · '+(GROUP_INFO[id]?.hasCycles?'лекции + периоды циклов · ':'')+'основное расписание обновляется при публикации новой версии';
- if($('cycleDisclaimer'))$('cycleDisclaimer').hidden=!GROUP_INFO[id]?.hasCycles;
 
  applyConstructionMode();
  selectedDate=kazanTodayKey();visibleMonth=new Date(parseISO(selectedDate).getFullYear(),parseISO(selectedDate).getMonth(),1,12);
@@ -1447,23 +597,7 @@ function exportICS(id){
 function renderModules(){}
 
 /* V8.1: неделя жестом, ссылки на предметы, офлайн-индикация, сообщения об ошибках */
-function renderNetworkStatus(){
- const b=$('networkBanner');if(b)b.hidden=navigator.onLine!==false;
-}
-function swipeContainer(node,onLeft,onRight){
- let touch=null;
- node.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1)return;
-  touch={x:e.touches[0].clientX,y:e.touches[0].clientY};
- },{passive:true});
- node.addEventListener('touchend',e=>{
-  if(!touch||e.changedTouches.length!==1)return;
-  const dx=e.changedTouches[0].clientX-touch.x,dy=e.changedTouches[0].clientY-touch.y;touch=null;
-  if(Math.abs(dx)<72||Math.abs(dx)<Math.abs(dy)*1.5)return;
-  (dx<0?onLeft:onRight)();
- },{passive:true});
- node.addEventListener('touchcancel',()=>touch=null,{passive:true});
-}
+function renderNetworkStatus(e){if(e&&e.type==='offline')toast('Нет интернета — показано сохранённое расписание');}
 function webUrlForShare(key,subject){
  if(!/^https?:$/.test(location.protocol))return '';
  const u=new URL(location.origin+location.pathname);
@@ -1482,7 +616,7 @@ async function shareText(text,url){
 function reportProblem(){
  const selected=selectedStudyGroup||'не выбрана';
  const day=activeView==='calendar'?selectedDate:dateISO((()=>{const d=parseISO(kazanTodayKey());d.setDate(d.getDate()+todayOffset);return d;})());
- $('reportMessage').value='Ошибка в расписании КГМУ\nГруппа: '+selected+'\nДата: '+day+'\nРаздел: '+({'today':'Сегодня','schedule':'Недели','calendar':'Календарь','modules':'Модули','settings':'Настройки'}[activeView]||'Выбор группы')+'\nЧто произошло: ';
+ $('reportMessage').value='Ошибка в расписании КГМУ\nГруппа: '+selected+'\nДата: '+day+'\nРаздел: '+(activeView==='calendar'?'Календарь':'Главная')+'\nЧто произошло: ';
  if(typeof $('reportDialog').showModal==='function')$('reportDialog').showModal();else $('reportDialog').setAttribute('open','');
 }
 async function copyReport(){
@@ -1491,10 +625,8 @@ async function copyReport(){
  catch(e){$('reportMessage').focus();$('reportMessage').select();toast('Выделен текст — скопируйте его вручную');return false;}
 }
 function initV81(){
- renderNetworkStatus();
  window.addEventListener('online',renderNetworkStatus);
  window.addEventListener('offline',renderNetworkStatus);
- swipeContainer($('calendarMatrix'),()=>moveMonth(1),()=>moveMonth(-1));
  document.addEventListener('click',e=>{
   const lesson=e.target.closest('[data-share-date]');
   if(lesson){e.preventDefault();e.stopPropagation();const date=lesson.dataset.shareDate;const subject=lesson.dataset.shareSubject;
@@ -1522,7 +654,7 @@ function initV81(){
 }
 
 initializeCalendar();
-if(selectedStudyGroup){activateStudyGroup(selectedStudyGroup);}else{renderGroupChooser('2');showGroupChooser(true);}
+if(selectedStudyGroup){activateStudyGroup(selectedStudyGroup);}else{showGroupChooser(true);}
 initV81();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&selectedStudyGroup){renderToday();renderCalendar();}});
 
@@ -1537,9 +669,8 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
-<script src="./cloud-sync.js?v=149"></script>
+<script src="./cloud-sync.js?v=150"></script>
 <script src="./community-extras.js?v=149"></script>
-<script src="./kg-ui.js?v=90"></script>
 <script>/* словарь предметов для английского интерфейса (449 КБ) — только в режиме en; при переключении его догружает kg-language.js */
 window.KG_SCHEDULE_EN_SRC='./kg-schedule-en.js?v=149';
 (function(){var l=null;try{l=new URLSearchParams(location.search).get('lang');if(l!=='ru'&&l!=='en')l=localStorage.getItem('kg-interface-language');}catch(e){}
@@ -1547,7 +678,6 @@ if(l==='en')document.write('<script src="'+window.KG_SCHEDULE_EN_SRC+'"><\/scrip
 <script src="./kg-language.js?v=154"></script>
 <script src="./rating.js"></script>
 <script src="./rating-ui.js?v=149"></script>
-<script src="./kg-app.js?v=153"></script>
-<script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
+<script src="./kg-app.js?v=154"></script>
 </body>
 </html>

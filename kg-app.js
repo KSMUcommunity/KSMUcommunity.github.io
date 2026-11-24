@@ -347,8 +347,7 @@
       case 'calendar': return showCal(state.tab === 'day' && !state.page ? state.date : null);
       case 'modules': return showModules();
       case 'search': return showSearch();
-      case 'schedule': return showOld('schedule', 'По неделям');
-      case 'tools': return showOld('settings', role() === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', true);
+      case 'tools': return showTools();
       case 'settings': return showSettings();
       case 'group': return showGroupPage();
       case 'bot': return openBot('g-' + botArg(selectedStudyGroup));
@@ -399,19 +398,19 @@
     renderTabs();
     saveView();
   }
-  function showOld(view, title, tools) {
-    restoreMoved();
-    enterPage(tools ? 'tools' : view, title);
-    document.body.classList.remove('kg-mode-home', 'kg-mode-page');
-    document.body.classList.add('kg-mode-old');
-    document.body.classList.toggle('kg-tools', !!tools);
-    try { setView(view); } catch (e) {}
-    window.scrollTo(0, 0);
+  /* «Инструменты» старосты/админа: блоки синхронизации, объявлений и архива живут в index.html (#kgToolsSrc) — переносим их сюда */
+  function showTools() {
+    var r = role();
+    showPage('tools', r === 'admin' ? 'Инструменты админа' : 'Инструменты старосты', '<div class="kg-tools" id="kgToolsSlot"></div>');
+    var slot = $('kgToolsSlot');
+    ['cloudPanel', 'kgNewsAdmin', 'kgToolsData'].forEach(function (id) { moveInto($(id), slot); });
+    try { if (typeof newsRender === 'function') newsRender(); } catch (e) {}
+    try { if (typeof cloudUpdateUI === 'function') cloudUpdateUI(); } catch (e) {}
   }
   function showPage(name, title, html) {
     restoreMoved();
     enterPage(name, title);
-    document.body.classList.remove('kg-mode-home', 'kg-mode-old', 'kg-tools');
+    document.body.classList.remove('kg-mode-home');
     document.body.classList.add('kg-mode-page');
     $('kgPage').innerHTML = html + cxFoot();
     pageIn($('kgPage'), state.noPush ? 0 : 1);
@@ -426,7 +425,7 @@
     var had = !!state.page;
     state.page = null; state.stack = [];
     restoreMoved();
-    document.body.classList.remove('kg-mode-old', 'kg-mode-page', 'kg-tools');
+    document.body.classList.remove('kg-mode-page');
     document.body.classList.add('kg-mode-home');
     tgPost('web_app_setup_back_button', { is_visible: false });
     if (had && !fromPop) { try { history.back(); } catch (e) {} }
@@ -1147,7 +1146,7 @@
         : botName() ? '<div class="kg-lbox">' + row('Подать заявку на старосту', esc(g), 'starreq', 'kg-accent') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия 9.14</div>';
+      '<div class="kg-ver">Версия 9.15</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     $('kgPage').querySelector('[data-language]').addEventListener('click', window.kgSwitchLanguage);
@@ -1157,7 +1156,7 @@
       box.addEventListener('click', function (ev) {
         var b = ev.target.closest('button[data-v]'); if (!b) return;
         if (box.dataset.seg === 'sub') { try { setGroup(b.dataset.v); } catch (e) {} }
-        else { var t = document.querySelector('[data-theme-choice="' + b.dataset.v + '"]'); if (t) t.click(); setTimeout(applyTGTheme, 30); }
+        else { try { window.kgSetTheme(b.dataset.v); } catch (e) {} setTimeout(applyTGTheme, 30); }
         renderProfile();
       });
     });
@@ -1779,7 +1778,7 @@
       var f = function (v) {
         if (state.page) {
           if (v === 'calendar') { showCal(typeof selectedDate !== 'undefined' ? selectedDate : null); return; }
-          if (v === 'today' || v === 'schedule') { back(); return; }
+          if (v === 'today') { back(); return; }
         }
         return sv.apply(this, arguments);
       };
@@ -1792,8 +1791,18 @@
       renderCal();
     });
     $('kgPage').addEventListener('click', onCxPage);
+    bodyRoles(); setInterval(bodyRoles, 1500);
+    document.addEventListener('click', function () { setTimeout(bodyRoles, 60); }, true);
+    window.addEventListener('kg-auth', bodyRoles);
     if (!curGroup()) showGroupPage(true);
     stat('open');
+  }
+
+  function bodyRoles() {
+    var b = document.body;
+    try { b.classList.toggle('kg-editor', typeof cloudCanEdit === 'function' && !!cloudCanEdit()); } catch (e) {}
+    try { b.classList.toggle('kg-tg', !!tgUser()); } catch (e) {}
+    try { b.classList.toggle('kg-admin', typeof newsAdmin === 'function' && !!newsAdmin()); } catch (e) {}
   }
 
   /* ---------- связка со старым приложением ---------- */
