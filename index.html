@@ -34,7 +34,7 @@ window.addEventListener('load',function(){setTimeout(function(){try{if(!window.c
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-base.css?v=1">
 <link rel="stylesheet" href="./kg-app.css?v=92">
-<link rel="stylesheet" href="./kg-e.css?v=155">
+<link rel="stylesheet" href="./kg-e.css?v=156">
 <link rel="stylesheet" href="./rating.css?v=148">
 <style>html.kg-boot body{visibility:hidden}
 html.kg-boot::after{content:"";position:fixed;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid rgba(140,43,51,.18);border-top-color:#8C2B33;opacity:0;animation:kgBootIn .3s ease 1s forwards,kgBootSpin .8s linear infinite}
@@ -223,7 +223,6 @@ function savePreferences(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(
 function resolvedTheme(){return userPreferences.theme==='system'?(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):userPreferences.theme;}
 function applyTheme(){const dark=resolvedTheme()==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
   const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=dark?'#0e1b2b':'#102642';
-  for(const btn of document.querySelectorAll('[data-theme-choice]')){const active=btn.dataset.themeChoice===userPreferences.theme;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));}
 }
 applyTheme();
 try{if(window.matchMedia){const mq=matchMedia('(prefers-color-scheme: dark)');mq.addEventListener?.('change',()=>{if(userPreferences.theme==='system')applyTheme();});}}catch(e){}
@@ -678,6 +677,6 @@ if(l==='en')document.write('<script src="'+window.KG_SCHEDULE_EN_SRC+'"><\/scrip
 <script src="./kg-language.js?v=154"></script>
 <script src="./rating.js"></script>
 <script src="./rating-ui.js?v=149"></script>
-<script src="./kg-app.js?v=154"></script>
+<script src="./kg-app.js?v=155"></script>
 </body>
 </html>
