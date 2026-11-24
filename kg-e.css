@@ -239,8 +239,6 @@ html.kg-e .cx-home{max-width:480px;padding:18px 16px calc(112px + env(safe-area-
 @media (prefers-reduced-motion:reduce){.cx-pulse,.cx-now i{animation:none}}
 
 /* ===== выбор группы (вместо старого экрана) ===== */
-html.kg-e #groupChooser{display:none!important}
-html.kg-e body:has(#groupChooser:not([hidden])) #kgApp{display:block!important}
 body.kg-cx-first .kg-tabbar,body.kg-cx-first .kg-subbar{display:none!important}
 #kgPage .cx-lab{margin:16px 4px 8px}
 #kgPage .cx-lab:first-child{margin-top:2px}
@@ -759,7 +757,6 @@ html.kg-desk .cx-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax
 @media (min-width:480px){#kgApp .kg-mrow{flex-direction:row}#kgApp .kg-mrow input{flex:1}#kgApp .kg-mrow .kg-tg-go{width:auto;flex:none}}
 
 /* ===== 9.11.2: своя кнопка «Войти через Telegram» вместо фрейма-виджета; без входа по паролю ===== */
-#cloudLoginForm,.kg-mail-login{display:none!important}
 #kgApp .kg-tg-main{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:0 18px;border-radius:14px;
   background:linear-gradient(135deg,#37AEE2,#1E96C8)!important;color:#fff!important;font-weight:700;font-size:15px;box-shadow:0 6px 16px rgba(30,150,200,.3)}
 #kgApp .kg-tg-main:disabled{opacity:.45;box-shadow:none;cursor:default}
@@ -796,7 +793,7 @@ html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) 
 /* меньше движения — для всех анимаций и плавной прокрутки */
 @media (prefers-reduced-motion:reduce){html.kg-e *,html.kg-e *::before,html.kg-e *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 /* ссылки в заголовках разделов («Весь день ›», «Модули ›») — на подложке: под стеклом бывает цветное пятно (контраст был 3.9:1) */
-#kgApp .cx-sh button,#kgApp .cx-sh a{background:var(--e-chip);border-radius:999px;padding:7px 12px;margin:-7px -4px;font-weight:700}
+#kgApp .cx-sh button,#kgApp .cx-sh a{background:var(--e-chip);border-radius:999px;padding:7px 12px;margin:-7px 0;font-weight:700}
 
 /* ===== 9.13 · визуал (демо): заглушки, статистика, пустые экраны, легенда, «Поделиться днём» ===== */
 /* заглушки загрузки */
@@ -897,3 +894,11 @@ html body #kgToolsSlot .settings-section,html body #kgToolsSlot #cloudPanel{marg
 #kgToolsSlot .kg-news-manage-row small{color:var(--a-hint)}
 #kgApp #kgToolsSlot .kg-news-manage-row button{min-height:36px;padding:6px 12px;border-radius:10px;background:var(--e-chip);border:1px solid var(--e-chipb);font-weight:600;font-size:13px}
 @media (max-width:479px){#kgToolsSlot .kg-news-form{grid-template-columns:1fr}}
+
+/* 9.15.1 · правки по проверке 24.11 */
+.cx-chip.w{align-items:baseline}
+.cx-chl{flex:none;white-space:nowrap} /* «ДЗ:» / «Модуль:» в карточке пары не рвётся */
+#cxCalSlot #detailLessons + .panel-section-title{margin-top:2px} /* панель дня: без пустоты над первым заголовком */
+body:not(.kg-editor) #cxCalSlot .panel-tools:has(> #addChange){display:none!important} /* у студента пустая строка вместо кнопки изменения */
+#cxCalSlot .entry .ics-button{width:100%;margin-top:8px}
+#kgTgSlot .kg-tg-login{border:0!important}

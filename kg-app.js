@@ -673,7 +673,7 @@
     if (FLAG[flag]) chips = '<span class="cx-chip r">' + FLAG[flag] + '</span>' + chips;
     var subjects = []; s.forEach(function (x) { var tt = subjTitle(x.subject); if (subjects.indexOf(tt) < 0) subjects.push(tt); });
     var nts = notesFor(key, subjects);
-    nts.forEach(function (n) { chips += '<span class="cx-chip w">' + (n.type === 'module' ? 'Модуль' : 'ДЗ') + (n.title ? ': <span translate="no">' + esc(n.title.length > 36 ? n.title.slice(0, 35) + '…' : n.title) + '</span>' : '') + '</span>'; });
+    nts.forEach(function (n) { chips += '<span class="cx-chip w"><span class="cx-chl">' + (n.type === 'module' ? 'Модуль' : 'ДЗ') + (n.title ? ':</span> <span translate="no">' : '</span>') + (n.title ? esc(n.title.length > 36 ? n.title.slice(0, 35) + '…' : n.title) + '</span>' : '') + '</span>'; });
     var h = '<article class="cx-card ' + (isNow ? 'live' : 'gl') + (past ? ' past' : '') + (!live ? ' cancel' : '') + '" style="' + kv(kindOf(e)) + '" data-cx="open" data-id="' + id + '">' +
       (isNow ? '<i class="kg-sheen"></i><span class="cx-left">ещё ' + dur(mins(e.end) - now) + '</span>' : '') + (past && live ? '<span class="cx-chk" aria-label="Прошла"><svg class="kg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>' : '') +
       '<h3><button type="button" class="cx-open" data-cx="open" data-id="' + id + '" aria-expanded="' + (state.open === id) + '">' + esc(names.join(' / ')) + '</button></h3><div class="m">' + esc([kindName(e) + cyclePeriod(e), sub].filter(Boolean).join(' · ')) + '</div>' + (teachers.length ? '<div class="m">' + esc(teachers.slice(0, 2).join(', ')) + '</div>' : '') +
@@ -1146,11 +1146,11 @@
         : botName() ? '<div class="kg-lbox">' + row('Подать заявку на старосту', esc(g), 'starreq', 'kg-accent') + '</div>' : '') +
       (canRoles() ? '<div class="kg-lbox">' + row('Роли и доступ', 'синхронно с ботом', 'roles') + (isAdm() ? row('Статистика', '', 'stats') : '') + '</div>' : '') +
       '<div class="kg-lbox">' + row('Сообщить о проблеме', '', 'report') + '</div>' +
-      '<div class="kg-ver">Версия 9.15</div>';
+      '<div class="kg-ver">Версия 9.15.1</div>';
     restoreMoved();
     $('kgPage').innerHTML = h + cxFoot();
     $('kgPage').querySelector('[data-language]').addEventListener('click', window.kgSwitchLanguage);
-    if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); moveInto(document.querySelector('.kg-mail-login'), $('kgTgSlot')); }
+    if ($('kgTgSlot')) { moveInto($('kgTgLogin'), $('kgTgSlot')); }
     if ($('kgLogout')) $('kgLogout').onclick = function () { try { cloudLogout(); } catch (e) {} setTimeout(renderProfile, 300); };
     $('kgPage').querySelectorAll('[data-seg]').forEach(function (box) {
       box.addEventListener('click', function (ev) {
