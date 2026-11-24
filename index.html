@@ -673,15 +673,19 @@ window.addEventListener('load',function(){setTimeout(function(){try{if(!window.c
 <link rel="stylesheet" href="./kg-app.css?v=91">
 <link rel="stylesheet" href="./kg-e.css?v=153">
 <link rel="stylesheet" href="./rating.css?v=148">
-<style>html.kg-boot body{visibility:hidden}</style>
-<script>/* без вспышки старого интерфейса: страница скрыта, пока kg-app.js не соберёт новый (снимает kg-boot); запасной таймер 4 с */
+<style>html.kg-boot body{visibility:hidden}
+html.kg-boot::after{content:"";position:fixed;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid rgba(140,43,51,.18);border-top-color:#8C2B33;opacity:0;animation:kgBootIn .3s ease 1s forwards,kgBootSpin .8s linear infinite}
+@keyframes kgBootIn{to{opacity:1}}@keyframes kgBootSpin{to{transform:rotate(360deg)}}</style>
+<script>/* без вспышки старого интерфейса: страница скрыта (с кружком загрузки), пока kg-app.js не соберёт новый (снимает kg-boot).
+   Запасной вариант — только если kg-app.js так и не сработал: через 1,5 с после загрузки всех скриптов (load) или через 25 с.
+   Раньше был таймер 4 с — на медленной сети он открывал старый интерфейс V8.8 до загрузки kg-app.js. */
 (function(){var d=document.documentElement,bg='#EEF2F8';d.classList.add('kg-boot');
 try{var h=new URLSearchParams(location.hash.slice(1)),tp=h.get('tgWebAppThemeParams');
 if(tp&&(tp=JSON.parse(tp)).bg_color)bg=tp.bg_color;
 else{var t=(JSON.parse(localStorage.getItem('kgmu-v8-settings-v1')||'{}')||{}).theme||'system';
 if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))bg='#0A0B12';}}catch(e){}
 d.style.background=bg;window.kgBootDone=function(){d.classList.remove('kg-boot');d.style.background='';};
-setTimeout(window.kgBootDone,4000);})();</script>
+setTimeout(window.kgBootDone,25000);addEventListener('load',function(){setTimeout(window.kgBootDone,1500)});})();</script>
 <script>/* дизайн один — E; вариант Apple (?design=apple) удалён, старые записи выбора стираем */
 window.KG_DESIGN='e';try{localStorage.removeItem('kgDesign');sessionStorage.removeItem('kgDesign')}catch(e){}</script>
 <script>/* группа, выбранная вручную, важнее группы из ссылки бота */try{var u=new URL(location.href),g=u.searchParams.get("studyGroup"),o=JSON.parse(localStorage.getItem("kg-group-override")||"null");window.KG_URL_GROUP=g;if(g&&o&&o.from===g&&o.to&&o.to!==g){u.searchParams.set("studyGroup",o.to);history.replaceState(null,"",u);}else if(g&&o&&o.from!==g){localStorage.removeItem("kg-group-override");}}catch(e){}</script>
@@ -1536,8 +1540,11 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./cloud-sync.js?v=149"></script>
 <script src="./community-extras.js?v=149"></script>
 <script src="./kg-ui.js?v=90"></script>
-<script src="./kg-schedule-en.js?v=149"></script>
-<script src="./kg-language.js?v=149"></script>
+<script>/* словарь предметов для английского интерфейса (449 КБ) — только в режиме en; при переключении его догружает kg-language.js */
+window.KG_SCHEDULE_EN_SRC='./kg-schedule-en.js?v=149';
+(function(){var l=null;try{l=new URLSearchParams(location.search).get('lang');if(l!=='ru'&&l!=='en')l=localStorage.getItem('kg-interface-language');}catch(e){}
+if(l==='en')document.write('<script src="'+window.KG_SCHEDULE_EN_SRC+'"><\/script>');})();</script>
+<script src="./kg-language.js?v=154"></script>
 <script src="./rating.js"></script>
 <script src="./rating-ui.js?v=149"></script>
 <script src="./kg-app.js?v=153"></script>

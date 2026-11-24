@@ -819,10 +819,25 @@ Telegram-бот|Telegram bot
 Другое|Other
 `.trim().split('\n').map(line => line.split('|')));
 
-  const schedule = window.KG_SCHEDULE_EN || {};
-  const scheduleTerms = new Map(Object.entries(schedule.terms || {}));
-  const scheduleTopics = new Map(Object.entries(schedule.topics || {}));
-  let embeddedTerms;
+  let scheduleTerms = new Map(), scheduleTopics = new Map(), embeddedTerms, scheduleLoading = false;
+  /* словарь предметов (kg-schedule-en.js) index.html подключает только в режиме en; при переключении на en — догружаем */
+  function useSchedule() {
+    const schedule = window.KG_SCHEDULE_EN;
+    if (!schedule) return false;
+    scheduleTerms = new Map(Object.entries(schedule.terms || {}));
+    scheduleTopics = new Map(Object.entries(schedule.topics || {}));
+    embeddedTerms = undefined;
+    return true;
+  }
+  function loadSchedule() {
+    if (scheduleTerms.size || useSchedule() || scheduleLoading) return;
+    scheduleLoading = true;
+    const script = document.createElement('script');
+    script.src = window.KG_SCHEDULE_EN_SRC || './kg-schedule-en.js';
+    script.onload = () => { if (useSchedule() && language === 'en') refresh(); };
+    script.onerror = () => { scheduleLoading = false; script.remove(); };
+    document.head.appendChild(script);
+  }
   function translateScheduleParts(text) {
     if (!scheduleTerms.size || !/[А-Яа-яЁё]/.test(text)) return text;
     if (!embeddedTerms) {
@@ -849,6 +864,7 @@ Telegram-бот|Telegram bot
   }
   language = language === 'en' ? 'en' : 'ru';
   document.documentElement.lang = language;
+  if (language === 'en') loadSchedule();
 
   const feedbackPrefixes = [
     ['Войти на сайт как ', 'Sign in as '], ['Удалить запись ', 'Delete entry '],
@@ -988,6 +1004,7 @@ Telegram-бот|Telegram bot
     const switchLanguage = () => {
       language = language === 'ru' ? 'en' : 'ru';
       document.documentElement.lang = language;
+      if (language === 'en') loadSchedule();
       try { localStorage.setItem('kg-interface-language', language); } catch {}
       const current = new URL(location.href);
       current.searchParams.set('lang', language);
