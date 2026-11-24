@@ -870,3 +870,10 @@ html.kg-e :is(.cx-hero,.cx-card.live,.kg-status,.cx-gp-hero,.cx-mhero,.cx-sgrp) 
 
 /* Profile language card follows the spacing of the other settings cards. */
 #kgPage [data-language] { margin-block-end: 10px; }
+
+/* 9.14 · картинки «Поделиться» на других экранах */
+#kgApp .cx-shrow{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 12px}
+#kgApp .kg-nsh{display:flex;justify-content:flex-end;margin-top:10px}
+#kgApp .cx-more .cx-shp{width:100%;justify-content:center;margin-top:8px}
+#kgApp .kr-share{margin-top:14px}
+#kgApp .cx-shb .kg-ic{width:16px;height:16px}

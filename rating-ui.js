@@ -64,6 +64,21 @@
       'This estimate uses the KSMU points and rating system. Actual results may differ depending on your department’s method.') +
       ' <a data-ext href="' + source + '" target="_blank" rel="noopener">' + l('Положение КГМУ','KSMU regulations') + '</a></p></div>';
   }
+  let last = null;
+  /* картинка «Поделиться» с результатом — общий рисовальщик из kg-app.js */
+  function shareResult() {
+    if (!last || !window.kgShareCard) return;
+    const no = last.required === Infinity;
+    const items = [{ t:'big', value: no ? fmt(last.max,true) : String(last.required), unit:'/ 100', c: no ? '#9A7A3E' : '#8C2B33',
+      caption: no ? l('Максимальный итоговый рейтинг при экзамене на 100','Maximum final rating with an exam score of 100')
+        : l('баллов на экзамене, чтобы получить итоговый рейтинг ','exam points to reach a final rating of ') + fmt(last.target) }];
+    items.push({ t:'text', c:'#6E7C9A', text: l('Баллы за семестр: ','Semester points: ') + fmt(last.base,true) +
+      (no ? '' : '\n' + l('Максимальный итоговый рейтинг: ','Maximum final rating: ') + fmt(last.max,true)) });
+    items.push({ t:'note', text: l('Расчёт по балльно-рейтинговой системе КГМУ, носит информационный характер.','Based on the KSMU points and rating system; for information only.') });
+    window.kgShareCard({ file:'reyting', alt: l('Результат калькулятора рейтинга','Rating calculator result'),
+      kicker: l('Калькулятор рейтинга','Rating calculator'), title: no ? l('Цель недостижима','Target unreachable') : l('Сколько нужно на экзамене','Required exam score'),
+      sub: l('Цель — итоговый рейтинг ','Target final rating: ') + fmt(last.target), items });
+  }
   function calculate(root) {
     const q = s => root.querySelector(s);
     root.querySelectorAll('[data-panel]').forEach(panel => {
@@ -123,6 +138,7 @@
     q('#krForecast').textContent = (forecast === null ? '—' : fmt(forecast,true)) + ' / 100';
     const mainLabel = l('Необходимо набрать на экзамене','Required exam score');
     let body = '<h2>' + mainLabel + '</h2>';
+    last = null;
     if (error || required === null) {
       body += '<p>' + (error || l('Заполните оценки, посещаемость и желаемый рейтинг.',
         'Enter your grades, attendance and target rating.')) + '</p>';
@@ -140,6 +156,8 @@
         l('Это математический минимум. Для сдачи экзамена ориентируйтесь на отдельный порог ',
           'This is the mathematical minimum. For passing the exam, use the separate threshold of ') + r.config.examPass +
         l(' баллов и уточните его на кафедре.',' points and confirm it with your department.') + '</p>';
+      last = { required, target, base, max };
+      if (window.kgShareCard) body += '<button type="button" class="cx-mbtn cx-shb kr-share" data-krshare="1">' + l('Поделиться результатом','Share result') + '</button>';
     }
     const result = q('#krResult');
     if (result.innerHTML !== body) result.innerHTML = body;
@@ -159,7 +177,8 @@
     root.addEventListener('click', e => {
       const button = e.target.closest('button');
       if (!button) return;
-      const {mode,choice,target,add,remove,row} = button.dataset;
+      const {mode,choice,target,add,remove,row,krshare} = button.dataset;
+      if (krshare) { shareResult(); return; }
       if (mode) state[mode] = choice;
       else if (target) {
         state.target = target;

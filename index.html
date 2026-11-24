@@ -671,7 +671,7 @@ window.addEventListener('load',function(){setTimeout(function(){try{if(!window.c
  caches.open('kgmu-data').then(function(c){return c.keys().then(function(ks){ks.forEach(function(r){var p=new URL(r.url).pathname;if(/\/data\/g\//.test(p)&&!keep[p])c.delete(r)})})}).catch(function(){})}catch(e){}},5000)});})();</script>
 <link rel="stylesheet" href="./kg-theme.css?v=91">
 <link rel="stylesheet" href="./kg-app.css?v=91">
-<link rel="stylesheet" href="./kg-e.css?v=152">
+<link rel="stylesheet" href="./kg-e.css?v=153">
 <link rel="stylesheet" href="./rating.css?v=148">
 <style>html.kg-boot body{visibility:hidden}</style>
 <script>/* без вспышки старого интерфейса: страница скрыта, пока kg-app.js не соберёт новый (снимает kg-boot); запасной таймер 4 с */
@@ -1539,8 +1539,8 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script src="./kg-schedule-en.js?v=149"></script>
 <script src="./kg-language.js?v=149"></script>
 <script src="./rating.js"></script>
-<script src="./rating-ui.js?v=148"></script>
-<script src="./kg-app.js?v=152"></script>
+<script src="./rating-ui.js?v=149"></script>
+<script src="./kg-app.js?v=153"></script>
 <script>setInterval(function(){try{document.body.classList.toggle("kg-admin",typeof newsAdmin==="function"&&!!newsAdmin())}catch(e){}},2000);</script>
 </body>
 </html>
