@@ -88,7 +88,6 @@ function cloudUpdateUI(){
   const myRole=cloudRoleIn();
   if(roles)roles.textContent=myRole==='admin'?'Администратор':myRole?KG_ROLE_RU[myRole]+' группы '+selectedStudyGroup:'Любой студент может публиковать ДЗ и модули';
   const tgBox=document.getElementById('kgTgLogin');if(tgBox)tgBox.hidden=Boolean(kgTgUser());
-  const login=document.getElementById('cloudLoginForm');if(login)login.hidden=Boolean(cloudSession?.user?.email);
   const logout=document.getElementById('cloudLogout');if(logout)logout.hidden=!cloudSession?.user?.email;
   const publish=document.getElementById('cloudPublishLocal');
   if(publish){publish.disabled=!cloudCanContribute();publish.textContent='Опубликовать локальные ДЗ и модули ('+cloudLocalNotes().length+')';}
@@ -230,24 +229,6 @@ async function cloudLoadPermissions(){
   }catch(e){if(cloudSession?.user?.id!==uid)return true;cloudAssignments=[];cloudSetStatus('Не удалось получить права редактора: '+e.message);cloudUpdateUI();return false;}
   cloudUpdateUI();
   return true;
-}
-async function cloudLogin(ev){
-  ev.preventDefault();
-  const email=document.getElementById('cloudEmail').value.trim();
-  const password=document.getElementById('cloudPassword').value;
-  if(!email||!password)return;
-  cloudSetStatus('Входим…');
-  try{
-    const r=await fetch(KGMU_CLOUD.url+'/auth/v1/token?grant_type=password',{
-      method:'POST',headers:cloudApiHeaders(false,{'Content-Type':'application/json'}),body:JSON.stringify({email,password})
-    });
-    const j=await r.json();if(!r.ok)throw Error(j.error_description||j.msg||j.message||'Не удалось войти');
-    if(!j.access_token||!j.refresh_token)throw Error('Сервер не выдал токен');
-    cloudSaveSession(j);
-    document.getElementById('cloudPassword').value='';
-    await cloudLoadPermissions();await cloudRefreshGroup(true);
-    cloudSetStatus(cloudCanEdit()?'Вход выполнен · разрешена публикация':'Вход выполнен · права редактора ещё не назначены');
-  }catch(e){cloudSetStatus('Ошибка входа: '+e.message);}
 }
 async function cloudLogout(){
   const token=cloudSession?.access_token;
@@ -409,8 +390,6 @@ async function cloudInit(){
     if(s?.access_token&&s?.refresh_token)cloudSession=s;
     else{const visitor=JSON.parse(localStorage.getItem(CLOUD_VISITOR_KEY)||'null');if(visitor?.access_token&&visitor?.refresh_token)cloudSession=visitor;}
   }catch(_){cloudSession=null;}
-  const form=document.getElementById('cloudLoginForm');
-  if(form)form.addEventListener('submit',cloudLogin);
   document.getElementById('cloudLogout')?.addEventListener('click',cloudLogout);
   document.getElementById('cloudRefresh')?.addEventListener('click',()=>cloudRefreshGroup());
   document.getElementById('cloudPublishLocal')?.addEventListener('click',cloudPublishLocal);
@@ -613,15 +592,14 @@ function kgMailMount(box){
   $m('kgMailBack').addEventListener('click',()=>{$m('kgMailS2').hidden=true;$m('kgMailS1').hidden=false;$m('kgMailCode').value='';msg('');});
 }
 function kgTgMountUI(){
-  const panel=document.getElementById('cloudPanel'),form=document.getElementById('cloudLoginForm');
-  if(!panel||!form||document.getElementById('kgTgLogin'))return;
+  const panel=document.getElementById('cloudPanel');
+  if(!panel||document.getElementById('kgTgLogin'))return;
   const box=document.createElement('div');box.id='kgTgLogin';box.className='kg-tg-login';
-  box.innerHTML='<p><b>Войдите через Telegram или по почте</b>, чтобы ваши ДЗ сохранялись за вами, а старосты и помощники могли подтверждать записи и публиковать изменения пар.</p>'+
+  box.innerHTML='<p>Войдите через Telegram или по почте, чтобы ваши ДЗ сохранялись за вами. Старостам вход открывает подтверждение ДЗ и изменения пар.</p>'+
     '<label class="kg-pd"><input type="checkbox" id="kgPdChk"'+(kgPdOk()?' checked':'')+'> <span>Я даю <a href="#" data-pd="consent">согласие на обработку персональных данных</a> и ознакомлен с <a href="#" data-pd="privacy">политикой конфиденциальности</a></span></label>'+
     '<div id="kgTgWidget"></div>';
-  form.parentNode.insertBefore(box,form);
+  panel.appendChild(box); /* профиль переносит этот блок к себе (#kgTgSlot); вход по паролю убран 16.11.2026 */
   kgMailMount(box);
-  form.hidden=true;form.classList.add('kg-gone'); /* вход по паролю для редакторов убран (16.11.2026): вход через Telegram или код из письма */
   const st=document.createElement('style');st.textContent='.kg-tg-login{margin:10px 0;padding:12px;border-radius:14px;background:rgba(42,171,238,.08);border:1px solid rgba(42,171,238,.35)}.kg-tg-login p{margin:0 0 8px}.kg-mail-login{margin:8px 0}.kg-mail-login summary{cursor:pointer;font-size:13px;opacity:.8}'+
     '.kg-pd{display:flex;gap:10px;align-items:flex-start;margin:4px 0 10px;font-size:13px;line-height:1.4;cursor:pointer}.kg-pd input{width:20px;height:20px;flex:none;margin:0;accent-color:#8C2B33}.kg-pd a{color:inherit;text-decoration:underline;text-underline-offset:2px}'+
     '.kg-tg-go{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:0;border-radius:12px;background:#2AABEE;color:#fff;font:inherit;font-weight:700;cursor:pointer}.kg-tg-go:disabled{opacity:.45;cursor:default}';
